@@ -1,0 +1,9 @@
+key,en,vi,ru,cn,jp,kr,in,de
+"""Play""","""Play""","""Chơi""","""Играть""","""播放""","""プレイ""","""재생""","""खेल""","""Spielen"""
+"""Lock""","""Lock""","""Khóa""","""Закрыть""","""锁定""","""ロック""","""잠금""","""ताला""","""Sperren"""
+"""Go""","""Go""","""Đi""","""Идти""","""去""","""行く""","""가기""","""जाओ""","""Gehen"""
+"""Campaign""","""Campaign""","""Chiến dịch""","""Кампания""","""战役""","""キャンペーン""","""캠페인""","""अभियान""","""Kampagne"""
+"""CampaignContent""","""Face off against AI robot armies to complete missions and unlock new chapters.""","""Đối đầu với đội quân robot AI để hoàn thành nhiệm vụ và mở khóa các chương mới.""","""Сражайтесь с армиями роботов ИИ, чтобы выполнить миссии и открыть новые главы.""","""对抗AI机器人军队，完成任务并解锁新章节。""","""AIロボット軍と対戦してミッションを完了し、新しい章をアンロックします。""","""AI 로봇 군대와 대결하여 임무를 완료하고 새로운 장을 잠금 해제하세요.""","""AI रोबोट सेनाओं के खिलाफ मिशन पूरे करें और नई अध्याय अनलॉक करें।""","""Kämpfe gegen AI-Roboterarmeen, um Missionen abzuschließen und neue Kapitel freizuschalten."""
+"""Boss""","""Boss""","""Phó bản""","""Босс""","""首领""","""ボス""","""보스""","""मुखिया""","""Boss"""
+"""BossContent""","""Participate in raids on giant Boss bases to defeat them and collect rare items.""","""Tham gia đột kích vào căn cứ Boss khổng lồ, đánh bại chúng và thu thập vật phẩm hiếm.""","""Участвуйте в рейдах на базы гигантских боссов, чтобы победить их и собрать редкие предметы.""","""参与突袭巨型Boss基地，击败它们并收集稀有物品。""","""巨大なボス基地にレイドして、それらを倒し、レアアイテムを集めます。""","""거대한 보스 기지에 대한 공격에 참여하여 보스를 물리치고 희귀 아이템을 수집합니다.""","""विशाल बॉस आधार पर छापे में भाग लें, उन्हें हराएँ और दुर्लभ वस्तुएँ इकट्ठा करें।""","""Nimm an Raids auf riesige Boss-Basen teil, besiege sie und sammle seltene Gegenstände."""
+"""No replays left""","""No replays left""","""Không còn lượt chơi lại""","""Вы достигли уровня ""","""你已达到等级""","""あなたはレベルに達しました""","""레벨에 도달했습니다""","""आपने स्तर प्राप्त किया है""","""Sie haben Stufe erreicht"""

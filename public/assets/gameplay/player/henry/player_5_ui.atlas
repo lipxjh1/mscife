@@ -1,0 +1,32 @@
+player_5_ui.png
+size:1328,1759
+filter:Linear,Linear
+pma:true
+ao choang sau
+bounds:152,2,609,720
+rotate:90
+chan
+bounds:463,551,643,1171
+rotate:180
+khuyu_tay_trai
+bounds:2,26,214,159
+offsets:0,0,221,159
+mat
+bounds:2,1545,190,212
+offsets:24,0,214,212
+ngon_tay_cai
+bounds:193,1573,68,79
+ngon_tay_tro
+bounds:2,1494,102,77
+sung
+bounds:1011,127,1272,315
+rotate:90
+tay_trai
+bounds:863,12,216,311
+offsets:0,0,226,317
+than
+bounds:2,568,613,1189
+toc mai 2
+bounds:157,1651,64,106
+tocs mai 1
+bounds:1081,7,188,118

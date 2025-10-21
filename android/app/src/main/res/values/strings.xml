@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">msci</string>
+    <string name="title_activity_main">msci</string>
+    <string name="package_name">com.daisylabs.msci</string>
+    <string name="custom_url_scheme">com.daisylabs.msci</string>
+</resources>

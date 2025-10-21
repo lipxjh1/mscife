@@ -1,0 +1,746 @@
+﻿import { useRef, useState, useEffect } from "react";
+
+import Phaser from "phaser";
+import { PhaserGame } from "./game/PhaserGame";
+import LinkGoogleAccount from "./pages/LinkGoogleAccount";
+
+import { init as initTelegramWebApp, viewport } from "@telegram-apps/sdk";
+
+import {
+    useTonConnectUI,
+    useTonAddress,
+    useTonWallet,
+    useTonConnectModal,
+} from "@tonconnect/ui-react";
+
+import { beginCell, Address } from "@ton/core";
+
+import centerData from "./game/Data/CenterData.js";
+import LoadingOverlay from "./game/scenes/Share/share-react/LoadingOverlay.jsx";
+import ConfirmPopup from "./game/scenes/Share/share-react/ConfirmPopup.jsx";
+import GoogleLoginContainer from "./game/scenes/Share/share-react/GoogleLoginContainer.jsx";
+import GoogleLoginTelegramLinkContainer from "./game/scenes/Share/share-react/GoogleLoginTelegramLinkContainer.jsx";
+
+import { EventBus } from "./game/EventBus.js";
+
+import {
+    GoogleLogin,
+    useGoogleLogin,
+    useGoogleOneTapLogin,
+    googleLogout,
+    useGoogleOAuth,
+} from "@react-oauth/google";
+import { lazy, Suspense } from "react";
+import axios from "axios";
+const AuthOneTap = lazy(() => import("./auth/AuthOneTap.jsx"));
+
+//import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
+
+function App() {
+    // The sprite can only be moved in the MainMenu Scene
+    const [canMoveSprite, setCanMoveSprite] = useState(true);
+
+    //  References to the PhaserGame component (game and scene are exposed)
+    const phaserRef = useRef();
+    const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+    const [showLoading, setShowLoading] = useState(false);
+
+    // Routing state
+    const [currentPage, setCurrentPage] = useState("game");
+
+    const [isPopupOpen, setPopupOpen] = useState(false);
+    const [popupConfig, setPopupConfig] = useState(null);
+    const [showGoogleLogin, setShowGoogleLogin] = useState(false);
+    const [showGoogleLoginTelegramLink, setShowGoogleLoginTelegramLink] =
+        useState(false);
+
+    useEffect(() => {
+        // Đăng ký lắng nghe sự kiện hiển thị LoadingOverlay
+        const showLoadingListener = () => setShowLoading(true);
+        // Đăng ký lắng nghe sự kiện ẩn LoadingOverlay
+        const hideLoadingListener = () => setShowLoading(false);
+
+        // Đăng ký các sự kiện với EventBus
+        EventBus.on("show-loading", showLoadingListener);
+        EventBus.on("hide-loading", hideLoadingListener);
+
+        // Cleanup listeners khi component unmount
+        return () => {
+            EventBus.off("show-loading", showLoadingListener);
+            EventBus.off("hide-loading", hideLoadingListener);
+        };
+    }, []);
+
+    // Lắng nghe yêu cầu hiển thị popup từ Phaser
+    useEffect(() => {
+        /**
+         * Xử lý hiển thị popup từ các sự kiện Phaser
+         * @param {Object} config - Cấu hình popup
+         * @param {string} config.title - Tiêu đề popup
+         * @param {string} config.message - Nội dung thông báo
+         * @param {string} [config.confirmText] - Nút xác nhận
+         * @param {string} [config.cancelText] - Nút hủy
+         * @param {string} config.confirmEvent - Sự kiện khi xác nhận
+         * @param {string} [config.cancelEvent] - Sự kiện khi hủy
+         * @param {boolean} [config.showBothButtons] - Hiển thị cả 2 nút hay chỉ 1 nút
+         */
+        const handleShowPopup = (config) => {
+            setPopupConfig({
+                title: config.title,
+                message: config.message,
+                confirmText: config.confirmText,
+                cancelText: config.cancelText,
+                showBothButtons:
+                    config.showBothButtons !== undefined
+                        ? config.showBothButtons
+                        : true,
+                onConfirm: () => {
+                    EventBus.emit(config.confirmEvent);
+                    setPopupOpen(false);
+                },
+                onCancel: () => {
+                    if (config.cancelEvent) {
+                        EventBus.emit(config.cancelEvent);
+                    }
+                    setPopupOpen(false);
+                },
+            });
+            setPopupOpen(true);
+        };
+
+        EventBus.on("ui:show-popup", handleShowPopup);
+
+        return () => {
+            EventBus.off("ui:show-popup", handleShowPopup);
+        };
+    }, []);
+
+    // Lắng nghe hiển thị/ẩn Google Login từ EventBus
+    useEffect(() => {
+        const handleShowGoogleLogin = () => setShowGoogleLogin(true);
+        const handleHideGoogleLogin = () => setShowGoogleLogin(false);
+
+        EventBus.on("ui:show-google-login", handleShowGoogleLogin);
+        EventBus.on("ui:hide-google-login", handleHideGoogleLogin);
+
+        return () => {
+            EventBus.off("ui:show-google-login", handleShowGoogleLogin);
+            EventBus.off("ui:hide-google-login", handleHideGoogleLogin);
+        };
+    }, []);
+
+    // Lắng nghe hiển thị/ẩn Google Login Telegram Link từ EventBus
+    useEffect(() => {
+        const handleShowGoogleLoginTelegramLink = () =>
+            setShowGoogleLoginTelegramLink(true);
+        const handleHideGoogleLoginTelegramLink = () =>
+            setShowGoogleLoginTelegramLink(false);
+
+        EventBus.on(
+            "ui:show-google-login-telegram-link",
+            handleShowGoogleLoginTelegramLink
+        );
+        EventBus.on(
+            "ui:hide-google-login-telegram-link",
+            handleHideGoogleLoginTelegramLink
+        );
+
+        return () => {
+            EventBus.off(
+                "ui:show-google-login-telegram-link",
+                handleShowGoogleLoginTelegramLink
+            );
+            EventBus.off(
+                "ui:hide-google-login-telegram-link",
+                handleHideGoogleLoginTelegramLink
+            );
+        };
+    }, []);
+
+    const changeScene = () => {
+        const scene = phaserRef.current.scene;
+
+        if (scene) {
+            scene.changeScene();
+        }
+    };
+
+    const moveSprite = () => {
+        const scene = phaserRef.current.scene;
+
+        if (scene && scene.scene.key === "MainMenu") {
+            // Get the update logo position
+            scene.moveLogo(({ x, y }) => {
+                setSpritePosition({ x, y });
+            });
+        }
+    };
+
+    const addSprite = () => {
+        const scene = phaserRef.current.scene;
+
+        if (scene) {
+            // Add more stars
+            const x = Phaser.Math.Between(64, scene.scale.width - 64);
+            const y = Phaser.Math.Between(64, scene.scale.height - 64);
+
+            //  `add.sprite` is a Phaser GameObjectFactory method and it returns a Sprite Game Object instance
+            const star = scene.add.sprite(x, y, "star");
+
+            //  ... which you can then act upon. Here we create a Phaser Tween to fade the star sprite in and out.
+            //  You could, of course, do this from within the Phaser Scene code, but this is just an example
+            //  showing that Phaser objects and systems can be acted upon from outside of Phaser itself.
+            scene.add.tween({
+                targets: star,
+                duration: 500 + Math.random() * 1000,
+                alpha: 0,
+                yoyo: true,
+                repeat: -1,
+            });
+        }
+    };
+
+    // Event emitted from the PhaserGame component
+    const currentScene = (scene) => {
+        setCanMoveSprite(scene.scene.key !== "MainMenu");
+    };
+
+    const ReactInitRelegram = async () => {
+        // Khởi tạo Telegram WebApp
+        await initTelegramWebApp();
+        // Mount viewport trước
+        await viewport.mount();
+        // Sau đó mới gọi requestFullscreen
+        try {
+            await viewport.requestFullscreen();
+        } catch (error) {
+            //console.error("Không thể chuyển sang chế độ toàn màn hình:", error);
+        }
+    };
+
+    useEffect(() => {
+        ReactInitRelegram();
+    }, []);
+
+    // Routing logic
+    useEffect(() => {
+        const path = window.location.pathname;
+
+        if (path === "/link-google-account") {
+            setCurrentPage("link-google");
+        } else {
+            setCurrentPage("game");
+        }
+    }, []);
+
+    // Google auth: chỉ mount One Tap khi người dùng yêu cầu
+    const [showOneTapGoogleSigin, setShowOneTapGoogleSigin] = useState(false);
+
+    // let login = useGoogleLogin({
+    //     onSuccess: async (tokenResponse) => {
+    //         console.log(tokenResponse);
+    //         centerData.RequestSigninGoogle(
+    //             tokenResponse.access_token,
+    //             (result) => {
+    //                 console.log(result);
+    //             },
+    //             (error) => {
+    //                 console.log(error);
+    //             }
+    //         );
+
+    //         console.log(userInfo);
+    //     },
+    //     onError: (error) => {
+    //         console.log("Google login error: ", error);
+    //     },
+    // });
+
+    // let login = useGoogleOneTapLogin({
+    //     onSuccess: (credentialResponse) => {
+    //         console.log(credentialResponse);
+    //     },
+    //     onError: () => {
+    //         console.log("Login Failed");
+    //     },
+    // });
+
+    let onLoginGoogleSuccess = null;
+    let onLoginGoogleError = null;
+
+    const ReactLoginGoogle = (onSuccess, onError) => {
+        onLoginGoogleSuccess = onSuccess;
+        onLoginGoogleError = onError;
+
+        setShowOneTapGoogleSigin(true);
+    };
+
+    const handleGoogleLogin = () => {
+        googleLogin();
+
+        setShowOneTapGoogleSigin(true);
+        //login();
+    };
+
+    const handleGoogleLogout = () => {
+        googleLogout();
+    };
+
+    //Ton Wallet
+
+    const [tonConnecting, setTonConnecting] = useState(false);
+
+    const [tonDisconnecting, setTonDisconnecting] = useState(false);
+
+    const [tonConnectUI, setOptions] = useTonConnectUI();
+    //tonConnectUI.disconnect();
+
+    const { state, open, close } = useTonConnectModal();
+    const tonWallet = useTonWallet();
+
+    const userFriendlyAddress = useTonAddress();
+    const rawAddress = useTonAddress(false);
+
+    // console.log("wallet frienly address: ", userFriendlyAddress);
+    // console.log("wallet raw address: ", rawAddress);
+
+    const ReactWalletConnect = async (onConnected, onDisconnected) => {
+        setTonConnecting(true);
+
+        open();
+
+        centerData.SetModalState(true);
+    };
+
+    const ReactWalletDisconnect = async (
+        onDisconnected,
+        onDisconnectedError
+    ) => {
+        setTonDisconnecting(true);
+
+        centerData.SetWalletAddress("");
+
+        tonConnectUI.disconnect();
+    };
+
+    // Modified useEffect to use callbacks from state
+    useEffect(() => {
+        if (userFriendlyAddress && userFriendlyAddress != "") {
+            centerData.walletType = centerData.WalletType.TON.KEY;
+
+            centerData.SetWalletAddress(userFriendlyAddress);
+
+            centerData.SetModalState(centerData.ModalState.Close.KEY);
+
+            setTonConnecting(false);
+        }
+
+        if (tonConnecting) {
+            console.log("Ton set ModalState");
+
+            centerData.SetModalState(tonConnectUI.modalState.status);
+
+            if (tonConnectUI.modalState === centerData.ModalState.Close.KEY) {
+                setTonConnecting(false);
+            }
+        }
+
+        if (tonDisconnecting) {
+            if (userFriendlyAddress == null || userFriendlyAddress === "") {
+                centerData.SetWalletAddress("");
+
+                setTonDisconnecting(false);
+            }
+        }
+
+        console.log("tonConnectUI.modalState: ", tonConnectUI.modalState);
+    }, [
+        userFriendlyAddress,
+        tonConnecting,
+        tonDisconnecting,
+        tonConnectUI.modalState,
+    ]); // Fixed dependency array
+
+    const ReactSendTransaction = async (
+        amount,
+        receiver,
+        onSuccess,
+        onError
+    ) => {
+        const body = beginCell()
+            .storeUint(0, 32)
+            .storeStringTail(`${centerData.userInfo.UserId || ""}|${amount}`)
+            .endCell();
+
+        const transaction = {
+            validUntil: Math.floor(Date.now() / 1000) + 60, // 1 minutes
+            messages: [
+                {
+                    address: receiver,
+                    amount: toNanoTon(amount), // 0.02 TON in nanotons
+                    payload: body.toBoc().toString("base64"),
+                },
+            ],
+        };
+
+        // console.log("UserId: ", centerData.userInfo.UserId);
+        // console.log("amount: ", amount);
+        // console.log("receiver: ", receiver);
+        // console.log("transaction: ", transaction);
+
+        try {
+            const result = await tonConnectUI.sendTransaction(transaction);
+            // console.log("Transaction sent successfully:", result);
+
+            if (onSuccess && typeof onSuccess === "function") {
+                onSuccess(result);
+            }
+        } catch (error) {
+            // console.error("Transaction failed:", error);
+
+            if (onError && typeof onError === "function") {
+                onError(error);
+            }
+        }
+    };
+
+    function toNanoTon(amount) {
+        amount = Number(amount);
+
+        return amount * 1_000_000_000; // Chuyển từ TON sang nanoton
+    }
+
+    // Hoặc sử dụng tonAPI
+    const ReactNftCharacters = async (onSuccess, onError) => {
+        if (!tonConnectUI.account) return;
+
+        let friendlyCollectionAddress =
+            "EQC2rvOp-eEfdJUnJN1ORvoIb5PMu8J_fnBos0gmqJBHEBEW";
+
+        const friendlyParse = Address.parse(friendlyCollectionAddress);
+
+        let rawCollectionAddress = friendlyParse.toRawString();
+
+        try {
+            const response = await fetch(
+                `https://tonapi.io/v2/accounts/${rawAddress}/nfts?collection=${rawCollectionAddress}&limit=1000&offset=0&indirect_ownership=true`
+            );
+            const result = await response.json();
+            //console.log("NFTs from tonAPI:", result);
+
+            let arr_ids = [];
+
+            if (result.nft_items) {
+                for (let i = 0; i < result.nft_items.length; i++) {
+                    let nft = result.nft_items[i];
+
+                    const rawParse = Address.parse(nft.address);
+
+                    arr_ids.push(rawParse.toString());
+                }
+
+                //console.log("arr_ids:", arr_ids);
+            } else {
+                //console.log("no nft characters");
+            }
+
+            if (onSuccess && typeof onSuccess === "function") {
+                onSuccess(arr_ids);
+            }
+        } catch (error) {
+            //console.error("Error:", error);
+
+            if (onError && typeof onError === "function") {
+                onError(error);
+            }
+        }
+    };
+
+    // Hoặc sử dụng tonAPI
+    const fetchJettonsTonAPI = async () => {
+        if (!tonConnectUI.account) return;
+
+        try {
+            const response = await fetch(
+                `https://tonapi.io/v2/accounts/${rawAddress}/jettons?currencies=ton`
+            );
+            const data = await response.json();
+            console.log("NFTs from tonAPI:", data);
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
+    // //Sui Wallet
+
+    // const [suiConnecting, setSuiConnecting] = useState(false);
+
+    // const [suiDisconnecting, setSuiDisconnecting] = useState(false);
+
+    // const [showModal, setShowModal] = useState(false);
+
+    // //const suiWallet = useAccounts();
+
+    // const suiWallet = useWallet();
+
+    // console.log("suiWallet", suiWallet);
+
+    // const ReactSuiWalletConnect = async () => {
+    //     setSuiConnecting(true);
+
+    //     setShowModal(true);
+
+    //     centerData.SetModalState(true);
+    // };
+
+    // const ReactSuiWalletDisconnect = async () => {
+    //     setSuiDisconnecting(true);
+
+    //     suiWallet.disconnect();
+    // };
+
+    // // Modified useEffect to use callbacks from state
+    // useEffect(() => {
+    //     if (suiWallet && suiWallet.address && suiWallet.address != "") {
+    //         centerData.walletType = centerData.WalletType.SUI.KEY;
+    //         centerData.SetWalletAddress(suiWallet.address);
+    //         setShowModal(false);
+    //         centerData.SetModalState(centerData.ModalState.Close.KEY);
+    //         setSuiConnecting(false);
+    //     }
+
+    //     console.log("suiConnecting: ", suiConnecting);
+
+    //     if (suiConnecting) {
+    //         if (showModal == true) {
+    //             centerData.SetModalState(centerData.ModalState.Open.KEY);
+    //         } else {
+    //             centerData.SetModalState(centerData.ModalState.Close.KEY);
+    //             setSuiConnecting(false);
+    //         }
+
+    //         console.log("Sui modalState: ", showModal);
+    //     }
+
+    //     if (suiDisconnecting) {
+    //         if (
+    //             suiWallet == null ||
+    //             suiWallet.address == null ||
+    //             suiWallet.address === ""
+    //         ) {
+    //             centerData.SetWalletAddress("");
+    //             setSuiDisconnecting(false);
+    //         }
+    //     }
+    // }, [suiWallet, suiConnecting, showModal, suiDisconnecting]);
+
+    return (
+        <div id="app">
+            {currentPage === "link-google" ? (
+                <LinkGoogleAccount />
+            ) : (
+                <PhaserGame
+                    ref={phaserRef}
+                    currentActiveScene={currentScene}
+                    phaserWalletConnect={ReactWalletConnect}
+                    phaserWalletDisconnect={ReactWalletDisconnect}
+                    phaserSendTransaction={ReactSendTransaction}
+                    phaserNftCharacters={ReactNftCharacters}
+                    // phaserSuiWalletConnect={ReactSuiWalletConnect}
+                    // phaserSuiWalletDisconnect={ReactSuiWalletDisconnect}
+                    phaserLoginGoogle={ReactLoginGoogle}
+                />
+            )}
+            <LoadingOverlay showLoading={showLoading} />
+            {popupConfig && (
+                <ConfirmPopup
+                    isOpen={isPopupOpen}
+                    title={popupConfig.title}
+                    message={popupConfig.message}
+                    confirmText={popupConfig.confirmText}
+                    cancelText={popupConfig.cancelText}
+                    onConfirm={popupConfig.onConfirm}
+                    onCancel={popupConfig.onCancel}
+                    showBothButtons={popupConfig.showBothButtons}
+                />
+            )}
+            <div>
+                {/* <ConnectModal
+                    open={showModal}
+                    onOpenChange={(open) => setShowModal(open)}
+                ></ConnectModal> */}
+
+                {/* <ConnectButton>Connect Wallet</ConnectButton> */}
+
+                {/* <button onClick={() => ReactSuiWalletConnect()}>
+                    Sui Wallet
+                </button>
+
+                <button onClick={() => ReactSuiWalletDisconnect()}>
+                    Disconnect sui Wallet
+                </button> */}
+                {/* <div>
+                    <button onClick={ReactNftCharacters}>Get NFTs (tonAPI)</button>
+                </div> */}
+                {/* <div>
+                    <button
+                        onClick={() =>
+                            ReactWalletConnect(
+                                (wallet) => {
+                                    console.log("Connected:", wallet);
+                                    // Xử lý khi kết nối thành công
+                                },
+                                (error) => {
+                                    console.log("Error:", error);
+                                    // Xử lý khi có lỗi
+                                }
+                            )
+                        }
+                    >
+                        Connect Wallet
+                    </button>
+                </div> */}
+                {/* <div>
+                    <button onClick={() => tonConnectUI.disconnect()}>
+                        Disconnect Wallet
+                    </button>
+                </div> */}
+                {/* <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "absolute",
+                        top: "15%",
+                        right: "10%",
+                        transform: "translate(-50%,-50%)",
+                        height: "25px", // Chiều cao nút
+                        width: "100px", // Chiều rộng nút
+                        paddingTop: "14px",
+                        paddingRight: "0px",
+                        paddingBottom: "14px",
+                        paddingLeft: "0px",
+                        color: "red", // Màu chữ
+                        fontSize: "10px", // Thay đổi kích thước font chữ ở đây
+                        textAlign: "center", // Căn giữa chữ
+                        zIndex: 100,
+                    }}
+                >
+                    User-friendly address: {userFriendlyAddress}
+                </div> */}
+                {/* <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "absolute",
+                        top: "20%",
+                        right: "-10%",
+                        transform: "translate(-50%,-50%)",
+                        height: "25px", // Chiều cao nút
+                        width: "100px", // Chiều rộng nút
+                        paddingTop: "14px",
+                        paddingRight: "0px",
+                        paddingBottom: "14px",
+                        paddingLeft: "0px",
+                        color: "red", // Màu chữ
+                        fontSize: "10px", // Thay đổi kích thước font chữ ở đây
+                        textAlign: "center", // Căn giữa chữ
+                        zIndex: 100,
+                    }}
+                >
+                    Raw address: {rawAddress}
+                </div> */}
+                {/* <div>
+                    <button className="button" onClick={changeScene}>
+                        Change Scene
+                    </button>
+                </div>
+                <div>
+                    <button
+                        disabled={canMoveSprite}
+                        className="button"
+                        onClick={moveSprite}
+                    >
+                        Toggle Movement
+                    </button>
+                </div>
+                <div className="spritePosition">
+                    Sprite Position:
+                    <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
+                </div>
+                <div>
+                    <button className="button" onClick={addSprite}>
+                        Add New Sprite
+                    </button>
+                </div> */}
+            </div>
+            <GoogleLoginContainer
+                isOpen={showGoogleLogin}
+                onSuccess={(credentialResponse) => {
+                    //console.log(credentialResponse);
+                    EventBus.emit(
+                        "react-google-button-login",
+                        credentialResponse
+                    );
+                    setShowGoogleLogin(false);
+                }}
+                onError={() => {
+                    EventBus.emit("react-google-button-login-error");
+                    setShowGoogleLogin(false);
+                }}
+            />
+            <GoogleLoginTelegramLinkContainer
+                isOpen={showGoogleLoginTelegramLink}
+                onSuccess={(credentialResponse) => {
+                    //console.log(credentialResponse);
+                    EventBus.emit(
+                        "react-google-button-login-telegram-link",
+                        credentialResponse
+                    );
+                    setShowGoogleLoginTelegramLink(false);
+                }}
+                onError={() => {
+                    EventBus.emit(
+                        "react-google-button-login-error-telegram-link"
+                    );
+                    setShowGoogleLoginTelegramLink(false);
+                }}
+            />
+            <div>
+                {/* <button onClick={handleGoogleLogin}>Đăng nhập Google</button>
+                <button onClick={handleGoogleLogout}>Đăng xuất Google</button> */}
+                {/* {showOneTapGoogleSigin && (
+                    <Suspense fallback={null}>
+                        <AuthOneTap
+                            onSuccess={(result) => {
+                                console.log("Google AuthOneTap: ", result);
+
+                                if (
+                                    onLoginGoogleSuccess &&
+                                    typeof onLoginGoogleSuccess === "function"
+                                ) {
+                                    onLoginGoogleSuccess(result);
+                                }
+
+                                setShowOneTapGoogleSigin(false);
+                            }}
+                            onError={() => {
+                                if (
+                                    onLoginGoogleError &&
+                                    typeof onLoginGoogleError === "function"
+                                ) {
+                                    onLoginGoogleError();
+                                }
+
+                                setShowOneTapGoogleSigin(false);
+                            }}
+                        />
+                    </Suspense>
+                )} */}
+            </div>
+        </div>
+    );
+}
+
+export default App;

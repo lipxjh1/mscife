@@ -1,0 +1,15 @@
+x_force_box.png
+size:1024,1024
+filter:Linear,Linear
+pma:true
+day_hop
+bounds:2,214,287,225
+guang
+bounds:2,441,759,393
+nap_dong
+bounds:763,555,279,190
+rotate:90
+nap_mo
+bounds:2,2,212,210
+xx
+bounds:291,394,45,45

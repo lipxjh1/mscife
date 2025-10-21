@@ -1,0 +1,67 @@
+{
+    "name": "template-react",
+    "description": "A Phaser 3 project template that demonstrates React communication and uses Vite for bundling.",
+    "version": "1.1.1",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/phaserjs/template-react.git"
+    },
+    "author": "Phaser Studio <support@phaser.io> (https://phaser.io/)",
+    "license": "MIT",
+    "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
+    "bugs": {
+        "url": "https://github.com/phaserjs/template-react/issues"
+    },
+    "homepage": "https://github.com/phaserjs/template-react#readme",
+    "keywords": [
+        "phaser",
+        "phaser3",
+        "react",
+        "vite"
+    ],
+    "scripts": {
+        "dev": "node log.js dev & vite --config vite/config.dev.mjs",
+        "build": "node log.js build & vite build --config vite/config.prod.mjs",
+        "dev-nolog": "vite --config vite/config.dev.mjs",
+        "build-nolog": "vite build --config vite/config.prod.mjs"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.723.0",
+        "@capacitor/android": "^7.4.0",
+        "@capacitor/cli": "^7.4.0",
+        "@capacitor/core": "^7.4.0",
+        "@esotericsoftware/spine-phaser-v3": "^4.2.83",
+        "@mysten/sui": "^1.21.2",
+        "@react-oauth/google": "^0.12.2",
+        "@suiet/wallet-kit": "^0.3.4",
+        "@telegram-apps/sdk": "^2.11.3",
+        "@ton/core": "^0.61.0",
+        "@tonconnect/ui-react": "^2.2.0",
+        "axios": "^1.7.7",
+        "buffer": "^6.0.3",
+        "esbuild": "^0.25.5",
+        "jwt-decode": "^4.0.0",
+        "papaparse": "^5.5.2",
+        "phaser": "^3.87.0",
+        "phaser3-rex-plugins": "^1.80.11",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "rxjs": "^7.8.1",
+        "socket.io-client": "^4.8.1",
+        "webfontloader": "^1.6.28"
+    },
+    "devDependencies": {
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
+        "@vitejs/plugin-react": "^4.3.1",
+        "autoprefixer": "^10.4.21",
+        "cssnano": "^7.0.7",
+        "eslint": "^8.57.0",
+        "eslint-plugin-react": "^7.34.2",
+        "eslint-plugin-react-hooks": "^4.6.2",
+        "eslint-plugin-react-refresh": "^0.4.7",
+        "terser": "^5.28.1",
+        "vite": "^6.3.5"
+    }
+}

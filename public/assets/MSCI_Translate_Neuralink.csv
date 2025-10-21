@@ -1,0 +1,162 @@
+key,en,vi,ru,cn,jp,kr,in,de
+"""Get more $MSCI in Center Market""","""Get more $MSCI in Center Market""","""Lấy thêm $MSCI trong Center Market""","""Получить больше $MSCI на Центральном рынке""","""在中心市场获取更多$MSCI""","""センターマーケットでより多くの$MSCIを取得""","""센터 마켓에서 $MSCI 더 가져오기""","""सेंटर मार्केट में अधिक $MSCI प्राप्त करें""","""Holen Sie sich mehr $MSCI im Zentralmarkt"""
+"""neuralinkDetailKey""","""Neuralink upgrades will randomly yield the following types upon completion:
+50% Connected Neuralink I +10% ATK
+20% Connected Neuralink II +15% ATK
+10% Connected Neuralink III +20% ATK
+8% Connected Neuralink IV +25% ATK
+7% Connected Neuralink V +30% ATK
+3% Elite Neuralink I +60% ATK
+1.5% Elite Neuralink II +70% ATK
+0.3% Elite Neuralink III +80% ATK
+0.15% Elite Neuralink IV +90% ATK
+0.05% Elite Neuralink V +100% ATK
+Neuralink Upgrades: Combine 3 Neuralinks to upgrade 1
+Connected I - V: 100% success rate
+Connected V - Elite I: 30% success rate (Insurance: 10 Memory per Neuralink)
+Elite I - Elite II: 20% success rate (Insurance: 20 Memory per Neuralink)
+Elite II - Elite III: 10% success rate (Insurance: 30 Memory per Neuralink)
+Elite III - Elite IV: 5% success rate (Insurance: 40 Memory per Neuralink)
+Elite IV - Elite V: 1% success rate (Insurance: 50 Memory per Neuralink)""","""Neuralink sẽ random sau khi hoàn thành upgrade sẽ random để ra các loại sau:
+50% Connected Neuralink I +10% ATK
+20% Connected Neuralink II + 15% ATK
+10% Connected Neuralink III +20% ATK
+8% Connected Neuralink IV +25% ATK
+7% Connected Neuralink V +30% ATK
+3% Elite Neuralink I 60% ATK
+1,5% Elite Neuralink II 70% ATK
+0,3 Elite Neuralink III 80% ATK
+0,15% Elite Neuralink IV 90% ATK
+0,05% Elite Neuralink V 100% ATK
+Nâng cấp Neuralink: cứ 3 cái ghép thành 1
+Connected: I -V tỉ lệ success 100%
+Connected V - Elite I: 30% (Bảo hiểm 10 Memory cho 1 Neuralink)
+Elite I - Elite II: 20% (Bảo hiểm 20 Memory cho 1 Neuralink)
+Elite II - Elite III: 10% (Bảo hiểm 30 Memory cho 1 Neuralink)
+Elite III - Elite IV: 5% (Bảo hiểm 40 Memory cho 1 Neuralink)
+Elite IV - Elite V: 1% (Bảo hiểm 50 Memory cho 1 Neuralink)""","""Обновление Neuralink будет случайным образом давать следующие типы после завершения:
+50% Connected Neuralink I +10% ATK
+20% Connected Neuralink II +15% ATK
+10% Connected Neuralink III +20% ATK
+8% Connected Neuralink IV +25% ATK
+7% Connected Neuralink V +30% ATK
+3% Elite Neuralink I +60% ATK
+1,5% Elite Neuralink II +70% ATK
+0,3% Elite Neuralink III +80% ATK
+0,15% Elite Neuralink IV +90% ATK
+0,05% Elite Neuralink V +100% ATK
+Обновление Neuralink: Объедините 3 Neuralink для улучшения 1
+Connected I - V: 100% успеха
+Connected V - Elite I: 30% успеха (Страховка: 10 памяти за Neuralink)
+Elite I - Elite II: 20% успеха (Страховка: 20 памяти за Neuralink)
+Elite II - Elite III: 10% успеха (Страховка: 30 памяти за Neuralink)
+Elite III - Elite IV: 5% успеха (Страховка: 40 памяти за Neuralink)
+Elite IV - Elite V: 1% успеха (Страховка: 50 памяти за Neuralink)""","""Neuralink升级完成后将随机产生以下类型：
+50% Connected Neuralink I +10% 攻击力
+20% Connected Neuralink II +15% 攻击力
+10% Connected Neuralink III +20% 攻击力
+8% Connected Neuralink IV +25% 攻击力
+7% Connected Neuralink V +30% 攻击力
+3% Elite Neuralink I +60% 攻击力
+1.5% Elite Neuralink II +70% 攻击力
+0.3% Elite Neuralink III +80% 攻击力
+0.15% Elite Neuralink IV +90% 攻击力
+0.05% Elite Neuralink V +100% 攻击力
+Neuralink升级：合并3个Neuralink升级为1个
+Connected I - V：100%成功率
+Connected V - Elite I：30%成功率（保险：每个Neuralink 10记忆）
+Elite I - Elite II：20%成功率（保险：每个Neuralink 20记忆）
+Elite II - Elite III：10%成功率（保险：每个Neuralink 30记忆）
+Elite III - Elite IV：5%成功率（保险：每个Neuralink 40记忆）
+Elite IV - Elite V：1%成功率（保险：每个Neuralink 50记忆）""","""Neuralinkのアップグレード完了時にランダムに以下のタイプが生成されます：
+50% Connected Neuralink I +10% 攻撃力
+20% Connected Neuralink II +15% 攻撃力
+10% Connected Neuralink III +20% 攻撃力
+8% Connected Neuralink IV +25% 攻撃力
+7% Connected Neuralink V +30% 攻撃力
+3% Elite Neuralink I +60% 攻撃力
+1.5% Elite Neuralink II +70% 攻撃力
+0.3% Elite Neuralink III +80% 攻撃力
+0.15% Elite Neuralink IV +90% 攻撃力
+0.05% Elite Neuralink V +100% 攻撃力
+Neuralinkアップグレード：3つのNeuralinkを統合して1つにアップグレード
+Connected I - V：成功率100%
+Connected V - Elite I：成功率30%（保険：Neuralinkあたり10メモリ）
+Elite I - Elite II：成功率20%（保険：Neuralinkあたり20メモリ）
+Elite II - Elite III：成功率10%（保険：Neuralinkあたり30メモリ）
+Elite III - Elite IV：成功率5%（保険：Neuralinkあたり40メモリ）
+Elite IV - Elite V：成功率1%（保険：Neuralinkあたり50メモリ）""","""Neuralink 업그레이드 완료 시 다음 유형이 랜덤으로 생성됩니다:
+50% Connected Neuralink I +10% 공격력
+20% Connected Neuralink II +15% 공격력
+10% Connected Neuralink III +20% 공격력
+8% Connected Neuralink IV +25% 공격력
+7% Connected Neuralink V +30% 공격력
+3% Elite Neuralink I +60% 공격력
+1.5% Elite Neuralink II +70% 공격력
+0.3% Elite Neuralink III +80% 공격력
+0.15% Elite Neuralink IV +90% 공격력
+0.05% Elite Neuralink V +100% 공격력
+Neuralink 업그레이드: 3개의 Neuralink를 결합하여 1개로 업그레이드
+Connected I - V: 100% 성공률
+Connected V - Elite I: 30% 성공률 (보험: Neuralink당 10 메모리)
+Elite I - Elite II: 20% 성공률 (보험: Neuralink당 20 메모리)
+Elite II - Elite III: 10% 성공률 (보험: Neuralink당 30 메모리)
+Elite III - Elite IV: 5% 성공률 (보험: Neuralink당 40 메모리)
+Elite IV - Elite V: 1% 성공률 (보험: Neuralink당 50 메모리)""","""Neuralink के अपग्रेड पूरा होने पर यादृच्छिक रूप से निम्नलिखित प्रकार के परिणाम देंगे:
+50% Connected Neuralink I +10% अटैक
+20% Connected Neuralink II +15% अटैक
+10% Connected Neuralink III +20% अटैक
+8% Connected Neuralink IV +25% अटैक
+7% Connected Neuralink V +30% अटैक
+3% Elite Neuralink I +60% अटैक
+1.5% Elite Neuralink II +70% अटैक
+0.3% Elite Neuralink III +80% अटैक
+0.15% Elite Neuralink IV +90% अटैक
+0.05% Elite Neuralink V +100% अटैक
+Neuralink अपग्रेड: 3 Neuralink को मिलाकर 1 को अपग्रेड करें
+Connected I - V: 100% सफलता दर
+Connected V - Elite I: 30% सफलता दर (बीमा: प्रति Neuralink 10 मेमोरी)
+Elite I - Elite II: 20% सफलता दर (बीमा: प्रति Neuralink 20 मेमोरी)
+Elite II - Elite III: 10% सफलता दर (बीमा: प्रति Neuralink 30 मेमोरी)
+Elite III - Elite IV: 5% सफलता दर (बीमा: प्रति Neuralink 40 मेमोरी)
+Elite IV - Elite V: 1% सफलता दर (बीमा: प्रति Neuralink 50 मेमोरी)""","""Neuralink-Upgrades werden nach Abschluss zufällig die folgenden Typen ergeben:
+50% Connected Neuralink I +10% Angriff
+20% Connected Neuralink II +15% Angriff
+10% Connected Neuralink III +20% Angriff
+8% Connected Neuralink IV +25% Angriff
+7% Connected Neuralink V +30% Angriff
+3% Elite Neuralink I +60% Angriff
+1,5% Elite Neuralink II +70% Angriff
+0,3% Elite Neuralink III +80% Angriff
+0,15% Elite Neuralink IV +90% Angriff
+0,05% Elite Neuralink V +100% Angriff
+Neuralink-Upgrades: Kombinieren Sie 3 Neuralinks, um 1 zu verbessern
+Connected I - V: 100% Erfolgsrate
+Connected V - Elite I: 30% Erfolgsrate (Versicherung: 10 Speicher pro Neuralink)
+Elite I - Elite II: 20% Erfolgsrate (Versicherung: 20 Speicher pro Neuralink)
+Elite II - Elite III: 10% Erfolgsrate (Versicherung: 30 Speicher pro Neuralink)
+Elite III - Elite IV: 5% Erfolgsrate (Versicherung: 40 Speicher pro Neuralink)
+Elite IV - Elite V: 1% Erfolgsrate (Versicherung: 50 Speicher pro Neuralink)"""
+"""Upgrade""","""Upgrade""","""Nâng cấp""","""Обновить""","""升级""","""アップグレード""","""업그레이드""","""अपग्रेड""","""Aktualisieren"""
+"""Detail""","""Detail""","""Chi tiết""","""Обновить""","""升级""","""アップグレード""","""업그레이드""","""अपग्रेड""","""Aktualisieren"""
+"""Detail""","""Detail""","""Chi tiết""","""Обновить""","""升级""","""アップグレード""","""업그레이드""","""अपग्रेड""","""Aktualisieren"""
+"""History""","""History""","""Lịch sử""","""История""","""历史""","""履歴""","""기록""","""इतिहास""","""Verlauf"""
+"""Your total Neuralink""","""Your total Neuralink""","""Tổng Neuralink của bạn""","""Ваш общий Neuralink""","""您的总Neuralink""","""あなたの合計Neuralink""","""당신의 총 Neuralink""","""आपका कुल Neuralink""","""Ihr Gesamt-Neuralink"""
+"""Not enough Neuralink""","""Not enough Neuralink""","""Không đủ Neuralink""","""Недостаточно Neuralink""","""Neuralink不足""","""Neuralinkが不足している""","""Neuralink가 충분하지 않음""","""Neuralink पर्याप्त नहीं है""","""Nicht genügend Neuralink"""
+"""Not enough $MSCI""","""Not enough $MSCI""","""Không đủ $MSCI""","""Недостаточно $MSCI""","""$MSCI不足""","""$MSCIが不足している""","""$MSCI가 충분하지 않음""","""$MSCI पर्याप्त नहीं है""","""Nicht genügend $MSCI"""
+"""neuralinkToConectedKey""","""Upgrade {i} Neuralink to Conected Neuralink\nWith {i} $MSCI""","""Nâng {i} Neuralink thành Conected Neuralink\nVới {i} $MSCI""","""Улучшить {i} Neuralink до Connected Neuralink\nЗа {i} $MSCI""","""将{i}个Neuralink升级为Connected Neuralink\n使用{i}个$MSCI""","""{i}個のNeuralinkをConnected Neuralinkにアップグレード\n{i} $MSCIを使用""","""{i}개의 Neuralink를 Connected Neuralink로 업그레이드\n{i} $MSCI 사용""","""{i} Neuralink को Connected Neuralink में अपग्रेड करें\n{i} $MSCI के साथ""","""{i} Neuralink zu Connected Neuralink aufrüsten\nMit {i} $MSCI"""
+"""Confirm""","""Confirm""","""Xác nhận""","""Подтвердить""","""确认""","""確認""","""확인""","""पुष्टि करें""","""Bestätigen"""
+"""Claim""","""Claim""","""Nhận""","""Получить""","""领取""","""受け取る""","""받기""","""दावा करें""","""Einsammeln"""
+"""Quantity: ""","""Quantity: ""","""Số lượng: ""","""Количество: ""","""数量：""","""数量：""","""수량: ""","""मात्रा: ""","""Menge: """
+"""Refining at: ""","""Refining at: ""","""Tinh luyện: ""","""Улучшение в: ""","""精炼于：""","""精錬中：""","""정제 중: ""","""संशोधन में: ""","""Verfeinerung um: """
+"""Completed at: ""","""Completed at: ""","""Hoàn thành: ""","""Завершено в: ""","""完成时间：""","""完了時間：""","""완료 시간: ""","""पूर्ण हुआ: ""","""Abgeschlossen um: """
+"""Created at: ""","""Created at: ""","""Chế tạo: ""","""Создано в: ""","""创建时间：""","""作成時間：""","""생성 시간: ""","""बनाया गया: ""","""Erstellt am: """
+"""Upgrade at: ""","""Upgrade at: ""","""Nâng cấp: ""","""Обновление в: ""","""升级时间：""","""アップグレード時間：""","""업그레이드 시간: ""","""अपग्रेड किया: ""","""Upgrade um: """
+"""View""","""View""","""Xem""","""Просмотр""","""查看""","""表示""","""보기""","""देखें""","""Ansehen"""
+"""Days""","""Days""","""Ngày""","""Дни""","""天""","""日""","""일""","""दिन""","""Tage"""
+"""Remaining Time: ""","""Remaining Time: ""","""Thời gian còn lại: ""","""Оставшееся время: ""","""剩余时间：""","""残り時間：""","""남은 시간: ""","""शेष समय: ""","""Verbleibende Zeit: """
+"""Time to upgrade: ""","""Time to upgrade: ""","""Thời gian nâng cấp: ""","""Время до улучшения: ""","""升级时间：""","""アップグレード時間：""","""업그레이드 시간: ""","""अपग्रेड करने का समय: ""","""Zeit für Upgrade: """
+"""You need to wait {i} to upgrade again""","""You need to wait {i} to upgrade again""","""Bạn cần chờ {i} để nâng cấp lại""","""Вы должны подождать {i}, чтобы улучшить снова""","""你需要等待 {i} 才能再次升级""","""再度アップグレードするには {i} 待つ必要があります""","""다시 업그레이드하려면 {i} 기다려야 합니다""","""आपको फिर से अपग्रेड करने के लिए {i} प्रतीक्षा करनी होगी""","""Sie müssen {i} warten, um erneut zu aktualisieren"""
+"""You need {i} $MSCI to complete this upgrade""","""You need {i} $MSCI to complete this upgrade""","""Bạn cần {i} $MSCI để hoàn thành nâng cấp""","""Время до улучшения: ""","""升级时间：""","""アップグレード時間：""","""업그레이드 시간: ""","""अपग्रेड करने का समय: ""","""Zeit für Upgrade: """
+"""You need at least 3 Neuralink to combine""","""You need at least 3 Neuralink to combine""","""Bạn cần ít nhất 3 Neuralink để kết hợp""","""Вам нужно минимум 3 Neuralink для объединения""","""您需要至少3个Neuralink才能合并""","""結合には少なくとも3つのNeuralinkが必要です""","""결합하려면 최소 3개의 Neuralink가 필요합니다""","""आपको कम से कम 3 Neuralink को जोड़ने के लिए चाहिए""","""Sie benötigen mindestens 3 Neuralink zum Kombinieren"""
+"""neuralink_upgrade_note_key""","""Note: You have 24 hours from the expiration time to complete the upgrade process. If you fail to complete it within this period, you will lose all Neuralink and $MSCI assets that were entered into the upgrade process""","""Lưu ý: Bạn có 24 giờ kể từ thời gian hết hạn để hoàn thành quá trình nâng cấp. Nếu không hoàn thành trong khoảng thời gian này, bạn sẽ mất toàn bộ tài sản Neuralink và $MSCI đã được đưa vào quá trình nâng cấp.""","""Важно: У вас есть 24 часа с момента истечения срока для завершения процесса обновления. Если вы не завершите его в этот период, вы потеряете все активы Neuralink и $MSCI, которые были введены в процесс обновления.""","""注意：从到期时间起，您有24小时完成升级过程。如果未能在此期间完成，您将失去所有已进入升级流程的Neuralink和$MSCI资产。""","""注意：有効期限から24時間以内にアップグレードプロセスを完了する必要があります。この期間内に完了しなかった場合、アップグレードプロセスに投入されたすべてのNeuralinkおよび$MSCI資産を失います。""","""참고: 만료 시간으로부터 업그레이드 프로세스를 완료할 수 있는 기간은 24시간입니다. 이 기간 내에 완료하지 못할 경우 업그레이드 프로세스에 포함된 모든 Neuralink 및 $MSCI 자산을 잃게 됩니다.""","""ध्यान दें: आपके पास समाप्ति समय से 24 घंटे का समय है अपग्रेड प्रक्रिया पूरी करने के लिए। यदि आप इस समयावधि के भीतर इसे पूरा नहीं करते हैं, तो आप उन सभी Neuralink और $MSCI संपत्तियों को खो देंगे जो अपग्रेड प्रक्रिया में शामिल की गई थीं।""","""Hinweis: Sie haben 24 Stunden ab dem Ablaufdatum Zeit, den Aktualisierungsprozess abzuschließen. Wenn Sie dies nicht innerhalb dieses Zeitraums tun, verlieren Sie alle Neuralink- und $MSCI-Vermögenswerte, die in den Aktualisierungsprozess eingegeben wurden."""

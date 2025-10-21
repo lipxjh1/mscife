@@ -1,0 +1,81 @@
+key,en,vi,ru,cn,jp,kr,in,de
+"""Available balance""","""Available balance""","""Số dư khả dụng""","""Доступный баланс""","""可用余额""","""利用可能残高""","""사용 가능 잔액""","""उपलब्ध शेष""","""Verfügbares Guthaben"""
+"""Withdraw""","""Withdraw""","""Rút""","""Вывести""","""提取""","""引き出す""","""출금""","""निकालना""","""Abheben"""
+"""Deposit""","""Deposit""","""Nạp""","""Пополнить""","""充值""","""入金""","""입금""","""जमा करना""","""Einzahlen"""
+"""Transfer M-Coin""","""Transfer M-Coin""","""Chuyển M-Coin""","""Перевести M-Coin""","""转账M-Coin""","""M-Coinを転送する""","""M-Coin 전송""","""M-Coin ट्रांसफर करें""","""M-Coin übertragen"""
+"""Enter the recipient's ID""","""Enter the recipient's ID""","""Nhập ID nhận""","""Введите ID получателя""","""输入接收者ID""","""受信者のIDを入力""","""수신자 ID 입력""","""रिसीवर का ID दर्ज करें""","""Empfänger-ID eingeben"""
+"""Not enough M-Coin to transfer""","""Not enough M-Coin to transfer""","""Không đủ M-Coin để chuyển""","""Недостаточно M-Coin для перевода""","""没有足够的M-Coin进行转账""","""M-Coinが不足して転送できません""","""전송할 M-Coin이 충분하지 않음""","""ट्रांसफर के लिए M-Coin पर्याप्त नहीं है""","""Nicht genügend M-Coin für die Übertragung"""
+"""Transfer success""","""Transfer success""","""Chuyển thành công""","""Перевод выполнен успешно""","""转账成功""","""転送が成功しました""","""전송 성공""","""ट्रांसफर सफल""","""Übertragung erfolgreich"""
+"""Recipient's ID must not be empty""","""Recipient's ID must not be empty""","""ID nhận không được trống""","""ID получателя не должен быть пустым""","""收件人ID不能为空""","""受信者のIDは空にできません""","""수신자 ID는 비워둘 수 없습니다""","""प्राप्तकर्ता का ID खाली नहीं होना चाहिए""","""Empfänger-ID darf nicht leer sein"""
+"""Number must not be empty""","""Number must not be empty""","""Số không được trống""","""Номер не должен быть пустым""","""数字不能为空""","""番号を空にすることはできません""","""숫자는 비워둘 수 없습니다""","""संख्या खाली नहीं होनी चाहिए""","""Die Nummer darf nicht leer sein"""
+"""Transactions History""","""Transactions History""","""Lịch sử giao dịch""","""История транзакций""","""交易历史""","""取引履歴""","""거래 내역""","""लेनदेन का इतिहास""","""Transaktionsverlauf"""
+"""Change Wallet""","""Change Wallet""","""Đổi ví""","""Сменить кошелек""","""更换钱包""","""ウォレットを変更""","""지갑 변경""","""वॉलेट बदलें""","""Wallet wechseln"""
+"""Connect Wallet""","""Connect Wallet""","""Kết nối ví""","""Подключить кошелек""","""连接钱包""","""ウォレットを接続""","""지갑 연결""","""वॉलेट कनेक्ट करें""","""Wallet verbinden"""
+"""Select wallet""","""Select wallet""","""Chọn ví""","""Выбрать кошелек""","""选择钱包""","""ウォレットを選択""","""지갑 선택""","""वॉलेट चुनें""","""Wallet auswählen"""
+"""SUI Wallet""","""SUI Wallet""","""Ví SUI""","""Кошелек SUI""","""SUI钱包""","""SUIウォレット""","""SUI 지갑""","""SUI वॉलेट""","""SUI Wallet"""
+"""TON Wallet""","""TON Wallet""","""Ví TON""","""Кошелек TON""","""TON钱包""","""TONウォレット""","""TON 지갑""","""TON वॉलेट""","""TON Wallet"""
+"""Enter number to withdraw""","""Enter number to withdraw""","""Nhập số lượng để rút""","""Введите количество для вывода""","""输入提款数量""","""出金額を入力してください""","""출금할 금액을 입력하세요""","""निकासी के लिए राशि दर्ज करें""","""Geben Sie die Auszahlungsmenge ein"""
+"""M-Coin withdraw""","""M-Coin withdraw""","""Rút M-Coin""","""Вывести M-Coin""","""提取 M-Coin""","""M-Coinを引き出す""","""M-Coin 출금""","""M-Coin निकासी""","""M-Coin abheben"""
+"""Amount must not be empty""","""Amount must not be empty""","""Số lượng không được để trống""","""Сумма не должна быть пустой""","""金额不能为空""","""金額を空にすることはできません""","""금액은 비워둘 수 없습니다""","""राशि खाली नहीं होनी चाहिए""","""Der Betrag darf nicht leer sein"""
+"""TON will be transferred to your wallet in 10 minutes.""","""TON will be transferred to your wallet in 10 minutes.""","""TON sẽ được chuyển về ví trong 10 phút.""","""TON будет переведен на ваш кошелек в течение 10 минут.""","""TON 将在 10 分钟内转入您的钱包。""","""TONは10分以内にウォレットに転送されます。""","""TON은 10분 안에 지갑으로 전송됩니다.""","""TON आपके वॉलेट में 10 मिनट में ट्रांसफर किया जाएगा।""","""TON wird in 10 Minuten auf Ihr Wallet übertragen."""
+"""Withdraw fail""","""Withdraw fail""","""Rút thất bại""","""Ошибка вывода""","""提取失败""","""引き出し失敗""","""출금 실패""","""निकासी विफल""","""Auszahlung fehlgeschlagen"""
+"""Do you want to withdraw {i} M-Coin to your wallet?""","""Do you want to withdraw {i} M-Coin to your wallet?""","""Bạn có muốn rút {i} M-Coin về ví không?""","""Вы хотите вывести {i} M-Coin на ваш кошелек?""","""您想将 {i} M-Coin 提现到您的钱包吗？""","""{i} M-Coinをウォレットに引き出しますか？""","""{i} M-Coin을 지갑으로 출금하시겠습니까?""","""क्या आप {i} M-Coin को अपने वॉलेट में निकालना चाहते हैं?""","""Möchten Sie {i} M-Coin auf Ihr Wallet überweisen?"""
+"""Cancel""","""Cancel""","""Hủy""","""Отменить""","""取消""","""キャンセル""","""취소""","""रद्द करें""","""Abbrechen"""
+"""Chip to $MSCI""","""Chip to $MSCI""","""Chip sang $MSCI""","""Чип в $MSCI""","""芯片转换为$MSCI""","""チップを$MSCIに変換""","""칩을 $MSCI로 전환""","""चिप को $MSCI में बदलें""","""Chip in $MSCI umwandeln"""
+"""convertBtnKey""","""Convert to \n$MSCI""","""Đổi sang \n$MSCI""","""Конвертировать в \n$MSCI""","""转换为\n$MSCI""","""変換する\n$MSCI""","""변환하기\n$MSCI""","""बदलें\n$MSCI में""","""Umwandeln in\n$MSCI"""
+"""converHistoryBtnKey""","""Convert \nHistory""","""Lịch sử \nquy đổi""","""История \nконвертации""","""转换\n历史""","""変換\n履歴""","""변환\n기록""","""रूपांतरण\nइतिहास""","""Konvertierungs-\nverlauf"""
+"""Total Chip in server""","""Total Chip in server""","""Tổng Chip trong máy chủ""","""Общее количество чипов на сервере""","""服务器中的总筹码""","""サーバー内のチップ総数""","""서버의 총 칩""","""सर्वर में कुल चिप""","""Gesamtanzahl Chips auf dem Server"""
+"""Total $MSCI to convert""","""Total $MSCI to convert""","""Tổng $MSCI chuyển đổi""","""Общая сумма $MSCI для конвертации""","""要转换的$MSCI总额""","""変換する$MSCIの合計""","""전환할 $MSCI 총액""","""$MSCI के कुल रूपांतरण""","""Gesamtsumme $MSCI zur Konvertierung"""
+"""Convert rate""","""Convert rate""","""Tỷ lệ chuyển đổi""","""Курс конвертации""","""转换率""","""変換レート""","""변환 비율""","""रूपांतरण दर""","""Wechselkurs"""
+"""Time left""","""Time left""","""Thời gian còn lại""","""Оставшееся время""","""剩余时间""","""残り時間""","""남은 시간""","""शेष समय""","""Verbleibende Zeit"""
+"""Your Chip""","""Your Chip""","""Chip của bạn""","""Ваши чипы""","""你的筹码""","""あなたのチップ""","""당신의 칩""","""आपका चिप""","""Deine Chips"""
+"""Level pass""","""Level pass""","""Màn đã qua""","""Пройденные уровни""","""已通过的关卡""","""クリアしたレベル""","""통과한 레벨""","""पारित स्तर""","""Überwundene Level"""
+"""Your % total Chip to convert""","""Your % total Chip to convert""","""Tổng % Chip quy đổi của bạn""","""Процент ваших чипов для конвертации""","""您要转换的筹码百分比""","""変換するチップの割合""","""전환할 칩의 비율""","""परिवर्तित करने के लिए आपके कुल चिप प्रतिशत""","""Prozentualer Anteil der Chips zur Konvertierung"""
+"""Your total Chip to convert""","""Your total Chip to convert""","""Tổng Chip quy đổi của bạn""","""Общее количество ваших чипов для конвертации""","""您要转换的总筹码""","""変換するチップの合計""","""전환할 총 칩""","""आपके कुल रूपांतरण चिप""","""Gesamtzahl Ihrer Chips zur Konvertierung"""
+"""$MSCI price""","""$MSCI price""","""Giá $MSCI""","""Общее количество ваших чипов для конвертации""","""您要转换的总筹码""","""変換するチップの合計""","""전환할 총 칩""","""आपके कुल रूपांतरण चिप""","""Gesamtzahl Ihrer Chips zur Konvertierung"""
+"""Growth rate""","""Growth rate""","""Tỷ lệ tăng trưởng""","""Общее количество ваших чипов для конвертации""","""您要转换的总筹码""","""変換するチップの合計""","""전환할 총 칩""","""आपके कुल रूपांतरण चिप""","""Gesamtzahl Ihrer Chips zur Konvertierung"""
+"""Your $MSCI""","""Your $MSCI""","""Tỷ lệ tăng trưởng""","""Общее количество ваших чипов для конвертации""","""您要转换的总筹码""","""変換するチップの合計""","""전환할 총 칩""","""आपके कुल रूपांतरण चिप""","""Gesamtzahl Ihrer Chips zur Konvertierung"""
+"""msciExplainKey""","""Explanation of how to earn $MSCI
+M-SCI has a total supply of 1 billion $MSCI, and the amount of $MSCI allocated for Play and Earn is 250 million tokens.
+You need Chips to convert into $MSCI.
+There are 100 levels corresponding to 100% of the total number of Chips in your account that you can convert in a day. The more levels you pass, the more Chips you can exchange (Example: If you pass level 50, you can exchange 50% of the total Chips you own into $MSCI).
+To calculate how much $MSCI you can convert in a day, use the following formula:
+(250,000,000 / 365 / 3) / (Total Chips in the Server) x (Total Chips in your account) x % (Number of levels you have passed) = Amount of $MSCI you receive in a day.""","""Giải thích cách nhận $MSCI
+M-SCI có tổng cung là 1 tỷ $MSCI và số lượng $MSCI dành cho Play and Earn là 250 triệu token.
+Bạn cần có Chip để quy đổi ra $MSCI
+Có 100 màn chơi tương ứng với 100% tổng số lượng Chip trong tài khoản mà bạn có thể quy đổi một ngày, vượt càng nhiều màn chơi, bạn càng đổi được nhiều Chip (Ví dụ: Bạn vượt qua màn 50, bạn có thể đổi 50% tổng số chip mà bạn đang sở hữu sang $MSCI)
+Để biết mình có thể đổi được bao nhiêu $MSCI trong ngày bạn tính theo công thức sau:
+(250.000.000/365/3) / (Tổng số chip trong Server) x (Tổng số chip trong tài khoản bạn có) x % (Số màn bạn vượt qua) = Số $MSCI bạn nhận về được trong ngày""","""Объяснение того, как заработать $MSCI
+Общий объем M-SCI составляет 1 миллиард $MSCI, из которых 250 миллионов токенов выделено для режима Играй и Зарабатывай.
+Вам нужны фишки для конвертации в $MSCI.
+Есть 100 уровней, соответствующих 100% от общего количества фишек на вашем счету, которые можно конвертировать за день. Чем больше уровней вы пройдете, тем больше фишек сможете обменять (например: если вы проходите уровень 50, вы можете обменять 50% всех имеющихся у вас фишек на $MSCI).
+Чтобы рассчитать, сколько $MSCI вы можете конвертировать в день, используйте следующую формулу:
+(250,000,000 / 365 / 3) / (Общее количество фишек на сервере) x (Общее количество фишек на вашем аккаунте) x % (Количество пройденных уровней) = Количество $MSCI, которое вы получите за день.""","""如何获取$MSCI的说明
+M-SCI总供应量为10亿$MSCI，其中用于边玩边赚（Play and Earn）的$MSCI数量为2.5亿个代币。
+您需要筹码来兑换$MSCI。
+共有100个等级对应您账户中可每日兑换的100%筹码总额。通过的等级越多，可兑换的筹码越多（例如：如果您通过第50级，您可以将拥有筹码总数的50%兑换为$MSCI）。
+要计算每天可以兑换多少$MSCI，请使用以下公式：
+(250,000,000 / 365 / 3) / （服务器中的总筹码）x （您账户中的总筹码）x % （您通过的等级数）= 您一天内收到的$MSCI金额。""","""$MSCIの獲得方法の説明
+M-SCIの総供給量は10億$MSCIで、Play and Earnに割り当てられた$MSCIの量は2億5千万トークンです。
+$MSCIに交換するにはチップが必要です。
+1日あたり変換可能なアカウント内のチップ合計に対応する100レベルがあり、より多くのレベルをクリアすればするほど、より多くのチップを交換できます（例：レベル50をクリアすると、保有するチップ総数の50％を$MSCIに交換可能）。
+1日にどれだけの$MSCIに交換できるかを計算するには、次の式を使用します：
+(250,000,000 / 365 / 3) / （サーバー内の総チップ数）x （あなたのアカウント内の総チップ数）x % （クリアしたレベル数） = 1日に受け取る$MSCIの金額。""","""$MSCI 획득 방법 설명
+M-SCI의 총 공급량은 10억 $MSCI이며, 플레이 앤 언(Pay and Earn)에 할당된 $MSCI의 양은 2억 5천만 토큰입니다.
+$MSCI로 변환하려면 칩이 필요합니다.
+하루 동안 변환할 수 있는 계정 내 총 칩의 100%를 나타내는 100개의 레벨이 있습니다. 더 많은 레벨을 통과할수록 더 많은 칩을 교환할 수 있습니다 (예: 50레벨을 통과하면 보유한 총 칩의 50%를 $MSCI로 교환 가능).
+하루 동안 얼마의 $MSCI를 변환할 수 있는지 계산하려면 다음 공식을 사용하세요:
+(250,000,000 / 365 / 3) / (서버의 총 칩 수) x (귀하의 계정 내 총 칩 수) x % (통과한 레벨 수) = 하루 동안 받는 $MSCI 금액.""","""$MSCI कमाने का स्पष्टीकरण
+एम-एससीआई की कुल आपूर्ति 1 बिलियन $MSCI है, और प्ले एंड अर्न के लिए आवंटित $MSCI की मात्रा 250 मिलियन टोकन है।
+आपको $MSCI में परिवर्तित करने के लिए चिप्स की आवश्यकता है।
+एक दिन में परिवर्तित करने के लिए आपके खाते में कुल चिप्स की संख्या के 100% के अनुरूप 100 स्तर हैं। जितने अधिक स्तर आप पार करते हैं, उतने ही अधिक चिप्स आप बदल सकते हैं (उदाहरण: यदि आप स्तर 50 पार करते हैं, तो आप अपने कुल चिप्स का 50% $MSCI में बदल सकते हैं)।
+यह जानने के लिए कि आप एक दिन में कितना $MSCI परिवर्तित कर सकते हैं, निम्नलिखित सूत्र का उपयोग करें:
+(250,000,000 / 365 / 3) / (सर्वर में कुल चिप्स) x (आपके खाते में कुल चिप्स) x % (आपके द्वारा पार किए गए स्तरों की संख्या) = एक दिन में आपको प्राप्त $MSCI की राशि।""","""Erklärung, wie man $MSCI verdient
+M-SCI hat eine Gesamtmenge von 1 Milliarde $MSCI, und die für „Spielen und Verdienen“ vorgesehene Menge beträgt 250 Millionen Token.
+Sie benötigen Chips, um sie in $MSCI umzuwandeln.
+Es gibt 100 Level, die 100 % der Gesamtanzahl an Chips in Ihrem Konto entsprechen, die Sie pro Tag umwandeln können. Je mehr Level Sie abschließen, desto mehr Chips können Sie umtauschen (Beispiel: Wenn Sie Level 50 abschließen, können Sie 50 % Ihrer gesamten Chips in $MSCI umwandeln).
+Um zu berechnen, wie viel $MSCI Sie pro Tag umwandeln können, verwenden Sie folgende Formel:
+(250.000.000 / 365 / 3) / (Gesamtzahl der Chips auf dem Server) x (Gesamtzahl der Chips in Ihrem Konto) x % (Anzahl der abgeschlossenen Level) = Betrag an $MSCI, den Sie pro Tag erhalten."""
+"""goToMarketBtnKey""","""Go to\nMarket""","""Đến chợ\nTrung tâm""","""Перейти\nна рынок""","""前往\n市场""","""市場へ\n移動""","""시장으로\n이동""","""बाजार पर\nजाएं""","""Zum Markt\ngehen"""
+"""History""","""History""","""Lịch sử""","""История""","""历史""","""履歴""","""히스토리""","""इतिहास""","""Verlauf"""
+"""Tokenomics""","""Tokenomics""","""Tokenomics""","""Токеномика""","""代币经济""","""トークン経済""","""토큰 이코노미""","""टोकनोमिक्स""","""Tokenomics"""
