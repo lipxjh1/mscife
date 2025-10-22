@@ -312,6 +312,28 @@ export class GameplayMultiplayerBossRoom {
             createdAt: "",
         };
     }
+
+    /**
+     * Cleanup socket listeners to prevent memory leaks
+     * Fix: Socket listeners không được cleanup khi room destroyed
+     */
+    cleanup() {
+        const events = [
+            "mpboss:room:closed",
+            "mpboss:room:joined",
+            "mpboss:room:ready",
+            "mpboss:room:start",
+            "mpboss:room:leave",
+            "mpboss:room:kick",
+            "mpboss:room:error"
+        ];
+
+        events.forEach(event => {
+            socketServiceMultiplayerBoss.off(event);
+        });
+
+        console.log('[GameplayMultiplayerBossRoom] Socket listeners cleaned up');
+    }
 }
 
 const multiplayerBossRoom = new GameplayMultiplayerBossRoom();
