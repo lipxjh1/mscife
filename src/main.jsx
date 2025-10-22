@@ -23,7 +23,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     // </React.StrictMode>
 
     <React.StrictMode>
-        <GoogleOAuthProvider clientId="572363325691-ti9khm7qmf82ritnti3h60g7fbs0tof3.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <TonConnectUIProvider manifestUrl={manifestUrl}>
                 <App />
             </TonConnectUIProvider>
