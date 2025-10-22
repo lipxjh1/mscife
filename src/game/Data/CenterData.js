@@ -1103,7 +1103,7 @@ export class CenterData {
 
     //Request login
     RequestSigninGoogle(credential, onSuccess, onError) {
-        const url = `/api/auth/login-google`;
+        const url = `/auth/login-google`;
 
         const bodyData = {
             idToken: credential,
@@ -1161,7 +1161,7 @@ export class CenterData {
     }
 
     async RequestSigninGoogleLinkTelegram(credential, onSuccess, onError) {
-        const url = `/api/auth/login-google`;
+        const url = `/auth/login-google`;
 
         const bodyData = {
             idToken: credential,
