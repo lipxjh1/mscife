@@ -448,7 +448,7 @@ export class CenterData {
 
     GetTelegramShareUrl() {
         // Tạo URL Telegram với startapp parameter
-        const baseUrl = "https://t.me/musksci_bot/game";
+        const baseUrl = import.meta.env.VITE_TELEGRAM_BOT_URL || "https://t.me/MSCIgamebot/game";
         const urlParams = new URLSearchParams();
         urlParams.set("startapp", this.userInfo.UserId);
 

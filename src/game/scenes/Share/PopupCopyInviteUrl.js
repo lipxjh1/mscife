@@ -141,7 +141,8 @@ export function CreateSelectInvitePopup(scene) {
 }
 
 export function getTelegramInviteUrl(userId) {
-    return `https://t.me/musksci_bot/game?startapp=${userId}`;
+    const botUrl = import.meta.env.VITE_TELEGRAM_BOT_URL || "https://t.me/MSCIgamebot/game";
+    return `${botUrl}?startapp=${userId}`;
 }
 
 export function getWebInviteUrl(userId) {
