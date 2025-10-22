@@ -1,6 +1,7 @@
 import centerData from "../../Data/CenterData";
 import cdLocalization from "../../Data/CenterDataLocalization";
 import { isTelegramMiniApp } from "../../utils.js";
+import ENV from "../../../config/env.js";
 
 let container_select_invite = null;
 
@@ -146,7 +147,7 @@ export function getTelegramInviteUrl(userId) {
 }
 
 export function getWebInviteUrl(userId) {
-    const baseUrl = "https://pro.m-sci.net/";
+    const baseUrl = ENV.WEB_BASE_URL + "/";
     const urlParams = new URLSearchParams();
     urlParams.set("startapp", userId);
     return `${baseUrl}?${urlParams.toString()}`;

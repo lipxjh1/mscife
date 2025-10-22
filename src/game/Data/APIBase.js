@@ -1,9 +1,10 @@
 import axios from "axios";
+import ENV from "../../config/env.js";
 
 // // Cấu hình base URL cho tất cả các request
 
 
-export const API_BASE_URL = "https://pro.m-sci.net";
+export const API_BASE_URL = ENV.API_BASE_URL;
 
 // Biến lưu trữ token
 let accessToken = null;
