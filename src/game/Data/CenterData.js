@@ -3,6 +3,7 @@ import { retrieveLaunchParams } from "@telegram-apps/sdk";
 import { GetNftCharacters } from "../wallet/Wallet.js";
 import { EMPTY } from "rxjs";
 import { API_BASE_URL, setTokens, apiClient } from "./APIBase.js";
+import { API_ENDPOINTS } from "./services/ApiEndpoints.js";
 
 export class CenterData {
     constructor() {
@@ -416,6 +417,9 @@ export class CenterData {
         this.centerMarketItems = {};
 
         this.centerMarketCharacters = {};
+
+        // API endpoints configuration
+        this.endpoints = API_ENDPOINTS;
     }
 
     SetCurrentScene(scene) {
@@ -847,7 +851,7 @@ export class CenterData {
     RequestLoginTelegram(onSuccess, onError) {
         //this.SetFirstMissionsDone(true);
 
-        const url = `/api/auth/login-telegram`;
+        const url = this.endpoints.AUTH.LOGIN_TELEGRAM;
 
         const { initDataRaw, initData, startParam } = retrieveLaunchParams();
 
@@ -932,7 +936,7 @@ export class CenterData {
 
     //Request login
     RequestSigninEmail(email, password, onSuccess, onError) {
-        const url = `/api/auth-ep/signin`;
+        const url = this.endpoints.AUTH.SIGNIN_EMAIL;
 
         const bodyData = {
             email: email,
@@ -999,7 +1003,7 @@ export class CenterData {
 
     //Request register
     RequestRegisterEmail(reference_id, email, password, onSuccess, onError) {
-        const url = `/api/auth-ep/signup`;
+        const url = this.endpoints.AUTH.SIGNUP_EMAIL;
 
         const bodyData = {
             email: email,
@@ -1057,7 +1061,7 @@ export class CenterData {
 
     //Request register
     RequestEmailForgotPassword(email, onSuccess, onError) {
-        const url = `/api/auth-ep/forgot-password`;
+        const url = this.endpoints.AUTH.FORGOT_PASSWORD;
 
         const bodyData = {
             email: email,
@@ -1103,7 +1107,7 @@ export class CenterData {
 
     //Request login
     RequestSigninGoogle(credential, onSuccess, onError) {
-        const url = `/auth/login-google`;
+        const url = this.endpoints.AUTH.SIGNIN_GOOGLE;
 
         const bodyData = {
             idToken: credential,
@@ -1161,7 +1165,7 @@ export class CenterData {
     }
 
     async RequestSigninGoogleLinkTelegram(credential, onSuccess, onError) {
-        const url = `/auth/login-google`;
+        const url = this.endpoints.AUTH.SIGNIN_GOOGLE_LINK_TELEGRAM;
 
         const bodyData = {
             idToken: credential,
@@ -1204,7 +1208,7 @@ export class CenterData {
 
     //Request update wallet
     RequestUpdateBattleCharacters(selectedArr, onSuccess, onError) {
-        const url = `/api/me/update-battle-characters`;
+        const url = this.endpoints.USER.UPDATE_BATTLE_CHARACTERS;
 
         const bodyData = {
             characterIds: selectedArr,
@@ -1253,7 +1257,7 @@ export class CenterData {
 
     //Request update wallet
     RequestUpdateWallet(walletId, onSuccess, onError) {
-        const url = `/api/me/update-wallet`;
+        const url = this.endpoints.USER.UPDATE_WALLET;
 
         const bodyData = {
             walletId: walletId,
@@ -1300,7 +1304,7 @@ export class CenterData {
 
     //Request market sell
     RequestWalletWithdraw(tonWalletAddress, muskAmount, onSuccess, onError) {
-        const url = `/api/withdraw/create-withdraw-request`;
+        const url = this.endpoints.WALLET.WITHDRAW_REQUEST;
 
         const bodyData = {
             tonWalletAddress: tonWalletAddress,
@@ -1347,7 +1351,7 @@ export class CenterData {
 
     //request user info
     RequestUserInfo(onSuccess, onError) {
-        const url = `/api/me`;
+        const url = this.endpoints.USER.GET_PROFILE;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -1394,7 +1398,7 @@ export class CenterData {
 
     //request get character info
     RequestCharacterInfo(onSuccess, onError) {
-        const url = `/api/character`;
+        const url = this.endpoints.CHARACTER.GET_INFO;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -1442,7 +1446,7 @@ export class CenterData {
 
     //request get item info
     RequestItemInfo(onSuccess, onError) {
-        const url = `/api/game-item`;
+        const url = this.endpoints.GAME.GET_ITEM_INFO;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -1489,7 +1493,7 @@ export class CenterData {
 
     //Request update wallet
     RequestUpdateOtherGameInfo(OtherGameCode, OtherGameId, onSuccess, onError) {
-        const url = `/api/me/update-other-game-info`;
+        const url = this.endpoints.USER.UPDATE_OTHER_GAME_INFO;
 
         const bodyData = {
             otherGameCode: OtherGameCode,
@@ -1584,7 +1588,7 @@ export class CenterData {
 
     //request unlocked players
     RequestCharacters(onSuccess, onError) {
-        const url = `/api/me/characters`;
+        const url = this.endpoints.USER.GET_CHARACTERS;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -1742,7 +1746,7 @@ export class CenterData {
 
     //request unlocked players
     RequestCharactersCraft(characterCode, onSuccess, onError) {
-        const url = `/api/character/combine-fragments`;
+        const url = this.endpoints.CHARACTER.COMBINE_FRAGMENTS;
 
         const bodyData = {
             characterCode: characterCode,
@@ -1789,7 +1793,7 @@ export class CenterData {
 
     //request up level
     RequestCharactersUpLevel(characterOfUserId, onSuccess, onError) {
-        const url = `/api/character/upgrade-level`;
+        const url = this.endpoints.CHARACTER.UPGRADE_LEVEL;
 
         const bodyData = {
             characterOfUserId: characterOfUserId,
@@ -2084,7 +2088,7 @@ export class CenterData {
 
     //request invited friend
     RequestInviteFriend(onSuccess, onError) {
-        const url = `/api/me/f1-list`;
+        const url = this.endpoints.USER.GET_F1_LIST;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -2126,7 +2130,7 @@ export class CenterData {
 
     //request quest
     RequestQuestInfo(onSuccess, onError) {
-        const url = `/api/me/quests`;
+        const url = this.endpoints.USER.GET_QUESTS;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -2167,7 +2171,7 @@ export class CenterData {
 
     //Request mark quest done
     RequestMarkQuestDone(questCode, onSuccess, onError) {
-        const url = `/api/me/quests/mark-done`;
+        const url = this.endpoints.USER.MARK_QUEST_DONE;
 
         const bodyData = {
             code: questCode,
@@ -2378,7 +2382,7 @@ export class CenterData {
 
     //Request spin
     RequestSpin(quantity, onSuccess, onError) {
-        const url = `/api/spin`;
+        const url = this.endpoints.GAME.SPIN;
 
         const bodyData = {
             quantity: quantity,
@@ -2426,7 +2430,7 @@ export class CenterData {
 
     //Request premium-spin
     RequestPremiumSpin(quantity, onSuccess, onError) {
-        const url = `/api/premium-spin`;
+        const url = this.endpoints.GAME.PREMIUM_SPIN;
 
         const bodyData = {
             quantity: quantity,
@@ -2479,7 +2483,7 @@ export class CenterData {
 
     //request get current battle
     RequestCurrentBattle(onSuccess, onError) {
-        const url = `/api/current-scene`;
+        const url = this.endpoints.GAME.GET_CURRENT_BATTLE;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -2522,7 +2526,7 @@ export class CenterData {
 
     //request get new battle
     RequestNewBattle(onSuccess, onError) {
-        const url = `/api/start-battle`;
+        const url = this.endpoints.GAME.START_BATTLE;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -2976,7 +2980,7 @@ export class CenterData {
 
     //request get inventory
     RequestInventory(onSuccess, onError) {
-        const url = `/api/me/inventory`;
+        const url = this.endpoints.USER.GET_INVENTORY;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -3044,7 +3048,7 @@ export class CenterData {
 
     //request get shop
     RequestShop(onSuccess, onError) {
-        const url = `/api/shop/items`;
+        const url = this.endpoints.SHOP.GET_ITEMS;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -3111,7 +3115,7 @@ export class CenterData {
 
     //Request buy item
     RequestBuyItem(itemCode, quantity, onSuccess, onError) {
-        const url = `/api/shop/buy`;
+        const url = this.endpoints.SHOP.BUY_ITEM;
 
         const bodyData = {
             itemCode: itemCode,
@@ -3156,7 +3160,7 @@ export class CenterData {
 
     //Request open box
     RequestOpenBox(itemCode, onSuccess, onError) {
-        const url = `/api/box/open`;
+        const url = this.endpoints.SHOP.OPEN_BOX;
         const bodyData = { box_code: itemCode };
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
@@ -3262,7 +3266,7 @@ export class CenterData {
 
     //request daily
     RequestDaily(onSuccess, onError) {
-        const url = `/api/me/checkin-status`;
+        const url = this.endpoints.USER.GET_CHECKIN_STATUS;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -3302,7 +3306,7 @@ export class CenterData {
 
     //Request update wallet
     RequestDailyCheckin(onSuccess, onError) {
-        const url = `/api/me/daily-checkin`;
+        const url = this.endpoints.USER.DAILY_CHECKIN;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
@@ -3345,7 +3349,7 @@ export class CenterData {
 
     //Request update wallet
     RequestLateCheckin(date, onSuccess, onError) {
-        const url = `/api/me/makeup-checkin`;
+        const url = this.endpoints.USER.MAKEUP_CHECKIN;
 
         const bodyData = {
             date: date,
@@ -4105,7 +4109,7 @@ export class CenterData {
     }
 
     RequestCenterMarketCharacterRoles(onSuccess, onError) {
-        const url = `/api/market/marketplace/character-roles`;
+        const url = this.endpoints.MARKET.GET_ROLES;
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
