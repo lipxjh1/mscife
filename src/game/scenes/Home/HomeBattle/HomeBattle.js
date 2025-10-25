@@ -511,16 +511,8 @@ function CreateItemBoss(scene, scrollablePanel) {
         )
     );
     btn_play.button.on("pointerdown", function () {
-        CreateInputNumberPopup(
-            scene,
-            "Password",
-            (inputValue) => {
-                if (inputValue == 112529) {
-                    CreateBoss(scene);
-                }
-            },
-            () => {}
-        );
+        // Password check removed - direct access to Boss mode
+        CreateBoss(scene);
     });
 
     scrollablePanel.getElement("panel").add(item, {
