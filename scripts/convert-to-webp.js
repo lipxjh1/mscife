@@ -57,7 +57,7 @@ async function findPngFiles(dir, minSize = 100 * 1024) { // 100KB minimum
 async function main() {
   const assetsDir = process.argv[2] || './public/assets';
   const quality = parseInt(process.argv[3]) || 80;
-  const minSize = parseInt(process.argv[4]) || 500; // KB
+  const minSize = process.argv[4] !== undefined ? parseInt(process.argv[4]) : 500; // KB
 
   console.log('=== PNG to WebP Converter ===');
   console.log(`Directory: ${assetsDir}`);

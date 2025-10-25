@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-10-25T15:12:45.891Z",
+  "totalSize": "85.97 MB",
+  "breakdown": {
+    "js": {
+      "count": 14,
+      "size": "4.43 MB",
+      "percentage": "5.2%"
+    },
+    "css": {
+      "count": 2,
+      "size": "0.01 MB",
+      "percentage": "0.0%"
+    },
+    "images": {
+      "total": {
+        "count": 541,
+        "size": "34.12 MB",
+        "percentage": "39.7%"
+      },
+      "webp": {
+        "count": 465,
+        "size": "7.99 MB"
+      },
+      "png": {
+        "count": 75,
+        "size": "26.08 MB"
+      }
+    }
+  },
+  "topFiles": [
+    {
+      "path": "dist/assets/gameplay/test/player_14_ui.png",
+      "size": 3020650,
+      "sizeKB": "2949.85",
+      "sizeMB": "2.88"
+    },
+    {
+      "path": "dist/assets/index-cGsPoFnu.js",
+      "size": 2533632,
+      "sizeKB": "2474.25",
+      "sizeMB": "2.42"
+    },
+    {
+      "path": "dist/assets/gameplay/test/player_14_gameplay.png",
+      "size": 2125953,
+      "sizeKB": "2076.13",
+      "sizeMB": "2.03"
+    },
+    {
+      "path": "dist/assets/phaser-CO_uW5Sp.js",
+      "size": 1195372,
+      "sizeKB": "1167.36",
+      "sizeMB": "1.14"
+    },
+    {
+      "path": "dist/assets/gameplay/player/juliasb/player_20_gameplay.png",
+      "size": 803176,
+      "sizeKB": "784.35",
+      "sizeMB": "0.77"
+    },
+    {
+      "path": "dist/assets/gameplay/player/alexandrasa/player_24_ui.png",
+      "size": 709962,
+      "sizeKB": "693.32",
+      "sizeMB": "0.68"
+    },
+    {
+      "path": "dist/assets/gameplay/player/fionasb/player_21_gameplay.png",
+      "size": 700149,
+      "sizeKB": "683.74",
+      "sizeMB": "0.67"
+    },
+    {
+      "path": "dist/assets/Home-BYoVmMGI.js",
+      "size": 696784,
+      "sizeKB": "680.45",
+      "sizeMB": "0.66"
+    },
+    {
+      "path": "dist/assets/gameplay/player/alexandrasa/player_24_gameplay.png",
+      "size": 683428,
+      "sizeKB": "667.41",
+      "sizeMB": "0.65"
+    },
+    {
+      "path": "dist/assets/gameplay/player/elizabethsa/player_23_gameplay.png",
+      "size": 608853,
+      "sizeKB": "594.58",
+      "sizeMB": "0.58"
+    }
+  ],
+  "issues": {
+    "pngInBuild": true,
+    "largeJsBundle": true,
+    "largeImages": 16
+  }
+}
