@@ -1,0 +1,345 @@
+{
+  "timestamp": "2025-10-25T14:00:41.226Z",
+  "quality": 80,
+  "minSize": 200,
+  "totalFiles": 48,
+  "totalSavings": "60.5%",
+  "files": [
+    {
+      "inputPath": "public/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1.png",
+      "outputPath": "public/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1.webp",
+      "reduction": "81.9",
+      "inputSize": 521698,
+      "outputSize": 94422
+    },
+    {
+      "inputPath": "public/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1_2.png",
+      "outputPath": "public/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1_2.webp",
+      "reduction": "91.2",
+      "inputSize": 341809,
+      "outputSize": 30230
+    },
+    {
+      "inputPath": "public/assets/gameplay/enemy/enemy_boss_1/player_19.png",
+      "outputPath": "public/assets/gameplay/enemy/enemy_boss_1/player_19.webp",
+      "reduction": "14.7",
+      "inputSize": 506702,
+      "outputSize": 432236
+    },
+    {
+      "inputPath": "public/assets/gameplay/enemy/enemy_ghost_0/player_15.png",
+      "outputPath": "public/assets/gameplay/enemy/enemy_ghost_0/player_15.webp",
+      "reduction": "39.1",
+      "inputSize": 485152,
+      "outputSize": 295514
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/akane/player_10_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/akane/player_10_gameplay.webp",
+      "reduction": "39.3",
+      "inputSize": 363303,
+      "outputSize": 220420
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/akane/player_10_ui.png",
+      "outputPath": "public/assets/gameplay/player/akane/player_10_ui.webp",
+      "reduction": "34.2",
+      "inputSize": 364345,
+      "outputSize": 239778
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/alexandra/player_7_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/alexandra/player_7_gameplay.webp",
+      "reduction": "49.4",
+      "inputSize": 441661,
+      "outputSize": 223424
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/alexandra/player_7_ui.png",
+      "outputPath": "public/assets/gameplay/player/alexandra/player_7_ui.webp",
+      "reduction": "49.5",
+      "inputSize": 564855,
+      "outputSize": 285180
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/alexandrasa/player_24_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/alexandrasa/player_24_gameplay.webp",
+      "reduction": "49.9",
+      "inputSize": 683428,
+      "outputSize": 342474
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/alexandrasa/player_24_ui.png",
+      "outputPath": "public/assets/gameplay/player/alexandrasa/player_24_ui.webp",
+      "reduction": "59.4",
+      "inputSize": 709962,
+      "outputSize": 288362
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/alice/player_11_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/alice/player_11_gameplay.webp",
+      "reduction": "40.0",
+      "inputSize": 304617,
+      "outputSize": 182902
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/alice/player_11_ui.png",
+      "outputPath": "public/assets/gameplay/player/alice/player_11_ui.webp",
+      "reduction": "53.5",
+      "inputSize": 435463,
+      "outputSize": 202298
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/anna/player_0_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/anna/player_0_gameplay.webp",
+      "reduction": "62.5",
+      "inputSize": 259989,
+      "outputSize": 97430
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/anna/player_0_ui.png",
+      "outputPath": "public/assets/gameplay/player/anna/player_0_ui.webp",
+      "reduction": "65.6",
+      "inputSize": 239795,
+      "outputSize": 82596
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/annasb/player_16_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/annasb/player_16_gameplay.webp",
+      "reduction": "37.6",
+      "inputSize": 265565,
+      "outputSize": 165650
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/annasb/player_16_ui.png",
+      "outputPath": "public/assets/gameplay/player/annasb/player_16_ui.webp",
+      "reduction": "33.6",
+      "inputSize": 215666,
+      "outputSize": 143224
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/caitlyn/player_13_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/caitlyn/player_13_gameplay.webp",
+      "reduction": "41.9",
+      "inputSize": 557956,
+      "outputSize": 324014
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/caitlyn/player_13_ui.png",
+      "outputPath": "public/assets/gameplay/player/caitlyn/player_13_ui.webp",
+      "reduction": "44.3",
+      "inputSize": 520975,
+      "outputSize": 290406
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/david/player_2_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/david/player_2_gameplay.webp",
+      "reduction": "73.1",
+      "inputSize": 331755,
+      "outputSize": 89208
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/david/player_2_ui.png",
+      "outputPath": "public/assets/gameplay/player/david/player_2_ui.webp",
+      "reduction": "77.8",
+      "inputSize": 471600,
+      "outputSize": 104724
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/davidsc/david_01_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/davidsc/david_01_gameplay.webp",
+      "reduction": "54.8",
+      "inputSize": 207104,
+      "outputSize": 93578
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/davidsc/david_01_ui.png",
+      "outputPath": "public/assets/gameplay/player/davidsc/david_01_ui.webp",
+      "reduction": "50.7",
+      "inputSize": 331759,
+      "outputSize": 163402
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/elizabeth/player_8_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/elizabeth/player_8_gameplay.webp",
+      "reduction": "42.1",
+      "inputSize": 242008,
+      "outputSize": 140148
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/elizabeth/player_8_ui.png",
+      "outputPath": "public/assets/gameplay/player/elizabeth/player_8_ui.webp",
+      "reduction": "23.6",
+      "inputSize": 376245,
+      "outputSize": 287530
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/elizabethsa/player_23_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/elizabethsa/player_23_gameplay.webp",
+      "reduction": "47.5",
+      "inputSize": 608853,
+      "outputSize": 319346
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/elizabethsa/player_23_ui.png",
+      "outputPath": "public/assets/gameplay/player/elizabethsa/player_23_ui.webp",
+      "reduction": "44.8",
+      "inputSize": 440641,
+      "outputSize": 243180
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/fiona/player_6_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/fiona/player_6_gameplay.webp",
+      "reduction": "49.3",
+      "inputSize": 348737,
+      "outputSize": 176800
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/fiona/player_6_ui.png",
+      "outputPath": "public/assets/gameplay/player/fiona/player_6_ui.webp",
+      "reduction": "56.3",
+      "inputSize": 279203,
+      "outputSize": 122010
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/fionasb/player_21_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/fionasb/player_21_gameplay.webp",
+      "reduction": "53.9",
+      "inputSize": 700149,
+      "outputSize": 322532
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/fionasb/player_21_ui.png",
+      "outputPath": "public/assets/gameplay/player/fionasb/player_21_ui.webp",
+      "reduction": "51.0",
+      "inputSize": 461266,
+      "outputSize": 225822
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/henry/player_5_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/henry/player_5_gameplay.webp",
+      "reduction": "66.5",
+      "inputSize": 325364,
+      "outputSize": 109054
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/henry/player_5_ui.png",
+      "outputPath": "public/assets/gameplay/player/henry/player_5_ui.webp",
+      "reduction": "73.1",
+      "inputSize": 389242,
+      "outputSize": 104560
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/henrysc/player_14_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/henrysc/player_14_gameplay.webp",
+      "reduction": "56.6",
+      "inputSize": 408337,
+      "outputSize": 177042
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/henrysc/player_14_ui.png",
+      "outputPath": "public/assets/gameplay/player/henrysc/player_14_ui.webp",
+      "reduction": "61.0",
+      "inputSize": 582347,
+      "outputSize": 227282
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/julia/player_4_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/julia/player_4_gameplay.webp",
+      "reduction": "66.8",
+      "inputSize": 260704,
+      "outputSize": 86634
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/julia/player_4_ui.png",
+      "outputPath": "public/assets/gameplay/player/julia/player_4_ui.webp",
+      "reduction": "71.2",
+      "inputSize": 344694,
+      "outputSize": 99208
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/juliasb/player_20_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/juliasb/player_20_gameplay.webp",
+      "reduction": "51.4",
+      "inputSize": 803176,
+      "outputSize": 390316
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/juliasb/player_20_ui.png",
+      "outputPath": "public/assets/gameplay/player/juliasb/player_20_ui.webp",
+      "reduction": "47.1",
+      "inputSize": 485459,
+      "outputSize": 256600
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/marcus/player_28_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/marcus/player_28_gameplay.webp",
+      "reduction": "66.7",
+      "inputSize": 285249,
+      "outputSize": 94922
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/marcussc/player_03_marcus_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/marcussc/player_03_marcus_gameplay.webp",
+      "reduction": "59.6",
+      "inputSize": 253096,
+      "outputSize": 102270
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/marcussc/player_03_marcus_ui.png",
+      "outputPath": "public/assets/gameplay/player/marcussc/player_03_marcus_ui.webp",
+      "reduction": "59.7",
+      "inputSize": 250298,
+      "outputSize": 100796
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/victoria/player_1_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/victoria/player_1_gameplay.webp",
+      "reduction": "45.0",
+      "inputSize": 518195,
+      "outputSize": 284780
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/victoria/player_1_ui.png",
+      "outputPath": "public/assets/gameplay/player/victoria/player_1_ui.webp",
+      "reduction": "37.0",
+      "inputSize": 523567,
+      "outputSize": 329854
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/victoriasa/player_1_gameplay.png",
+      "outputPath": "public/assets/gameplay/player/victoriasa/player_1_gameplay.webp",
+      "reduction": "44.9",
+      "inputSize": 573512,
+      "outputSize": 316146
+    },
+    {
+      "inputPath": "public/assets/gameplay/player/victoriasa/player_22_ui.png",
+      "outputPath": "public/assets/gameplay/player/victoriasa/player_22_ui.webp",
+      "reduction": "40.8",
+      "inputSize": 431653,
+      "outputSize": 255686
+    },
+    {
+      "inputPath": "public/assets/gameplay/test/player_14_gameplay.png",
+      "outputPath": "public/assets/gameplay/test/player_14_gameplay.webp",
+      "reduction": "90.2",
+      "inputSize": 2125953,
+      "outputSize": 208792
+    },
+    {
+      "inputPath": "public/assets/gameplay/test/player_14_ui.png",
+      "outputPath": "public/assets/gameplay/test/player_14_ui.webp",
+      "reduction": "91.5",
+      "inputSize": 3020650,
+      "outputSize": 257412
+    },
+    {
+      "inputPath": "public/assets/home_2/home_inventory_shop/x_force_box.png",
+      "outputPath": "public/assets/home_2/home_inventory_shop/x_force_box.webp",
+      "reduction": "81.4",
+      "inputSize": 352302,
+      "outputSize": 65380
+    }
+  ]
+}
