@@ -1258,42 +1258,35 @@ export class Login extends Scene {
 
     // Vorld Auth: Handle successful login
     handleVorldLoginSuccess(data) {
-        console.log('✅ Vorld login complete, starting Home');
+        console.log('✅ Vorld login complete, loading user data');
 
-        // Save user data
+        // Save user data nếu có
         if (data.user) {
             centerData.userInfo = data.user;
         }
 
-        // ✅ FIX: Reload tokens in APIBase sau khi login
-        // Tokens đã được lưu vào sessionStorage, giờ cần báo cho APIBase biết
-        if (typeof window.loadTokens === 'function') {
-            window.loadTokens();
-            console.log('✅ APIBase tokens reloaded after Vorld login');
-        } else {
-            console.warn('⚠️ window.loadTokens not available');
-        }
+        // ✅ FIX: Load character và item info như Google login
+        // Đảm bảo data mới được load vào memory
+        centerData.RequestCharacterInfo();
+        centerData.RequestItemInfo();
 
         // Initialize socket connections
         this.InitSocket();
 
-        CreateLoadingPopup();
-
-        // Update wallet if needed (như LoginEmail)
+        // Update wallet
         centerData.RequestUpdateWallet(
             centerData.GetWalletAddress(),
             () => {
-                HideLoadingPopup();
-                // Go to Home scene
-                this.scene.start('Home');
+                console.log('✅ Wallet updated successfully');
             },
             (error) => {
-                HideLoadingPopup();
-                console.error('Update wallet error:', error);
-                // Still go to Home even if wallet update fails
-                this.scene.start('Home');
+                console.error('⚠️ Update wallet error:', error);
             }
         );
+
+        // ✅ FIX: Load player info và chuyển scene như Google login
+        // GetPlayerInfo sẽ gọi RequestUserInfo và start Home scene sau khi load xong
+        this.GetPlayerInfo(this);
     }
 
     RegisterGoogleButtonLogin(scene, onConnected, onDisconected) {
