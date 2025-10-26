@@ -1,0 +1,212 @@
+{
+  "timestamp": "2025-10-26T08:09:08.394Z",
+  "totalFiles": 59,
+  "updatedFiles": 41,
+  "files": [
+    {
+      "atlasPath": "public/assets/gameplay/player/alexandrasa/player_24_gameplay.atlas",
+      "oldTexture": "player_24_gameplay.png",
+      "newTexture": "player_24_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/alexandrasa/player_24_ui.atlas",
+      "oldTexture": "player_24_ui.png",
+      "newTexture": "player_24_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/alice/player_11_gameplay.atlas",
+      "oldTexture": "player_11_gameplay.png",
+      "newTexture": "player_11_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/alice/player_11_ui.atlas",
+      "oldTexture": "player_11_ui.png",
+      "newTexture": "player_11_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/anna/player_0_gameplay.atlas",
+      "oldTexture": "player_0_gameplay.png",
+      "newTexture": "player_0_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/anna/player_0_ui.atlas",
+      "oldTexture": "player_0_ui.png",
+      "newTexture": "player_0_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/annasb/player_16_gameplay.atlas",
+      "oldTexture": "player_16_gameplay.png",
+      "newTexture": "player_16_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/annasb/player_16_ui.atlas",
+      "oldTexture": "player_16_ui.png",
+      "newTexture": "player_16_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/caitlyn/player_13_gameplay.atlas",
+      "oldTexture": "player_13_gameplay.png",
+      "newTexture": "player_13_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/caitlyn/player_13_ui.atlas",
+      "oldTexture": "player_13_ui.png",
+      "newTexture": "player_13_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/david/player_2_gameplay.atlas",
+      "oldTexture": "player_2_gameplay.png",
+      "newTexture": "player_2_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/david/player_2_ui.atlas",
+      "oldTexture": "player_2_ui.png",
+      "newTexture": "player_2_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/davidsc/david_01_gameplay.atlas",
+      "oldTexture": "david_01_gameplay.png",
+      "newTexture": "david_01_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/davidsc/david_01_ui.atlas",
+      "oldTexture": "david_01_ui.png",
+      "newTexture": "david_01_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/elizabeth/player_8_gameplay.atlas",
+      "oldTexture": "player_8_gameplay.png",
+      "newTexture": "player_8_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/elizabeth/player_8_ui.atlas",
+      "oldTexture": "player_8_ui.png",
+      "newTexture": "player_8_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/elizabethsa/player_23_gameplay.atlas",
+      "oldTexture": "player_23_gameplay.png",
+      "newTexture": "player_23_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/elizabethsa/player_23_ui.atlas",
+      "oldTexture": "player_23_ui.png",
+      "newTexture": "player_23_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/fiona/player_6_gameplay.atlas",
+      "oldTexture": "player_6_gameplay.png",
+      "newTexture": "player_6_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/fiona/player_6_ui.atlas",
+      "oldTexture": "player_6_ui.png",
+      "newTexture": "player_6_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/fionasb/player_21_gameplay.atlas",
+      "oldTexture": "player_21_gameplay.png",
+      "newTexture": "player_21_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/fionasb/player_21_ui.atlas",
+      "oldTexture": "player_21_ui.png",
+      "newTexture": "player_21_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/henry/player_5_gameplay.atlas",
+      "oldTexture": "player_5_gameplay.png",
+      "newTexture": "player_5_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/henry/player_5_ui.atlas",
+      "oldTexture": "player_5_ui.png",
+      "newTexture": "player_5_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/henrysc/player_14_gameplay.atlas",
+      "oldTexture": "player_14_gameplay.png",
+      "newTexture": "player_14_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/henrysc/player_14_ui.atlas",
+      "oldTexture": "player_14_ui.png",
+      "newTexture": "player_14_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/julia/player_4_gameplay.atlas",
+      "oldTexture": "player_4_gameplay.png",
+      "newTexture": "player_4_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/julia/player_4_ui.atlas",
+      "oldTexture": "player_4_ui.png",
+      "newTexture": "player_4_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/juliasb/player_20_gameplay.atlas",
+      "oldTexture": "player_20_gameplay.png",
+      "newTexture": "player_20_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/juliasb/player_20_ui.atlas",
+      "oldTexture": "player_20_ui.png",
+      "newTexture": "player_20_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/marcus/player_28_gameplay.atlas",
+      "oldTexture": "player_28_gameplay.png",
+      "newTexture": "player_28_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/marcus/player_28_ui.atlas",
+      "oldTexture": "player_28_ui.png",
+      "newTexture": "player_28_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/marcussc/player_03_marcus_gameplay.atlas",
+      "oldTexture": "player_03_marcus_gameplay.png",
+      "newTexture": "player_03_marcus_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/marcussc/player_03_marcus_ui.atlas",
+      "oldTexture": "player_03_marcus_ui.png",
+      "newTexture": "player_03_marcus_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/victoria/player_1_gameplay.atlas",
+      "oldTexture": "player_1_gameplay.png",
+      "newTexture": "player_1_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/victoria/player_1_ui.atlas",
+      "oldTexture": "player_1_ui.png",
+      "newTexture": "player_1_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/victoriasa/player_1_gameplay.atlas",
+      "oldTexture": "player_1_gameplay.png",
+      "newTexture": "player_1_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/player/victoriasa/player_22_ui.atlas",
+      "oldTexture": "player_22_ui.png",
+      "newTexture": "player_22_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/test/player_14_gameplay.atlas",
+      "oldTexture": "player_14_gameplay.png",
+      "newTexture": "player_14_gameplay.webp"
+    },
+    {
+      "atlasPath": "public/assets/gameplay/test/player_14_ui.atlas",
+      "oldTexture": "player_14_ui.png",
+      "newTexture": "player_14_ui.webp"
+    },
+    {
+      "atlasPath": "public/assets/home_2/home_inventory_shop/x_force_box.atlas",
+      "oldTexture": "x_force_box.png",
+      "newTexture": "x_force_box.webp"
+    }
+  ]
+}
