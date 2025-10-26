@@ -39,11 +39,16 @@ class VorldAuthService {
 
       console.log('✅ Vorld Login Response:', response.data);
       
-      // ✅ FIX: Save tokens to sessionStorage (consistent with verifyOTP)
-      if (response.data.accessToken) {
+      // ✅ FIX: Save tokens to sessionStorage - handle nested response
+      if (response.data.data && response.data.data.accessToken) {
+        sessionStorage.setItem('accessToken', response.data.data.accessToken);
+        sessionStorage.setItem('refreshToken', response.data.data.refreshToken);
+        console.log('✅ Tokens saved to sessionStorage');
+      } else if (response.data.accessToken) {
+        // Fallback for direct structure
         sessionStorage.setItem('accessToken', response.data.accessToken);
         sessionStorage.setItem('refreshToken', response.data.refreshToken);
-        console.log('✅ Tokens saved to sessionStorage');
+        console.log('✅ Tokens saved to sessionStorage (direct)');
       }
       
       return {

@@ -1226,11 +1226,15 @@ export class Login extends Scene {
                 } else {
                     console.log('✅ Vorld login OK - No OTP needed');
                     
-                    // ✅ FIX: Ensure tokens are saved (backup if auth service didn't save)
-                    if (result.data.accessToken) {
+                    // ✅ FIX: Ensure tokens are saved - handle nested data
+                    if (result.data.data && result.data.data.accessToken) {
+                        sessionStorage.setItem('accessToken', result.data.data.accessToken);
+                        sessionStorage.setItem('refreshToken', result.data.data.refreshToken);
+                        console.log('✅ Tokens saved (nested)');
+                    } else if (result.data.accessToken) {
                         sessionStorage.setItem('accessToken', result.data.accessToken);
                         sessionStorage.setItem('refreshToken', result.data.refreshToken);
-                        console.log('✅ Tokens saved to sessionStorage (backup)');
+                        console.log('✅ Tokens saved (direct)');
                     }
                     
                     this.handleVorldLoginSuccess(result.data);
