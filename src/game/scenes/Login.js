@@ -2,6 +2,7 @@
 
 import { EventBus } from "../EventBus";
 import vorldAuth from '../../modules/vorld-auth';
+import { clearTokens } from '../Data/APIBase.js';
 
 import centerData from "../Data/CenterData.js";
 import { socketService } from "../socket.js";
@@ -1226,15 +1227,22 @@ export class Login extends Scene {
                 } else {
                     console.log('✅ Vorld login OK - No OTP needed');
                     
+                    // ✅ FIX: Clear old tokens BEFORE saving new ones
+                    console.log('🗑️ Clearing old tokens before saving new ones');
+                    clearTokens();
+                    // Also clear localStorage to be safe
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    
                     // ✅ FIX: Ensure tokens are saved - handle nested data
                     if (result.data.data && result.data.data.accessToken) {
                         sessionStorage.setItem('accessToken', result.data.data.accessToken);
                         sessionStorage.setItem('refreshToken', result.data.data.refreshToken);
-                        console.log('✅ Tokens saved (nested)');
+                        console.log('✅ New tokens saved to sessionStorage (nested)');
                     } else if (result.data.accessToken) {
                         sessionStorage.setItem('accessToken', result.data.accessToken);
                         sessionStorage.setItem('refreshToken', result.data.refreshToken);
-                        console.log('✅ Tokens saved (direct)');
+                        console.log('✅ New tokens saved to sessionStorage (direct)');
                     }
                     
                     this.handleVorldLoginSuccess(result.data);

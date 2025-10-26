@@ -6,7 +6,7 @@
  * @date 2025-10-26
  */
 
-import { apiClient } from '../../game/Data/APIBase';
+import { apiClient, clearTokens } from '../../game/Data/APIBase';
 
 // ============================================
 // API ENDPOINTS
@@ -39,16 +39,23 @@ class VorldAuthService {
 
       console.log('✅ Vorld Login Response:', response.data);
       
+      // ✅ FIX: Clear old tokens BEFORE saving new ones
+      console.log('🗑️ Clearing old tokens before saving new ones');
+      clearTokens();
+      // Also clear localStorage to be safe
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      
       // ✅ FIX: Save tokens to sessionStorage - handle nested response
       if (response.data.data && response.data.data.accessToken) {
         sessionStorage.setItem('accessToken', response.data.data.accessToken);
         sessionStorage.setItem('refreshToken', response.data.data.refreshToken);
-        console.log('✅ Tokens saved to sessionStorage');
+        console.log('✅ New tokens saved to sessionStorage');
       } else if (response.data.accessToken) {
         // Fallback for direct structure
         sessionStorage.setItem('accessToken', response.data.accessToken);
         sessionStorage.setItem('refreshToken', response.data.refreshToken);
-        console.log('✅ Tokens saved to sessionStorage (direct)');
+        console.log('✅ New tokens saved to sessionStorage (direct)');
       }
       
       return {
@@ -83,11 +90,18 @@ class VorldAuthService {
 
       console.log('✅ Vorld OTP Verified:', response.data);
       
+      // ✅ FIX: Clear old tokens BEFORE saving new ones
+      console.log('🗑️ Clearing old tokens before saving new ones (OTP)');
+      clearTokens();
+      // Also clear localStorage to be safe
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      
       // Save tokens to sessionStorage (như backend hiện tại)
       if (response.data.accessToken) {
         sessionStorage.setItem('accessToken', response.data.accessToken);
         sessionStorage.setItem('refreshToken', response.data.refreshToken);
-        console.log('✅ Tokens saved to sessionStorage');
+        console.log('✅ New tokens saved to sessionStorage (OTP)');
       }
 
       return {
