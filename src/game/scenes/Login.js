@@ -1225,6 +1225,14 @@ export class Login extends Scene {
                     });
                 } else {
                     console.log('✅ Vorld login OK - No OTP needed');
+                    
+                    // ✅ FIX: Ensure tokens are saved (backup if auth service didn't save)
+                    if (result.data.accessToken) {
+                        sessionStorage.setItem('accessToken', result.data.accessToken);
+                        sessionStorage.setItem('refreshToken', result.data.refreshToken);
+                        console.log('✅ Tokens saved to sessionStorage (backup)');
+                    }
+                    
                     this.handleVorldLoginSuccess(result.data);
                 }
             } else {

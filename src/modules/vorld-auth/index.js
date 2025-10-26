@@ -39,6 +39,13 @@ class VorldAuthService {
 
       console.log('✅ Vorld Login Response:', response.data);
       
+      // ✅ FIX: Save tokens to sessionStorage (consistent with verifyOTP)
+      if (response.data.accessToken) {
+        sessionStorage.setItem('accessToken', response.data.accessToken);
+        sessionStorage.setItem('refreshToken', response.data.refreshToken);
+        console.log('✅ Tokens saved to sessionStorage');
+      }
+      
       return {
         success: true,
         needsOTP: response.data.requiresOTP || false,
