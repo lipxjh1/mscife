@@ -3,6 +3,8 @@
 import Phaser from "phaser";
 import { PhaserGame } from "./game/PhaserGame";
 import LinkGoogleAccount from "./pages/LinkGoogleAccount";
+import vorldAuth, { OTPInput } from './modules/vorld-auth';
+import VorldLoginModal from './game/scenes/Share/share-react/VorldLoginModal.jsx';
 
 import { init as initTelegramWebApp, viewport } from "@telegram-apps/sdk";
 
@@ -47,6 +49,11 @@ function App() {
 
     // Routing state
     const [currentPage, setCurrentPage] = useState("game");
+
+    // Vorld Auth State
+    const [showVorldOTP, setShowVorldOTP] = useState(false);
+    const [vorldEmail, setVorldEmail] = useState('');
+    const [showVorldLoginPopup, setShowVorldLoginPopup] = useState(false);  // NEW: Login popup state
 
     const [isPopupOpen, setPopupOpen] = useState(false);
     const [popupConfig, setPopupConfig] = useState(null);
@@ -154,6 +161,66 @@ function App() {
                 "ui:hide-google-login-telegram-link",
                 handleHideGoogleLoginTelegramLink
             );
+        };
+    }, []);
+
+    // Vorld Auth: Listen for OTP event from Phaser
+    useEffect(() => {
+        const handleShowOTP = (data) => {
+            console.log('🔐 Show Vorld OTP for:', data.email);
+            setVorldEmail(data.email);
+            setShowVorldOTP(true);
+        };
+
+        EventBus.on('vorld:show-otp', handleShowOTP);
+
+        return () => {
+            EventBus.removeListener('vorld:show-otp', handleShowOTP);
+        };
+    }, []);
+
+    // ========================================
+    // NEW: Vorld Auth - Login Popup Listeners
+    // ========================================
+    useEffect(() => {
+        /**
+         * Show Vorld Login Modal
+         * Triggered when user clicks "Đăng nhập bằng Vorld" button
+         */
+        const handleShowLoginPopup = () => {
+            console.log('[App] Showing Vorld login popup');
+            setShowVorldLoginPopup(true);
+        };
+        
+        /**
+         * Handle Vorld Login Submit
+         * Triggered when user submits email/password in modal
+         */
+        const handleLoginSubmit = ({ email, password }) => {
+            console.log('[App] Vorld login submit:', email);
+            
+            // Close login popup
+            setShowVorldLoginPopup(false);
+            
+            // Get current scene reference from phaserRef (same pattern as changeScene, moveSprite, addSprite)
+            const currentScene = phaserRef.current?.scene;
+            
+            // Call RequestVorldLogin method
+            if (currentScene && typeof currentScene.RequestVorldLogin === 'function') {
+                console.log('[App] Calling scene.RequestVorldLogin()');
+                currentScene.RequestVorldLogin(email, password);
+            } else {
+                console.error('[App] RequestVorldLogin method not found on scene');
+                console.log('[App] Available scene:', currentScene);
+            }
+        };
+
+        EventBus.on('show-vorld-login-popup', handleShowLoginPopup);
+        EventBus.on('vorld-login-submit', handleLoginSubmit);
+
+        return () => {
+            EventBus.off('show-vorld-login-popup', handleShowLoginPopup);
+            EventBus.off('vorld-login-submit', handleLoginSubmit);
         };
     }, []);
 
@@ -534,6 +601,33 @@ function App() {
     //     }
     // }, [suiWallet, suiConnecting, showModal, suiDisconnecting]);
 
+    // Vorld Auth: Handle OTP verification
+    const handleVorldOTPVerify = async (otp) => {
+        console.log('🔐 Verifying Vorld OTP:', otp);
+        
+        const result = await vorldAuth.verifyOTP(vorldEmail, otp);
+        
+        if (result.success) {
+            console.log('✅ Vorld OTP verified:', result.user);
+            setShowVorldOTP(false);
+            
+            // Notify Phaser
+            EventBus.emit('vorld:otp-success', {
+                user: result.user,
+                tokens: result.tokens
+            });
+        } else {
+            console.error('❌ Vorld OTP failed:', result.error);
+            throw new Error(result.error);
+        }
+    };
+
+    const handleVorldOTPBack = () => {
+        console.log('🔙 Vorld OTP cancelled');
+        setShowVorldOTP(false);
+        setVorldEmail('');
+    };
+
     return (
         <div id="app">
             {currentPage === "link-google" ? (
@@ -707,6 +801,26 @@ function App() {
                     setShowGoogleLoginTelegramLink(false);
                 }}
             />
+            
+            {/* ========================================
+                NEW: VORLD LOGIN MODAL
+                ======================================== */}
+            <VorldLoginModal 
+                isOpen={showVorldLoginPopup}
+                onClose={() => setShowVorldLoginPopup(false)}
+            />
+            
+            {/* ========================================
+                EXISTING: VORLD OTP INPUT
+                ======================================== */}
+            {showVorldOTP && (
+                <OTPInput
+                    email={vorldEmail}
+                    onVerify={handleVorldOTPVerify}
+                    onBack={handleVorldOTPBack}
+                />
+            )}
+            
             <div>
                 {/* <button onClick={handleGoogleLogin}>Đăng nhập Google</button>
                 <button onClick={handleGoogleLogout}>Đăng xuất Google</button> */}

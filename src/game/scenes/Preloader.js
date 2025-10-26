@@ -407,6 +407,9 @@ export function LoadLogin(scene) {
     scene.load.image("login_btn_1", url_r2 + "assets/login/login_btn_1.webp");
 
     scene.load.image("login_btn_3", url_r2 + "assets/login/login_btn_3.webp");
+
+    // NEW: Load Vorld logo for login button
+    scene.load.image("vorld_logo", url_r2 + "icons/vorld.png");
 }
 
 export function LoadHome(scene) {

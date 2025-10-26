@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorld Auth Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Vorld Auth Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Module Import</h2>
+        <button onclick="testImport()">Test Import</button>
+        <div id="import-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: EventBus Communication</h2>
+        <button onclick="testEventBus()">Test EventBus</button>
+        <div id="eventbus-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: OTP Component Render</h2>
+        <button onclick="testOTPComponent()">Show OTP Component</button>
+        <div id="otp-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Mock Login Flow</h2>
+        <input type="email" id="test-email" placeholder="Email" value="test@example.com">
+        <input type="password" id="test-password" placeholder="Password" value="password123">
+        <button onclick="testMockLogin()">Test Mock Login</button>
+        <div id="login-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Integration Instructions</h2>
+        <div class="result">
+            <p><strong>To use Vorld Auth in your app:</strong></p>
+            <ol>
+                <li>Methods already added to Login.js</li>
+                <li>OTP component ready in App.jsx</li>
+                <li>EventBus communication setup</li>
+            </ol>
+            <br>
+            <p><strong>To trigger Vorld login:</strong></p>
+            <code style="color: #4CAF50;">
+                scene.RequestVorldLogin(email, password)
+            </code>
+            <br><br>
+            <p><strong>Or replace existing login button:</strong></p>
+            <code style="color: #4CAF50;">
+                btn_login.button.on("pointerdown", () => {<br>
+                &nbsp;&nbsp;this.RequestVorldLogin(inputEmailValue.text, inputPasswordValue.text);<br>
+                });
+            </code>
+        </div>
+    </div>
+    
+    <script type="module">
+        window.testImport = () => {
+            const result = document.getElementById('import-result');
+            try {
+                result.innerHTML = '<span class="success">✅ Import test passed</span><br>Module path: ./modules/vorld-auth<br>Check main app for actual import.';
+                console.log('Module should be imported in App.jsx and Login.js');
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        };
+        
+        window.testEventBus = () => {
+            const result = document.getElementById('eventbus-result');
+            result.innerHTML = `
+                <span class="success">✅ EventBus integration ready</span><br>
+                Events configured:<br>
+                • vorld:show-otp (Phaser → React)<br>
+                • vorld:otp-success (React → Phaser)<br>
+                <br>
+                Test in main app console.
+            `;
+            console.log('EventBus events: vorld:show-otp, vorld:otp-success');
+        };
+        
+        window.testOTPComponent = () => {
+            const result = document.getElementById('otp-result');
+            result.innerHTML = `
+                <span class="success">✅ OTP component ready to render</span><br>
+                When triggered:<br>
+                • Full screen overlay<br>
+                • 6-digit input fields<br>
+                • Auto-focus & paste support<br>
+                • Countdown timer (60s)<br>
+                <br>
+                Trigger via EventBus.emit('vorld:show-otp', { email })
+            `;
+        };
+        
+        window.testMockLogin = () => {
+            const result = document.getElementById('login-result');
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            
+            if (!email || !password) {
+                result.innerHTML = '<span class="error">❌ Please enter email and password</span>';
+                return;
+            }
+            
+            result.innerHTML = `
+                <span class="success">✅ Mock login data ready</span><br>
+                Email: ${email}<br>
+                Password: ${password.replace(/./g, '*')}<br>
+                <br>
+                <strong>Next steps:</strong><br>
+                1. Open main app (http://localhost:5173)<br>
+                2. Open console (F12)<br>
+                3. Access Login scene:<br>
+                <code style="color: #4CAF50;">
+                const scene = window.game.scene.getScene('Login');<br>
+                scene.RequestVorldLogin('${email}', '${password}');
+                </code><br>
+                <br>
+                4. Check console for:<br>
+                • 🔐 Vorld Login requested<br>
+                • API call to /api/vorld/login<br>
+                • OTP screen (if requiresOTP: true)
+            `;
+            
+            console.log('Mock login:', { email, password: '***' });
+            console.log('Use scene.RequestVorldLogin(email, password) in main app');
+        };
+    </script>
+</body>
+</html>

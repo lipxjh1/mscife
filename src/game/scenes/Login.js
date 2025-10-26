@@ -1,6 +1,7 @@
 ﻿import { Scene } from "phaser";
 
 import { EventBus } from "../EventBus";
+import vorldAuth from '../../modules/vorld-auth';
 
 import centerData from "../Data/CenterData.js";
 import { socketService } from "../socket.js";
@@ -39,6 +40,8 @@ let btn_forgot_password_cancel = null;
 let btn_forgot_password = null;
 
 let btn_login_google = null;
+
+let btn_vorld_login = null;  // NEW: Vorld login button
 
 let text_respone = null;
 
@@ -669,7 +672,7 @@ export class Login extends Scene {
         btn_register = this.CreateButton1(
             scene,
             540,
-            1427 + 51 / 2,
+            1640,  // NEW: Moved down from 1452.5 (1427 + 51/2) to make space for Vorld button
             "login_btn_1",
             cdLocalization.getLocalization(
                 cdLocalization.GROUP_KEYS.Main.KEY,
@@ -745,6 +748,67 @@ export class Login extends Scene {
             this.LoginEmail(scene, inputEmailValue, inputPasswordValue);
         });
 
+        // ========================================
+        // NEW: Vorld Login Section
+        // ========================================
+        
+        // Divider text "hoặc"
+        const divider_text_vorld = this.add.text(
+            540,                                    // Center X (design width 1080)
+            1400,                                   // Y position (between Login and Vorld button)
+            "─── hoặc ───",                         // Text
+            {
+                fontSize: '28px',                   // Font size
+                color: '#888888',                   // Grey color
+                align: 'center',                    // Center alignment
+                fontFamily: cdLocalization.getCurrentFont()
+            }
+        ).setOrigin(0.5, 0.5);                     // Center origin
+        
+        container_main_login.add(divider_text_vorld);
+        
+        // Vorld Login Button
+        btn_vorld_login = this.CreateButton(
+            scene,
+            540,                                    // Center X
+            1450,                                   // Y position (below divider, above Forgot)
+            "login_btn_0",                          // Same texture as Login button
+            "Đăng nhập bằng Vorld"                 // Button text
+        );
+        
+        // Add Vorld logo to button (logo on left side of text)
+        const vorld_logo = this.add.image(
+            420,                                    // X: Left of button text (540 - 120)
+            1450,                                   // Y: Same as button
+            "vorld_logo"                            // Logo asset key
+        ).setDisplaySize(40, 40)                   // Logo size 40x40
+         .setOrigin(0.5, 0.5);                     // Center origin
+        
+        // ========================================
+        // NEW: Vorld Login Button Click Handler
+        // ========================================
+        // Click handler - emit event to show login popup
+        btn_vorld_login.button.on("pointerdown", () => {
+            console.log("[Vorld Login] Button clicked - showing popup");
+            
+            // Emit event để hiện Vorld Login Modal
+            // Modal sẽ handle việc nhận email/password từ user
+            EventBus.emit('show-vorld-login-popup');
+            
+            // KHÔNG lấy email/password từ form chính nữa
+            // User sẽ nhập trong popup riêng
+        });
+        
+        // Add to container
+        container_main_login.add(btn_vorld_login);
+        container_main_login.add(vorld_logo);      // Add logo to container too
+        
+        console.log("[Login] Vorld login button created at Y:", 1450);
+        
+        // ========================================
+        // END: Vorld Login Section
+        // ========================================
+
         // btn_login_google = this.CreateButtonGoogle(
         //     scene,
         //     540,
@@ -758,7 +822,7 @@ export class Login extends Scene {
         btn_forgot_password = this.add
             .text(
                 540,
-                1221,
+                1550,  // NEW: Moved down from 1221 to make space for Vorld button
                 cdLocalization.getLocalization(
                     cdLocalization.GROUP_KEYS.Main.KEY,
                     "Forgot password"
@@ -1111,6 +1175,96 @@ export class Login extends Scene {
                 let str = `${error.message}\n`;
 
                 text_respone.setText(str);
+            }
+        );
+    }
+
+    // Vorld Auth: Login with Vorld backend
+    async RequestVorldLogin(email, password) {
+        if (!email || email === '') {
+            text_respone.setText(
+                cdLocalization.getLocalization(
+                    cdLocalization.GROUP_KEYS.Main.KEY,
+                    'Email must not be empty'
+                )
+            );
+            return;
+        }
+
+        if (!password || password === '') {
+            text_respone.setText(
+                cdLocalization.getLocalization(
+                    cdLocalization.GROUP_KEYS.Main.KEY,
+                    'Password must not be empty'
+                )
+            );
+            return;
+        }
+
+        console.log('🔐 Vorld Login requested:', email);
+
+        CreateLoadingPopup();
+
+        try {
+            const result = await vorldAuth.login(email, password);
+
+            HideLoadingPopup();
+
+            if (result.success) {
+                if (result.needsOTP) {
+                    console.log('✅ Vorld login OK - OTP required');
+                    text_respone.setText('Please check your email for OTP code');
+
+                    // Emit event to show OTP in React
+                    EventBus.emit('vorld:show-otp', { email });
+
+                    // Listen for OTP success
+                    EventBus.once('vorld:otp-success', (data) => {
+                        console.log('✅ Vorld OTP success:', data);
+                        this.handleVorldLoginSuccess(data);
+                    });
+                } else {
+                    console.log('✅ Vorld login OK - No OTP needed');
+                    this.handleVorldLoginSuccess(result.data);
+                }
+            } else {
+                console.error('❌ Vorld login failed:', result.error);
+                text_respone.setText(result.error || 'Login failed');
+            }
+        } catch (error) {
+            console.error('❌ Vorld login error:', error);
+            HideLoadingPopup();
+            text_respone.setText('Login failed. Please try again.');
+        }
+    }
+
+    // Vorld Auth: Handle successful login
+    handleVorldLoginSuccess(data) {
+        console.log('✅ Vorld login complete, starting Home');
+
+        // Save user data (như login hiện tại)
+        if (data.user) {
+            centerData.userInfo = data.user;
+        }
+
+        // Initialize socket connections (như LoginEmail)
+        this.InitSocket();
+
+        CreateLoadingPopup();
+
+        // Update wallet if needed (như LoginEmail)
+        centerData.RequestUpdateWallet(
+            centerData.GetWalletAddress(),
+            () => {
+                HideLoadingPopup();
+                // Go to Home scene
+                this.scene.start('Home');
+            },
+            (error) => {
+                HideLoadingPopup();
+                console.error('Update wallet error:', error);
+                // Still go to Home even if wallet update fails
+                this.scene.start('Home');
             }
         );
     }
