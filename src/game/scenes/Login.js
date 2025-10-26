@@ -2,7 +2,7 @@
 
 import { EventBus } from "../EventBus";
 import vorldAuth from '../../modules/vorld-auth';
-import { clearTokens } from '../Data/APIBase.js';
+import { clearTokens, setTokens } from '../Data/APIBase.js';
 
 import centerData from "../Data/CenterData.js";
 import { socketService } from "../socket.js";
@@ -1234,15 +1234,13 @@ export class Login extends Scene {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
                     
-                    // ✅ FIX: Ensure tokens are saved - handle nested data
+                    // ✅ FIX: Use setTokens() to sync memory and storage
                     if (result.data.data && result.data.data.accessToken) {
-                        sessionStorage.setItem('accessToken', result.data.data.accessToken);
-                        sessionStorage.setItem('refreshToken', result.data.data.refreshToken);
-                        console.log('✅ New tokens saved to sessionStorage (nested)');
+                        setTokens(result.data.data.accessToken, result.data.data.refreshToken);
+                        console.log('✅ Tokens synced to memory and storage (nested)');
                     } else if (result.data.accessToken) {
-                        sessionStorage.setItem('accessToken', result.data.accessToken);
-                        sessionStorage.setItem('refreshToken', result.data.refreshToken);
-                        console.log('✅ New tokens saved to sessionStorage (direct)');
+                        setTokens(result.data.accessToken, result.data.refreshToken);
+                        console.log('✅ Tokens synced to memory and storage (direct)');
                     }
                     
                     this.handleVorldLoginSuccess(result.data);

@@ -6,7 +6,7 @@
  * @date 2025-10-26
  */
 
-import { apiClient, clearTokens } from '../../game/Data/APIBase';
+import { apiClient, clearTokens, setTokens } from '../../game/Data/APIBase';
 
 // ============================================
 // API ENDPOINTS
@@ -46,16 +46,14 @@ class VorldAuthService {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       
-      // ✅ FIX: Save tokens to sessionStorage - handle nested response
+      // ✅ FIX: Use setTokens() to sync memory and storage
       if (response.data.data && response.data.data.accessToken) {
-        sessionStorage.setItem('accessToken', response.data.data.accessToken);
-        sessionStorage.setItem('refreshToken', response.data.data.refreshToken);
-        console.log('✅ New tokens saved to sessionStorage');
+        setTokens(response.data.data.accessToken, response.data.data.refreshToken);
+        console.log('✅ Tokens synced to memory and storage');
       } else if (response.data.accessToken) {
         // Fallback for direct structure
-        sessionStorage.setItem('accessToken', response.data.accessToken);
-        sessionStorage.setItem('refreshToken', response.data.refreshToken);
-        console.log('✅ New tokens saved to sessionStorage (direct)');
+        setTokens(response.data.accessToken, response.data.refreshToken);
+        console.log('✅ Tokens synced to memory and storage (direct)');
       }
       
       return {
@@ -97,11 +95,10 @@ class VorldAuthService {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       
-      // Save tokens to sessionStorage (như backend hiện tại)
+      // Use setTokens() to sync memory and storage
       if (response.data.accessToken) {
-        sessionStorage.setItem('accessToken', response.data.accessToken);
-        sessionStorage.setItem('refreshToken', response.data.refreshToken);
-        console.log('✅ New tokens saved to sessionStorage (OTP)');
+        setTokens(response.data.accessToken, response.data.refreshToken);
+        console.log('✅ Tokens synced to memory and storage (OTP)');
       }
 
       return {
