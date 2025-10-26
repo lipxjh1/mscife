@@ -144,7 +144,13 @@ const clearTokens = () => {
 const loadTokens = () => {
     accessToken = sessionStorage.getItem("accessToken");
     refreshToken = sessionStorage.getItem("refreshToken");
+    console.log('🔄 APIBase: Tokens reloaded -', accessToken ? 'HAS TOKEN' : 'NO TOKEN');
 };
+
+// ✅ FIX: Export loadTokens để Login.js có thể gọi
+if (typeof window !== 'undefined') {
+    window.loadTokens = loadTokens;
+}
 
 loadTokens();
 

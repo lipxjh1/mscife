@@ -1254,12 +1254,21 @@ export class Login extends Scene {
     handleVorldLoginSuccess(data) {
         console.log('✅ Vorld login complete, starting Home');
 
-        // Save user data (như login hiện tại)
+        // Save user data
         if (data.user) {
             centerData.userInfo = data.user;
         }
 
-        // Initialize socket connections (như LoginEmail)
+        // ✅ FIX: Reload tokens in APIBase sau khi login
+        // Tokens đã được lưu vào sessionStorage, giờ cần báo cho APIBase biết
+        if (typeof window.loadTokens === 'function') {
+            window.loadTokens();
+            console.log('✅ APIBase tokens reloaded after Vorld login');
+        } else {
+            console.warn('⚠️ window.loadTokens not available');
+        }
+
+        // Initialize socket connections
         this.InitSocket();
 
         CreateLoadingPopup();
