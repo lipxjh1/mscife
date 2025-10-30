@@ -36,6 +36,11 @@ import { lazy, Suspense } from "react";
 import axios from "axios";
 const AuthOneTap = lazy(() => import("./auth/AuthOneTap.jsx"));
 
+// ========================================
+// NEW: ARENA GAME IMPORT
+// ========================================
+import ArenaTab from "./components/Arena/ArenaTab.jsx";
+
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
 function App() {
@@ -853,6 +858,11 @@ function App() {
                     </Suspense>
                 )} */}
             </div>
+
+            {/* ========================================
+                NEW: ARENA GAME TAB
+                ======================================== */}
+            <ArenaTab />
         </div>
     );
 }

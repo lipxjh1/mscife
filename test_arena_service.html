@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Arena Service</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 10px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Arena Service Test</h1>
+
+    <div>
+        <button id="testHealth">Test Health Check</button>
+        <button id="testInit">Test Init Game</button>
+        <button id="testCatalog">Test Items Catalog</button>
+        <button id="testBoost">Test Boost Player</button>
+    </div>
+
+    <div id="log" class="log">Test logs will appear here...</div>
+
+    <script type="module">
+        const log = document.getElementById('log');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `<span class="${type}">[${timestamp}] ${message}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Mock token for testing (use the token we got earlier)
+        const TEST_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTAwOTUzZTdkNWQzN2I0ZDdkMWNiNDYiLCJpYXQiOjE3NjE4MzkyNDYsImV4cCI6MTc2MTg0MDE0Nn0.AhOL4VJAvg_AF0GuYR7j8Bvk4uNhX26UJD1LVEqQkbE';
+
+        // Store token for API calls
+        sessionStorage.setItem('accessToken', TEST_TOKEN);
+
+        try {
+            // Import Arena service
+            import('../src/services/arena.js').then(({ default: arenaService }) => {
+                addLog('✅ Arena service imported successfully', 'success');
+
+                document.getElementById('testHealth').onclick = async () => {
+                    try {
+                        addLog('🔍 Testing health check...', 'info');
+                        const isHealthy = await arenaService.healthCheck();
+                        addLog(`Health check result: ${isHealthy ? '✅ Healthy' : '❌ Unhealthy'}`, isHealthy ? 'success' : 'error');
+                    } catch (error) {
+                        addLog(`Health check failed: ${error.message}`, 'error');
+                    }
+                };
+
+                document.getElementById('testInit').onclick = async () => {
+                    try {
+                        addLog('🎮 Testing game initialization...', 'info');
+                        const result = await arenaService.initGame('https://twitch.tv/test');
+                        addLog(`Game init result: ${JSON.stringify(result, null, 2)}`, 'success');
+                    } catch (error) {
+                        addLog(`Game init failed: ${error.message}`, 'error');
+                    }
+                };
+
+                document.getElementById('testCatalog').onclick = async () => {
+                    try {
+                        addLog('📦 Testing items catalog...', 'info');
+                        const result = await arenaService.getItemsCatalog(1, 5);
+                        addLog(`Catalog result: ${JSON.stringify(result, null, 2)}`, 'success');
+                    } catch (error) {
+                        addLog(`Catalog failed: ${error.message}`, 'error');
+                    }
+                };
+
+                document.getElementById('testBoost').onclick = async () => {
+                    try {
+                        addLog('💰 Testing boost player...', 'info');
+                        // This will likely fail without a valid session, but we can test the API call
+                        const result = await arenaService.boostPlayer('test_session', 'A00111312', 50);
+                        addLog(`Boost result: ${JSON.stringify(result, null, 2)}`, 'success');
+                    } catch (error) {
+                        addLog(`Boost failed: ${error.message}`, 'error');
+                    }
+                };
+
+                addLog('🚀 Arena service test ready! Click buttons to test.', 'success');
+            }).catch(error => {
+                addLog(`❌ Failed to import Arena service: ${error.message}`, 'error');
+            });
+
+        } catch (error) {
+            addLog(`❌ Error setting up tests: ${error.message}`, 'error');
+        }
+    </script>
+</body>
+</html>

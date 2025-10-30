@@ -22,6 +22,13 @@ export const ENV = {
   // Game URLs
   GAME_BASE_URL: import.meta.env.VITE_GAME_BASE_URL || "https://game.m-sci.net",
   WEB_BASE_URL: import.meta.env.VITE_WEB_BASE_URL || "https://sta.m-sci.net",
+
+  // ========================================
+  // ARENA BACKEND CONFIGURATION (NEW)
+  // ========================================
+  ARENA_API_URL: import.meta.env.VITE_ARENA_API_URL || 'https://pro.m-sci.net',
+  ARENA_WS_URL: import.meta.env.VITE_ARENA_WS_URL || 'wss://airdrop-arcade.onrender.com',
+  VORLD_APP_ID: import.meta.env.VITE_VORLD_APP_ID || 'app_mh96pk5z_ca7db3dd',
 };
 
 // Validate required environment variables
@@ -47,6 +54,10 @@ const validateEnv = () => {
       TELEGRAM_BOT_URL: ENV.TELEGRAM_BOT_URL,
       GAME_BASE_URL: ENV.GAME_BASE_URL,
       WEB_BASE_URL: ENV.WEB_BASE_URL,
+      // NEW: Arena environment variables
+      ARENA_API_URL: ENV.ARENA_API_URL,
+      ARENA_WS_URL: ENV.ARENA_WS_URL,
+      VORLD_APP_ID: ENV.VORLD_APP_ID,
       IS_DEV: ENV.IS_DEV,
       IS_PROD: ENV.IS_PROD,
     });

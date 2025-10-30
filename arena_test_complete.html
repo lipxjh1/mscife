@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎮 Arena Complete Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .status-connected { background: #d4edda; color: #155724; }
+        .status-disconnected { background: #f8d7da; color: #721c24; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1>🎮 Arena Arcade - Complete Integration Test</h1>
+        <p>Test all Arena features: API, WebSocket, UI Components</p>
+    </header>
+
+    <div class="grid">
+        <!-- Left Column: API Tests -->
+        <div>
+            <div class="test-section">
+                <h2>🔧 API Service Tests</h2>
+                <button class="btn-primary" onclick="testArenaAPI()">Test Arena API Service</button>
+                <button class="btn-primary" onclick="testInitGame()">Test Init Game</button>
+                <button class="btn-primary" onclick="testCatalog()">Test Items Catalog</button>
+                <button class="btn-danger" onclick="testBoostValidation()">Test Boost Validation</button>
+                <div id="api-log" class="log">API test results will appear here...</div>
+            </div>
+
+            <div class="test-section">
+                <h2>🌐 WebSocket Tests</h2>
+                <input type="text" id="ws-session-id" placeholder="Session ID" value="test_session_123" style="width: 100%; padding: 8px; margin: 5px 0;">
+                <button class="btn-primary" onclick="connectWebSocket()">Connect WebSocket</button>
+                <button class="btn-success" onclick="pingWebSocket()" disabled id="ping-btn">Ping</button>
+                <button class="btn-danger" onclick="disconnectWebSocket()" disabled id="disconnect-btn">Disconnect</button>
+                <div id="ws-status" class="status status-disconnected">❌ Disconnected</div>
+                <div id="ws-log" class="log">WebSocket test results will appear here...</div>
+            </div>
+        </div>
+
+        <!-- Right Column: UI Components -->
+        <div>
+            <div class="test-section">
+                <h2>🎮 Game Init Component Test</h2>
+                <div id="game-init-container">Loading component...</div>
+                <div id="game-init-log" class="log">Game init logs will appear here...</div>
+            </div>
+
+            <div class="test-section">
+                <h2>💰 Boost Component Test</h2>
+                <div id="boost-container">Loading component...</div>
+                <div id="boost-log" class="log">Boost test logs will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Width: Catalog and Item Drop -->
+    <div class="test-section">
+        <h2>📦 Items Catalog Component Test</h2>
+        <div id="catalog-container">Loading component...</div>
+        <div id="catalog-log" class="log">Catalog test logs will appear here...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎁 Item Drop Component Test</h2>
+        <div id="itemdrop-container">Loading component...</div>
+        <div id="itemdrop-log" class="log">Item drop test logs will appear here...</div>
+    </div>
+
+    <script type="module">
+        // Mock token for testing
+        const TEST_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTAwOTUzZTdkNWQzN2I0ZDdkMWNiNDYiLCJpYXQiOjE3NjE4Mzk1MDksImV4cCI6MTc2MTg0MDQwOX0.7SgRdEgkTElGLvGqbAmgK6OEFIYZOm7Cd8ccbVLa3HA';
+        sessionStorage.setItem('accessToken', TEST_TOKEN);
+
+        // Helper functions
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateStatus(statusId, connected, message = '') {
+            const status = document.getElementById(statusId);
+            if (connected) {
+                status.className = 'status status-connected';
+                status.innerHTML = '✅ Connected' + (message ? ` - ${message}` : '');
+            } else {
+                status.className = 'status status-disconnected';
+                status.innerHTML = '❌ Disconnected' + (message ? ` - ${message}` : '');
+            }
+        }
+
+        // API Tests
+        window.testArenaAPI = async () => {
+            log('api-log', '🔧 Testing Arena API Service...', 'info');
+
+            try {
+                const { default: arenaService } = await import('../src/services/arena.js');
+                log('api-log', '✅ Arena service imported successfully', 'success');
+
+                // Test health check
+                const isHealthy = await arenaService.healthCheck();
+                log('api-log', `Health check: ${isHealthy ? '✅ Healthy' : '❌ Unhealthy'}`, isHealthy ? 'success' : 'error');
+
+            } catch (error) {
+                log('api-log', `❌ API service test failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testInitGame = async () => {
+            log('api-log', '🎮 Testing game initialization...', 'info');
+
+            try {
+                const { default: arenaService } = await import('../src/services/arena.js');
+                const result = await arenaService.initGame('https://twitch.tv/test');
+
+                if (result.success) {
+                    log('api-log', `✅ Game initialized: Session ${result.data.sessionId}`, 'success');
+                    document.getElementById('ws-session-id').value = result.data.sessionId;
+                } else {
+                    log('api-log', `⚠️ Game init response: ${result.message}`, 'warning');
+                }
+
+            } catch (error) {
+                log('api-log', `❌ Init game failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testCatalog = async () => {
+            log('api-log', '📦 Testing items catalog...', 'info');
+
+            try {
+                const { default: arenaService } = await import('../src/services/arena.js');
+                const result = await arenaService.getItemsCatalog(1, 5);
+
+                if (result.success) {
+                    log('api-log', `✅ Catalog loaded: ${result.data.items.length} items`, 'success');
+                    log('api-log', `Pagination: Page ${result.data.pagination.page} of ${result.data.pagination.pages}`, 'info');
+                } else {
+                    log('api-log', `❌ Catalog failed: ${result.message}`, 'error');
+                }
+
+            } catch (error) {
+                log('api-log', `❌ Catalog test failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testBoostValidation = async () => {
+            log('api-log', '💰 Testing boost validation...', 'info');
+
+            try {
+                const { default: arenaService } = await import('../src/services/arena.js');
+
+                // Test invalid amount
+                try {
+                    await arenaService.boostPlayer('test_session', 'A00111312', 75);
+                    log('api-log', '❌ Validation failed - should have rejected amount 75', 'error');
+                } catch (error) {
+                    if (error.message.includes('Invalid boost amount')) {
+                        log('api-log', '✅ Validation working - rejected invalid amount 75', 'success');
+                    } else {
+                        log('api-log', `⚠️ Unexpected error: ${error.message}`, 'warning');
+                    }
+                }
+
+                // Test valid amount (should fail with session not found, but pass validation)
+                try {
+                    await arenaService.boostPlayer('test_session', 'A00111312', 50);
+                    log('api-log', '⚠️ Unexpected success - should have failed with session not found', 'warning');
+                } catch (error) {
+                    if (error.message.includes('Session not found')) {
+                        log('api-log', '✅ Validation working - rejected invalid session, passed amount validation', 'success');
+                    } else {
+                        log('api-log', `⚠️ Unexpected error: ${error.message}`, 'warning');
+                    }
+                }
+
+            } catch (error) {
+                log('api-log', `❌ Boost validation test failed: ${error.message}`, 'error');
+            }
+        };
+
+        // WebSocket Tests
+        let arenaSocket = null;
+
+        window.connectWebSocket = async () => {
+            const sessionId = document.getElementById('ws-session-id').value.trim();
+            if (!sessionId) {
+                log('ws-log', '❌ Please enter a session ID', 'error');
+                return;
+            }
+
+            log('ws-log', `🔗 Connecting WebSocket to session: ${sessionId}`, 'info');
+
+            try {
+                const { default: socket } = await import('../src/services/arenaSocket.js');
+                arenaSocket = socket;
+
+                // Setup event listeners
+                arenaSocket.on('connected', (data) => {
+                    log('ws-log', `✅ WebSocket connected: ${JSON.stringify(data)}`, 'success');
+                    updateStatus('ws-status', true, data.socketId);
+                    document.getElementById('ping-btn').disabled = false;
+                    document.getElementById('disconnect-btn').disabled = false;
+                });
+
+                arenaSocket.on('disconnected', (data) => {
+                    log('ws-log', `🔌 WebSocket disconnected: ${JSON.stringify(data)}`, 'warning');
+                    updateStatus('ws-status', false, data.reason);
+                    document.getElementById('ping-btn').disabled = true;
+                    document.getElementById('disconnect-btn').disabled = true;
+                });
+
+                arenaSocket.on('error', (data) => {
+                    log('ws-log', `❌ WebSocket error: ${JSON.stringify(data)}`, 'error');
+                    updateStatus('ws-status', false, data.message);
+                });
+
+                arenaSocket.connect(sessionId);
+
+            } catch (error) {
+                log('ws-log', `❌ WebSocket connection failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.pingWebSocket = () => {
+            if (arenaSocket) {
+                log('ws-log', '📡 Sending ping...', 'info');
+                arenaSocket.ping();
+            }
+        };
+
+        window.disconnectWebSocket = () => {
+            if (arenaSocket) {
+                log('ws-log', '🔌 Disconnecting WebSocket...', 'info');
+                arenaSocket.disconnect();
+                arenaSocket = null;
+            }
+        };
+
+        // Load Components
+        async function loadComponents() {
+            try {
+                log('game-init-log', '🔄 Loading GameInit component...', 'info');
+                const { default: GameInit } = await import('../src/components/Arena/GameInit.jsx');
+                const gameInit = new GameInit({
+                    onSessionCreated: (session) => {
+                        log('game-init-log', `✅ Session created: ${JSON.stringify(session)}`, 'success');
+                        if (session?.sessionId) {
+                            document.getElementById('ws-session-id').value = session.sessionId;
+                        }
+                    }
+                });
+                document.getElementById('game-init-container').innerHTML = '<div style="padding: 20px; background: #e3f2fd; border-radius: 4px;">✅ GameInit component loaded successfully!</div>';
+                log('game-init-log', '✅ GameInit component loaded', 'success');
+
+            } catch (error) {
+                document.getElementById('game-init-container').innerHTML = `<div style="color: red;">❌ Failed to load: ${error.message}</div>`;
+                log('game-init-log', `❌ GameInit load failed: ${error.message}`, 'error');
+            }
+
+            try {
+                log('boost-log', '🔄 Loading BoostPlayer component...', 'info');
+                const { default: BoostPlayer } = await import('../src/components/Arena/BoostPlayer.jsx');
+                const boost = new BoostPlayer({
+                    sessionId: null,
+                    userBalance: 5000,
+                    onBalanceUpdate: (newBalance) => {
+                        log('boost-log', `💰 Balance updated: ${newBalance}`, 'info');
+                    }
+                });
+                document.getElementById('boost-container').innerHTML = '<div style="padding: 20px; background: #e8f5e8; border-radius: 4px;">✅ BoostPlayer component loaded successfully!</div>';
+                log('boost-log', '✅ BoostPlayer component loaded', 'success');
+
+            } catch (error) {
+                document.getElementById('boost-container').innerHTML = `<div style="color: red;">❌ Failed to load: ${error.message}</div>`;
+                log('boost-log', `❌ BoostPlayer load failed: ${error.message}`, 'error');
+            }
+
+            try {
+                log('catalog-log', '🔄 Loading ItemsCatalog component...', 'info');
+                const { default: ItemsCatalog } = await import('../src/components/Arena/ItemsCatalog.jsx');
+                const catalog = new ItemsCatalog({
+                    onSelectItem: (item) => {
+                        log('catalog-log', `📦 Item selected: ${JSON.stringify(item)}`, 'success');
+                    }
+                });
+                document.getElementById('catalog-container').innerHTML = '<div style="padding: 20px; background: #fff3e0; border-radius: 4px;">✅ ItemsCatalog component loaded successfully!</div>';
+                log('catalog-log', '✅ ItemsCatalog component loaded', 'success');
+
+            } catch (error) {
+                document.getElementById('catalog-container').innerHTML = `<div style="color: red;">❌ Failed to load: ${error.message}</div>`;
+                log('catalog-log', `❌ ItemsCatalog load failed: ${error.message}`, 'error');
+            }
+
+            try {
+                log('itemdrop-log', '🔄 Loading ItemDrop component...', 'info');
+                const { default: ItemDrop } = await import('../src/components/Arena/ItemDrop.jsx');
+                const itemDrop = new ItemDrop({
+                    sessionId: null,
+                    selectedItem: null
+                });
+                document.getElementById('itemdrop-container').innerHTML = '<div style="padding: 20px; background: #fce4ec; border-radius: 4px;">✅ ItemDrop component loaded successfully!</div>';
+                log('itemdrop-log', '✅ ItemDrop component loaded', 'success');
+
+            } catch (error) {
+                document.getElementById('itemdrop-container').innerHTML = `<div style="color: red;">❌ Failed to load: ${error.message}</div>`;
+                log('itemdrop-log', `❌ ItemDrop load failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        log('api-log', '🚀 Arena Complete Test Initialized!', 'success');
+        log('ws-log', '🌐 WebSocket test ready - enter session ID and click Connect', 'info');
+
+        loadComponents();
+
+        // Auto-run basic API test
+        setTimeout(() => {
+            testArenaAPI();
+        }, 1000);
+    </script>
+</body>
+</html>

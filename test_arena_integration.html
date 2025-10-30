@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arena Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Arena Integration Test</h1>
+
+    <div class="test-section">
+        <h2>Environment Variables</h2>
+        <div id="env-results">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Services Import</h2>
+        <div id="services-results">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>API Configuration</h2>
+        <div id="api-results">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Components Import</h2>
+        <div id="components-results">Loading...</div>
+    </div>
+
+    <script type="module">
+        const envResults = document.getElementById('env-results');
+        const servicesResults = document.getElementById('services-results');
+        const apiResults = document.getElementById('api-results');
+        const componentsResults = document.getElementById('components-results');
+
+        function addResult(container, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        function addResultWithCode(container, message, code, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `${message}: <code>${code}</code>`;
+            container.appendChild(div);
+        }
+
+        // Test 1: Environment Variables
+        addResult(envResults, 'Testing environment variables...', 'info');
+        addResultWithCode(envResults, 'ARENA_API_URL', import.meta.env.VITE_ARENA_API_URL || 'NOT_FOUND', 'success');
+        addResultWithCode(envResults, 'ARENA_WS_URL', import.meta.env.VITE_ARENA_WS_URL || 'NOT_FOUND', 'success');
+        addResultWithCode(envResults, 'VORLD_APP_ID', import.meta.env.VITE_VORLD_APP_ID || 'NOT_FOUND', 'success');
+
+        // Test 2: Services Import
+        addResult(servicesResults, 'Testing services import...', 'info');
+
+        try {
+            const { default: arenaService } = await import('../src/services/arena.js');
+            addResult(servicesResults, '✅ Arena service imported successfully', 'success');
+            addResult(servicesResults, `Available methods: ${Object.getOwnPropertyNames(Object.getPrototypeOf(arenaService)).filter(name => name !== 'constructor').join(', ')}`, 'info');
+        } catch (error) {
+            addResult(servicesResults, `❌ Arena service import failed: ${error.message}`, 'error');
+        }
+
+        try {
+            const { default: arenaSocket } = await import('../src/services/arenaSocket.js');
+            addResult(servicesResults, '✅ Arena WebSocket service imported successfully', 'success');
+        } catch (error) {
+            addResult(servicesResults, `❌ Arena WebSocket service import failed: ${error.message}`, 'error');
+        }
+
+        // Test 3: API Configuration
+        addResult(apiResults, 'Testing API configuration...', 'info');
+
+        try {
+            const ENV = await import('../src/config/env.js');
+            const env = ENV.default || ENV;
+            addResultWithCode(apiResults, 'ARENA_API_URL from config', env.ARENA_API_URL || 'NOT_FOUND', 'success');
+            addResultWithCode(apiResults, 'ARENA_WS_URL from config', env.ARENA_WS_URL || 'NOT_FOUND', 'success');
+            addResultWithCode(apiResults, 'VORLD_APP_ID from config', env.VORLD_APP_ID || 'NOT_FOUND', 'success');
+        } catch (error) {
+            addResult(apiResults, `❌ Config import failed: ${error.message}`, 'error');
+        }
+
+        // Test 4: Components Import
+        addResult(componentsResults, 'Testing components import...', 'info');
+
+        try {
+            const ArenaGame = await import('../src/components/Arena/ArenaGame.jsx');
+            addResult(componentsResults, '✅ ArenaGame component imported', 'success');
+        } catch (error) {
+            addResult(componentsResults, `❌ ArenaGame import failed: ${error.message}`, 'error');
+        }
+
+        try {
+            const GameInit = await import('../src/components/Arena/GameInit.jsx');
+            addResult(componentsResults, '✅ GameInit component imported', 'success');
+        } catch (error) {
+            addResult(componentsResults, `❌ GameInit import failed: ${error.message}`, 'error');
+        }
+
+        try {
+            const BoostPlayer = await import('../src/components/Arena/BoostPlayer.jsx');
+            addResult(componentsResults, '✅ BoostPlayer component imported', 'success');
+        } catch (error) {
+            addResult(componentsResults, `❌ BoostPlayer import failed: ${error.message}`, 'error');
+        }
+
+        try {
+            const ItemsCatalog = await import('../src/components/Arena/ItemsCatalog.jsx');
+            addResult(componentsResults, '✅ ItemsCatalog component imported', 'success');
+        } catch (error) {
+            addResult(componentsResults, `❌ ItemsCatalog import failed: ${error.message}`, 'error');
+        }
+
+        try {
+            const ItemDrop = await import('../src/components/Arena/ItemDrop.jsx');
+            addResult(componentsResults, '✅ ItemDrop component imported', 'success');
+        } catch (error) {
+            addResult(componentsResults, `❌ ItemDrop import failed: ${error.message}`, 'error');
+        }
+
+        try {
+            const ArenaTab = await import('../src/components/Arena/ArenaTab.jsx');
+            addResult(componentsResults, '✅ ArenaTab component imported', 'success');
+        } catch (error) {
+            addResult(componentsResults, `❌ ArenaTab import failed: ${error.message}`, 'error');
+        }
+
+        // Summary
+        addResult(document.body, '<hr><h2>🎯 Integration Test Complete!</h2><p>If all imports show ✅, the Arena integration is ready to test in the main app.</p><p>Look for the "🎮 Arena Game" button in the bottom-right corner of the main app.</p>', 'success');
+    </script>
+</body>
+</html>

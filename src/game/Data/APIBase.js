@@ -31,6 +31,8 @@ const apiClient = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
+        // NEW: Add Vorld App ID header for Arena backend compatibility
+        "X-App-ID": ENV.VORLD_APP_ID,
     },
 });
 

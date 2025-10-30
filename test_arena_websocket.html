@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Arena WebSocket</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        input { margin: 5px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        .section { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .connecting { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>Arena WebSocket Service Test</h1>
+
+    <div class="section">
+        <h3>Connection Control</h3>
+        <input type="text" id="sessionId" placeholder="Session ID (e.g., test_session_123)" value="test_session_123">
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+        <button id="pingBtn" disabled>Ping</button>
+    </div>
+
+    <div class="section">
+        <h3>Connection Status</h3>
+        <div id="status" class="status disconnected">❌ Disconnected</div>
+        <div id="connectionInfo"></div>
+    </div>
+
+    <div class="section">
+        <h3>Event Logs</h3>
+        <button id="clearLogBtn">Clear Log</button>
+        <div id="log" class="log">WebSocket event logs will appear here...</div>
+    </div>
+
+    <script type="module">
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        const connectionInfo = document.getElementById('connectionInfo');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const pingBtn = document.getElementById('pingBtn');
+        const clearLogBtn = document.getElementById('clearLogBtn');
+        const sessionIdInput = document.getElementById('sessionId');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `<span class="${type}">[${timestamp}] ${message}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus(connected, message = '') {
+            if (connected) {
+                status.className = 'status connected';
+                status.innerHTML = '✅ Connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                pingBtn.disabled = false;
+            } else {
+                status.className = 'status disconnected';
+                status.innerHTML = '❌ Disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                pingBtn.disabled = true;
+            }
+
+            if (message) {
+                status.innerHTML += ` - ${message}`;
+            }
+        }
+
+        function updateConnectionInfo(info) {
+            connectionInfo.innerHTML = `
+                <strong>Connection Info:</strong><br>
+                Socket ID: ${info.socketId || 'N/A'}<br>
+                Session ID: ${info.sessionId || 'N/A'}<br>
+                URL: ${info.url || 'N/A'}<br>
+                Reconnect Attempts: ${info.reconnectAttempts || 0}
+            `;
+        }
+
+        // Mock token for testing
+        const TEST_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTAwOTUzZTdkNWQzN2I0ZDdkMWNiNDYiLCJpYXQiOjE3NjE4MzkyNDYsImV4cCI6MTc2MTg0MDE0Nn0.AhOL4VJAvg_AF0GuYR7j8Bvk4uNhX26UJD1LVEqQkbE';
+        sessionStorage.setItem('accessToken', TEST_TOKEN);
+
+        try {
+            // Import Arena WebSocket service
+            import('../src/services/arenaSocket.js').then(({ default: arenaSocket }) => {
+                addLog('✅ Arena WebSocket service imported successfully', 'success');
+
+                // Setup event listeners
+                arenaSocket.on('connected', (data) => {
+                    addLog(`🔗 Connected: ${JSON.stringify(data)}`, 'success');
+                    updateStatus(true, 'Socket connected');
+                    updateConnectionInfo(arenaSocket.getConnectionInfo());
+                });
+
+                arenaSocket.on('disconnected', (data) => {
+                    addLog(`🔌 Disconnected: ${JSON.stringify(data)}`, 'warning');
+                    updateStatus(false, data.reason || 'Unknown reason');
+                    updateConnectionInfo(arenaSocket.getConnectionInfo());
+                });
+
+                arenaSocket.on('error', (data) => {
+                    addLog(`❌ Error: ${JSON.stringify(data)}`, 'error');
+                });
+
+                arenaSocket.on('session_created', (data) => {
+                    addLog(`🎮 Session created: ${JSON.stringify(data)}`, 'success');
+                });
+
+                arenaSocket.on('session_activated', (data) => {
+                    addLog(`🎯 Session activated: ${JSON.stringify(data)}`, 'success');
+                });
+
+                arenaSocket.on('player_boosted', (data) => {
+                    addLog(`💰 Player boosted: ${JSON.stringify(data)}`, 'success');
+                });
+
+                arenaSocket.on('item_dropped', (data) => {
+                    addLog(`🎁 Item dropped: ${JSON.stringify(data)}`, 'success');
+                });
+
+                arenaSocket.on('session_ended', (data) => {
+                    addLog(`🏁 Session ended: ${JSON.stringify(data)}`, 'warning');
+                });
+
+                // Button event handlers
+                connectBtn.onclick = () => {
+                    const sessionId = sessionIdInput.value.trim();
+                    if (!sessionId) {
+                        addLog('❌ Please enter a session ID', 'error');
+                        return;
+                    }
+
+                    addLog(`🔗 Connecting to session: ${sessionId}`, 'info');
+                    status.className = 'status connecting';
+                    status.innerHTML = '🔄 Connecting...';
+                    arenaSocket.connect(sessionId);
+                };
+
+                disconnectBtn.onclick = () => {
+                    addLog('🔌 Disconnecting...', 'info');
+                    arenaSocket.disconnect();
+                };
+
+                pingBtn.onclick = () => {
+                    addLog('📡 Sending ping...', 'info');
+                    arenaSocket.ping();
+                };
+
+                clearLogBtn.onclick = () => {
+                    log.innerHTML = 'Log cleared...\n';
+                };
+
+                // Update connection info periodically
+                setInterval(() => {
+                    if (arenaSocket.connected) {
+                        updateConnectionInfo(arenaSocket.getConnectionInfo());
+                    }
+                }, 2000);
+
+                addLog('🚀 Arena WebSocket test ready! Enter a session ID and click Connect.', 'success');
+
+            }).catch(error => {
+                addLog(`❌ Failed to import Arena WebSocket service: ${error.message}`, 'error');
+            });
+
+        } catch (error) {
+            addLog(`❌ Error setting up tests: ${error.message}`, 'error');
+        }
+    </script>
+</body>
+</html>
