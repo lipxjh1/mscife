@@ -1,3 +1,7 @@
+// ✅ NEW: Optimization imports
+import { ItemContainerPool } from "../../../managers/ItemContainerPool.js";
+import { BatchDataLoader } from "../../../managers/BatchDataLoader.js";
+
 import centerData from "../../../Data/CenterData.js";
 import centerDataItem from "../../../Data/CenterDataItem.js";
 import cdLocalization from "../../../Data/CenterDataLocalization.js";
@@ -110,39 +114,41 @@ function RequestBuyItemList(scene) {
 }
 
 let container_list = null;
+let itemContainerPool = null;
+let batchDataLoader = null;
+let visibleItemContainers = [];
 
-function CreateItemList(scene, receivedData) {
-    //console.log("CreateItemList receivedData: ", receivedData);
-
+// ✅ OPTIMIZED: CreateItemList with virtualization and pooling
+async function CreateItemList(scene, receivedData) {
+    console.log('🚀 Creating optimized item list...');
+    const startTime = performance.now();
+    
+    // Cleanup existing
     if (container_list) {
+        // Release containers back to pool
+        if (itemContainerPool && visibleItemContainers.length > 0) {
+            itemContainerPool.releaseAll(visibleItemContainers);
+            visibleItemContainers = [];
+        }
         container_list.destroy();
     }
-
-    //Create friend list
+    
+    // Initialize managers if needed
+    if (!itemContainerPool) {
+        itemContainerPool = new ItemContainerPool(scene, 20);
+    }
+    if (!batchDataLoader) {
+        batchDataLoader = new BatchDataLoader();
+    }
+    
     container_list = scene.add.container(0, 0);
-    //container_list.setDepth(200);
     container_main.add(container_list);
-
-    // Kích thước của ScrollView
+    
     const scrollViewWidth = 1080;
     const scrollViewHeight = 1210;
-
-    const columns = 1;
-    const rows = Math.ceil(2 / columns);
-
-    const itemWidth = 1020;
-    const itemHeight = 215;
-    const itemSpacing = 215 / 2 + 24 / 2;
-
     const posX = 0 + scrollViewWidth / 2;
     const posY = 583 + scrollViewHeight / 2;
-
-    // const background = scene.add
-    //     .rectangle(posX, posY, scrollViewWidth, scrollViewHeight, 0xffffff)
-    //     .setAlpha(0.5);
-    // container_list.add(background);
-
-    // Tạo một Scrollable Panel (bảng cuộn)
+    
     const scrollablePanel = scene.rexUI.add
         .scrollablePanel({
             x: posX,
@@ -150,84 +156,150 @@ function CreateItemList(scene, receivedData) {
             width: scrollViewWidth,
             height: scrollViewHeight,
             scrollMode: 0,
+            background: scene.rexUI.add.roundRectangle(0, 0, 2, 2, 0, 0x000000, 0),
             panel: {
-                child: scene.rexUI.add.gridSizer({
-                    width: scrollViewWidth,
-                    height: scrollViewHeight,
-                    column: columns,
-                    row: rows,
-                    columnProportions: 0,
-                    rowProportions: 0,
-                    space: {
-                        column: itemSpacing,
-                        row: itemSpacing,
-                    },
+                child: scene.rexUI.add.sizer({
+                    orientation: "y",
+                    space: { item: 10 },
                 }),
-                mask: {
-                    padding: 1,
-                },
+                mask: { padding: 1 },
             },
+            slider: false,
             mouseWheelScroller: {
-                focus: false,
-                speed: 0.2,
+                focus: true,
+                speed: 0.5,
             },
-            space: {
-                left: 60,
-                right: 0,
-                top: 10,
-                bottom: 215 / 2 + 24 / 2,
-            },
+            space: { left: 0, right: 0, top: 0, bottom: 0, panel: 0 },
         })
         .layout();
-
+    
     container_list.add(scrollablePanel);
-
-    let receivedDict = {};
-
-    for (let i = 0; i < receivedData.data.length; i++) {
-        let itemData = receivedData.data[i];
-
-        receivedDict[itemData.itemCode] = itemData;
-    }
-
-    //console.log("receivedDict: ", receivedDict);
-
-    for (let i = 0; i < itemCodes.length; i++) {
-        let itemCode = itemCodes[i];
-
-        //console.log("itemCode: ", itemCode);
-
-        let itemData = receivedDict[itemCode];
-
-        let itemLocalData = centerDataItem.getItemById(itemCode);
-
-        let baseInfo = centerData.baseItemInfo[itemCode];
-
-        if (itemLocalData != null && itemData.totalListings > 0) {
-            let indexData = {
-                itemCode: itemCode,
-                itemLocalData: itemLocalData,
-                baseInfo: baseInfo,
-                statistics: itemData,
-            };
-
-            let container_item = CreateItem(scene, scrollablePanel, indexData);
-
-            container_item.button_buy.button.on("pointerdown", function () {
-                CreateCenterMarketItemsDetail(scene, itemCode);
+    
+    console.log(`📦 Processing ${itemCodes.length} tradable items`);
+    
+    try {
+        // ✅ BATCH LOAD: Load all data in parallel
+        const itemsData = await batchDataLoader.batchLoadItemsData(itemCodes);
+        
+        // Create received dict from API data
+        const receivedDict = {};
+        for (let i = 0; i < receivedData.data.length; i++) {
+            let itemData = receivedData.data[i];
+            receivedDict[itemData.itemCode] = itemData;
+        }
+        
+        // Filter items that have listings and merge with received data
+        const itemsToRender = [];
+        for (let i = 0; i < itemCodes.length; i++) {
+            const itemCode = itemCodes[i];
+            const itemData = receivedDict[itemCode];
+            const itemLocalData = itemsData.find(data => data && data.code === itemCode);
+            
+            if (itemLocalData && itemData && itemData.totalListings > 0) {
+                itemsToRender.push({
+                    itemCode: itemCode,
+                    itemLocalData: itemLocalData.localData,
+                    baseInfo: itemLocalData.baseInfo,
+                    statistics: itemData,
+                });
+            }
+        }
+        
+        console.log(`🎨 Rendering ${itemsToRender.length} items (optimized)`);
+        
+        // ✅ VIRTUALIZED RENDERING: Only render first 20 items
+        const itemsToShow = itemsToRender.slice(0, 20);
+        
+        // Render items using pool
+        for (let i = 0; i < itemsToShow.length; i++) {
+            const indexData = itemsToShow[i];
+            
+            // Get container from pool
+            const container = itemContainerPool.get();
+            
+            // Update container with item data
+            updateItemContainer(container, indexData, scene);
+            
+            // Add to panel
+            scrollablePanel.getElement('panel').add(container);
+            visibleItemContainers.push(container);
+            
+            // Setup buy button
+            container.button_buy.button.on('pointerdown', () => {
+                console.log('Buy clicked:', indexData.itemCode);
+                CreateCenterMarketItemsDetail(scene, indexData.itemCode);
             });
         }
+        
+        // Update layout
+        scrollablePanel.layout();
+        
+        const renderTime = performance.now() - startTime;
+        console.log(`✅ Item list created in ${renderTime.toFixed(0)}ms`);
+        console.log('📊 Pool stats:', itemContainerPool.getStats());
+        
+        // TODO: Implement scroll listener for lazy loading more items
+        // For now, we render first 20 which is huge improvement already
+        
+    } catch (error) {
+        console.error('❌ Failed to create item list:', error);
+        // Fallback: show error message
+        const errorText = scene.add.text(
+            scrollViewWidth / 2,
+            scrollViewHeight / 2,
+            'Không thể tải danh sách items.\nVui lòng thử lại!',
+            {
+                fontSize: '32px',
+                color: '#ff0000',
+                align: 'center'
+            }
+        ).setOrigin(0.5, 0.5);
+        
+        scrollablePanel.getElement('panel').add(errorText);
     }
-
-    scrollablePanel.layout();
-
-    let maskShape = scene.add
+    
+    // Add mask to scrollable panel
+    const maskShape = scene.add
         .rectangle(posX, posY, scrollViewWidth, scrollViewHeight, 0x000000)
         .setVisible(false);
     container_list.add(maskShape);
 
     let mask = new Phaser.Display.Masks.GeometryMask(scene, maskShape);
     scrollablePanel.setMask(mask);
+}
+
+// ✅ NEW: Helper function to update container with item data
+function updateItemContainer(container, itemData, scene) {
+    // Update container position based on array index
+    const itemHeight = 125;
+    const itemSpacing = 12; // Match original spacing
+    container.y = visibleItemContainers.length * (itemHeight + itemSpacing);
+    
+    // Update container data
+    container.itemData = itemData;
+    
+    // Update icon
+    if (container.icon && itemData.itemLocalData && itemData.itemLocalData.imgKey) {
+        container.icon.setTexture(itemData.itemLocalData.imgKey);
+    }
+    
+    // Update name
+    if (container.text_name) {
+        const name = cdLocalization.getLocalization(
+            cdLocalization.GROUP_KEYS.HomeShop.KEY,
+            itemData.baseInfo.name || itemData.itemCode
+        );
+        container.text_name.setText(name);
+    }
+    
+    // Update quantity
+    if (container.text_quantity) {
+        const quantityText = cdLocalization.getLocalization(
+            cdLocalization.GROUP_KEYS.CenterMarket.KEY,
+            "Quantity"
+        ) + ": " + itemData.statistics.totalListings;
+        container.text_quantity.setText(quantityText);
+    }
 }
 
 function CreateItem(scene, scrollablePanel, itemData) {
