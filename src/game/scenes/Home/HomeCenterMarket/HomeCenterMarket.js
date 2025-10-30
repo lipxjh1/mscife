@@ -55,58 +55,201 @@ let priceGuide = {};
 
 export { container_sub, container_menu_buttons };
 
-export function CreateCenterMarket(scene) {
-    CreateLoadingPopup();
-
-    let assetsToLoad = 4;
-    let assetsLoaded = 0;
-
-    const onAssetLoaded = () => {
-        assetsLoaded++;
-        if (assetsLoaded === assetsToLoad) {
-            HideLoadingPopup();
-
-            AssetsLoadDone(scene);
+// ✅ NEW: Helper functions to promisify callbacks
+function lazyLoadCenterMarketAsync() {
+    return new Promise((resolve, reject) => {
+        try {
+            AssetLoadingManager.getInstance().lazyLoadCenterMarket(() => {
+                console.log('✅ Market assets loaded');
+                resolve('market_assets_loaded');
+            });
+        } catch (error) {
+            console.error('❌ Market assets failed:', error);
+            reject(error);
         }
-    };
-
-    AssetLoadingManager.getInstance().init(scene);
-
-    AssetLoadingManager.getInstance().lazyLoadCenterMarket(() => {
-        onAssetLoaded();
     });
+}
 
-    AssetLoadingManager.getInstance().lazyCharacterInventory(() => {
-        onAssetLoaded();
-    });
-
-    let keys = Object.keys(centerDataPlayer.CODE_KEY);
-
-    let tempArr = [];
-
-    for (let i = 0; i < keys.length; i++) {
-        let pData = centerDataPlayer.getPlayerById(keys[i]);
-
-        if (pData !== null) {
-            tempArr.push(keys[i]);
+function lazyCharacterInventoryAsync() {
+    return new Promise((resolve, reject) => {
+        try {
+            AssetLoadingManager.getInstance().lazyCharacterInventory(() => {
+                console.log('✅ Character inventory loaded');
+                resolve('inventory_loaded');
+            });
+        } catch (error) {
+            console.error('❌ Character inventory failed:', error);
+            reject(error);
         }
+    });
+}
+
+function lazyLoadCharacterUICardAsync(keys) {
+    return new Promise((resolve, reject) => {
+        try {
+            AssetPlayerLoadingManager.getInstance().lazyLoadCharacterUICard(
+                keys,
+                () => {
+                    console.log('✅ Character UI cards loaded');
+                    resolve('character_cards_loaded');
+                }
+            );
+        } catch (error) {
+            console.error('❌ Character UI cards failed:', error);
+            reject(error);
+        }
+    });
+}
+
+function UpdateTradeAbleItemsAsync(scene) {
+    return new Promise((resolve, reject) => {
+        tradableItems = [];
+        
+        centerData.RequestGetCMarketItemTradeAbleItems(
+            (result) => {
+                console.log('✅ Tradable items loaded');
+                tradableItems = result.data.itemCodes;
+                resolve(result);
+            },
+            (error) => {
+                console.error('❌ Tradable items failed:', error);
+                reject(error);
+            }
+        );
+    });
+}
+
+function UpdatePriceGuideAsync(scene) {
+    return new Promise((resolve, reject) => {
+        centerData.RequestGetCMarketItemPriceGuide(
+            (result) => {
+                console.log('✅ Price guide loaded');
+                
+                // Xử lý data response và tạo priceGuide object
+                priceGuide = {};
+                
+                if (result && result.data) {
+                    const categories = Object.keys(result.data);
+                    
+                    categories.forEach((category) => {
+                        const items = result.data[category];
+                        
+                        Object.keys(items).forEach((itemCode) => {
+                            const itemData = items[itemCode];
+                            
+                            priceGuide[itemCode] = {
+                                min: itemData.min || 0,
+                                max: itemData.max || 0,
+                                basePrice: itemData.basePrice || 0,
+                                category: category,
+                            };
+                        });
+                    });
+                }
+                
+                resolve(result);
+            },
+            (error) => {
+                console.error('❌ Price guide failed:', error);
+                reject(error);
+            }
+        );
+    });
+}
+
+// ✅ NEW: Error popup helper
+function ShowErrorPopup(title, message, retryCallback) {
+    // Sử dụng existing AlertPopup nếu có
+    if (typeof CreateAlertPopup === 'function') {
+        CreateAlertPopup({
+            title: title,
+            message: message,
+            buttons: [
+                {
+                    text: 'Thử lại',
+                    callback: retryCallback
+                },
+                {
+                    text: 'Đóng',
+                    callback: () => {
+                        console.log('User closed error popup');
+                    }
+                }
+            ]
+        });
+    } else {
+        // Fallback: console error
+        console.error(`${title}: ${message}`);
+        alert(`${title}\n${message}`);
+        if (retryCallback) retryCallback();
     }
-    keys = tempArr;
+}
 
-    //console.log("arr_ids: ", keys);
-
-    AssetPlayerLoadingManager.getInstance().init(scene);
-
-    AssetPlayerLoadingManager.getInstance().lazyLoadCharacterUICard(
-        keys,
-        () => {
-            onAssetLoaded();
+export async function CreateCenterMarket(scene) {
+    // Show loading popup immediately
+    CreateLoadingPopup();
+    
+    const startTime = performance.now();
+    console.log('🚀 Market loading started...');
+    
+    try {
+        // Initialize asset managers
+        AssetLoadingManager.getInstance().init(scene);
+        AssetPlayerLoadingManager.getInstance().init(scene);
+        
+        // Prepare character keys
+        let keys = Object.keys(centerDataPlayer.CODE_KEY);
+        let tempArr = [];
+        
+        for (let i = 0; i < keys.length; i++) {
+            let pData = centerDataPlayer.getPlayerById(keys[i]);
+            if (pData !== null) {
+                tempArr.push(keys[i]);
+            }
         }
-    );
-
-    UpdateTradeAbleItems(scene, false, onAssetLoaded, null);
-
-    UpdatePriceGuide(scene, false, onAssetLoaded, null);
+        keys = tempArr;
+        
+        // ✅ PARALLEL LOADING: Load everything at once using Promise.all
+        console.log('⏳ Loading all assets and data in parallel...');
+        
+        const [
+            marketAssets,
+            characterInventory,
+            characterUICards,
+            tradeableItemsData,
+            priceGuideData
+        ] = await Promise.all([
+            lazyLoadCenterMarketAsync(),
+            lazyCharacterInventoryAsync(),
+            lazyLoadCharacterUICardAsync(keys),
+            UpdateTradeAbleItemsAsync(scene),
+            UpdatePriceGuideAsync(scene)
+        ]);
+        
+        // All loading complete
+        const loadTime = performance.now() - startTime;
+        console.log(`✅ Market loaded successfully in ${loadTime.toFixed(0)}ms`);
+        
+        // Hide loading and show UI
+        HideLoadingPopup();
+        AssetsLoadDone(scene);
+        
+    } catch (error) {
+        console.error('❌ Market loading failed:', error);
+        
+        // Hide loading popup
+        HideLoadingPopup();
+        
+        // Show error message to user
+        ShowErrorPopup(
+            'Không thể tải Market',
+            'Đã xảy ra lỗi khi tải Market. Vui lòng thử lại!',
+            () => {
+                // Retry button callback
+                CreateCenterMarket(scene);
+            }
+        );
+    }
 }
 
 export function GetTradeAbleItems() {
