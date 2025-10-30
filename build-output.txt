@@ -1,0 +1,9 @@
+
+> template-react@1.1.1 build
+> node log.js build & vite build --config vite/config.prod.mjs
+
+Building for production...
+---------------------------------------------------------
+❤️❤️❤️ Tell us about your game! - games@phaser.io ❤️❤️❤️
+---------------------------------------------------------
+✨ Done ✨
