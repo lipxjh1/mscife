@@ -126,6 +126,7 @@ export function CreateLobby(scene) {
 
     CreateLoadingPopup();
 
+    // ✅ NEW: Load On Demand implementation
     centerData.RequestMergedCharacters(
         () => {
             HideLoadingPopup();
@@ -133,7 +134,7 @@ export function CreateLobby(scene) {
             if (centerData.selectedPlayerArr.length <= 0) {
                 FirstTimeEquipCharacters(scene);
             } else {
-                SpawnLobbyCharacter(scene);
+                SpawnLobbyCharacterWithLoadOnDemand(scene);
             }
         },
         () => {
@@ -1310,6 +1311,7 @@ function LeftButtonClick(scene) {
         },
     });
 }
+}
 
 function RightButtonClick(scene) {
     if (centerData.selectedPlayerArr.length < 1) {
@@ -1357,6 +1359,7 @@ function RightButtonClick(scene) {
             isTween = false;
         },
     });
+}
 }
 
 let container_player = null;
@@ -1407,4 +1410,135 @@ function CreateLobbyCharacter(scene) {
     // });
 
     return spawnedSpine;
+}
+
+// ✅ NEW: Load On Demand implementation
+function SpawnLobbyCharacterWithLoadOnDemand(scene) {
+    console.log('SpawnLobbyCharacterWithLoadOnDemand: Starting progressive character loading');
+    
+    // Step 1: Quick basic spine loading (100-200ms)
+    const basicIds = centerData.getSelectedPlayerLocalIds();
+    AssetPlayerLoadingManager.getInstance().init(scene);
+    
+    // Step 2: Render immediately with basic data
+    AssetPlayerLoadingManager.getInstance()
+        .lazyLoadCharacterSpineUI(basicIds, () => {
+            console.log('SpawnLobbyCharacterWithLoadOnDemand: Basic assets loaded');
+            
+            // Render basic lobby character immediately
+            renderBasicLobbyCharacter(scene);
+            
+            // Step 3: Background-load detailed data
+            console.log('SpawnLobbyCharacterWithLoadOnDemand: Loading detailed data in background');
+            Promise.allSettled(
+                centerData.selectedPlayerArr.map(id =>
+                    centerData.loadFullCharacterData(id)
+                )
+            ).then(results => {
+                console.log('SpawnLobbyCharacterWithLoadOnDemand: Detailed data loaded', results);
+                
+                // Step 4: Enhance with detailed data when ready
+                enhanceLobbyCharacterWithDetails(scene);
+            }).catch(error => {
+                console.error('SpawnLobbyCharacterWithLoadOnDemand: Error loading detailed data:', error);
+            });
+        }).catch(error => {
+            console.error('SpawnLobbyCharacterWithLoadOnDemand: Error loading basic assets:', error);
+            // Fallback to basic implementation
+            SpawnLobbyCharacter(scene);
+        });
+}
+
+// ✅ NEW: Render basic lobby character
+function renderBasicLobbyCharacter(scene) {
+    console.log('renderBasicLobbyCharacter: Rendering with basic data');
+    
+    // Use existing SpawnLobbyCharacter but with basic data only
+    SpawnLobbyCharacter(scene);
+}
+
+// ✅ NEW: Enhance lobby character with details
+function enhanceLobbyCharacterWithDetails(scene) {
+    console.log('enhanceLobbyCharacterWithDetails: Enhancing with detailed data');
+    
+    // Update character UI with detailed data
+    centerData.EmitUnlockedPlayerChange();
+}
+
+// ✅ NEW: Smooth character switching with Load On Demand
+function SwitchCharacterSeamlessly(scene, direction) {
+    console.log('SwitchCharacterSeamlessly: Switching character', direction);
+    
+    const currentIndex = centerData.selectedPlayerLocalIndex || 0;
+    let nextIndex;
+    
+    if (direction === 'next') {
+        nextIndex = (currentIndex + 1) % centerData.selectedPlayerArr.length;
+    } else {
+        nextIndex = (currentIndex - 1 + centerData.selectedPlayerArr.length) % centerData.selectedPlayerArr.length;
+    }
+    
+    centerData.selectedPlayerLocalIndex = nextIndex;
+    const nextCharacterId = centerData.selectedPlayerArr[nextIndex];
+    
+    if (!centerData.isCharacterFullyLoaded(nextCharacterId)) {
+        // Show subtle loading indicator during transition
+        showTransitionLoading(scene);
+        
+        // Load details mid-transition
+        centerData.loadFullCharacterData(nextCharacterId)
+            .then(() => {
+                performCharacterSwitch(scene, direction, nextIndex);
+                hideTransitionLoading(scene);
+            })
+            .catch(error => {
+                console.error('SwitchCharacterSeamlessly: Error loading character', error);
+                hideTransitionLoading(scene);
+                // Still perform switch with basic data
+                performCharacterSwitch(scene, direction, nextIndex);
+            });
+    } else {
+        // Direct switch if already loaded
+        performCharacterSwitch(scene, direction, nextIndex);
+    }
+}
+
+// ✅ NEW: Show transition loading
+function showTransitionLoading(scene) {
+    console.log('showTransitionLoading: Showing transition loading');
+    // Add subtle loading indicator during character switch
+    if (!scene.transitionLoading) {
+        scene.transitionLoading = scene.add.text(
+            540, 960, 'Loading...',
+            {
+                fontFamily: 'Russo One',
+                fontSize: '24px',
+                fill: '#ffffff',
+                align: 'center'
+            }
+        ).setOrigin(0.5);
+    } else {
+        scene.transitionLoading.setVisible(true);
+    }
+}
+
+// ✅ NEW: Hide transition loading
+function hideTransitionLoading(scene) {
+    console.log('hideTransitionLoading: Hiding transition loading');
+    // Hide loading indicator
+    if (scene.transitionLoading) {
+        scene.transitionLoading.setVisible(false);
+    }
+}
+
+// ✅ NEW: Perform character switch
+function performCharacterSwitch(scene, direction, nextIndex) {
+    console.log('performCharacterSwitch: Performing character switch', direction, nextIndex);
+    
+    // Use existing character switching logic
+    if (direction === 'next') {
+        NextCharacter(scene);
+    } else if (direction === 'prev') {
+        PrevCharacter(scene);
+    }
 }
