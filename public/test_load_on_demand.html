@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load On Demand Test - CenterData.js</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .button.danger {
+            background: #f44336;
+        }
+        .button.danger:hover {
+            background: #da190b;
+        }
+        .results {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .warning {
+            background: #ff9800;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Load On Demand Test Suite</h1>
+        <p>Testing CenterData.js Load On Demand Implementation - Phase 1</p>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Important:</strong> This test should be run in the actual game environment where centerData is available.
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Implementation Tests</h2>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value" id="data-structures">?</div>
+                <div class="metric-label">Data Structures</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="methods">?</div>
+                <div class="metric-label">New Methods</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="backward-compat">?</div>
+                <div class="metric-label">Backward Compatible</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="performance">?</div>
+                <div class="metric-label">Performance</div>
+            </div>
+        </div>
+        
+        <button class="button" onclick="runTests()">🔬 Run All Tests</button>
+        <button class="button" onclick="clearResults()">🗑️ Clear Results</button>
+        <button class="button danger" onclick="resetCenterData()">🔄 Reset CenterData</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Functional Tests</h2>
+        <button class="button" onclick="testBasicLoading()">📦 Test Basic Loading</button>
+        <button class="button" onclick="testDetailedLoading()">📋 Test Detailed Loading</button>
+        <button class="button" onclick="testGetMergedCharacters()">🔗 Test GetMergedCharacters</button>
+        <input type="text" id="characterId" placeholder="Enter character ID" style="padding: 8px; margin: 5px;">
+        <button class="button" onclick="testSpecificCharacter()">🎯 Test Specific Character</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Performance Metrics</h2>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value" id="characters-count">0</div>
+                <div class="metric-label">Total Characters</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="basic-loaded">0</div>
+                <div class="metric-label">Basic Characters</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="detailed-loaded">0</div>
+                <div class="metric-label">Detailed Characters</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="memory-usage">0 MB</div>
+                <div class="metric-label">Memory Usage</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Test Results</h2>
+        <div id="results" class="results">
+Welcome to Load On Demand Test Suite!
+
+Click "Run All Tests" to begin testing the implementation.
+
+Expected Results:
+✅ Data structures should be properly initialized
+✅ New methods should be available
+✅ Backward compatibility should be maintained
+✅ Performance should be improved
+
+Test Commands in Console:
+- testLoadOnDemand() - Run comprehensive test
+- testManualLoad(characterId) - Test specific character
+        </div>
+    </div>
+
+    <script src="test_load_on_demand_browser.js"></script>
+    
+    <script>
+        let testResults = '';
+        
+        function log(message) {
+            console.log(message);
+            testResults += message + '\n';
+            updateResults();
+        }
+        
+        function updateResults() {
+            document.getElementById('results').textContent = testResults;
+            document.getElementById('results').scrollTop = document.getElementById('results').scrollHeight;
+        }
+        
+        function clearResults() {
+            testResults = '';
+            updateResults();
+            resetMetrics();
+        }
+        
+        function resetMetrics() {
+            ['data-structures', 'methods', 'backward-compat', 'performance'].forEach(id => {
+                document.getElementById(id).textContent = '?';
+            });
+            updateMetrics();
+        }
+        
+        function setMetric(id, value, isGood = true) {
+            const element = document.getElementById(id);
+            element.textContent = value;
+            element.style.color = isGood ? '#4CAF50' : '#f44336';
+        }
+        
+        function updateMetrics() {
+            if (window.centerData) {
+                const merged = centerData.GetMergedCharacters();
+                setMetric('characters-count', Object.keys(merged).length);
+                setMetric('basic-loaded', centerData.basicCharacters.size);
+                setMetric('detailed-loaded', centerData.detailedCharacters.size);
+                
+                if (performance.memory) {
+                    const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+                    setMetric('memory-usage', memoryMB + ' MB');
+                }
+            }
+        }
+        
+        async function runTests() {
+            clearResults();
+            log('🚀 Starting Load On Demand Implementation Tests...\n');
+            
+            try {
+                const success = window.testLoadOnDemand();
+                
+                if (success) {
+                    log('✅ ALL TESTS PASSED!\n');
+                    setMetric('data-structures', '✅ PASS');
+                    setMetric('methods', '✅ PASS');
+                    setMetric('backward-compat', '✅ PASS');
+                    
+                    // Performance test
+                    const startTime = performance.now();
+                    for (let i = 0; i < 100; i++) {
+                        centerData.GetMergedCharacters();
+                    }
+                    const avgTime = (performance.now() - startTime) / 100;
+                    setMetric('performance', avgTime < 1 ? '✅ FAST' : avgTime < 5 ? '✅ GOOD' : '⚠️ SLOW');
+                    
+                    log('🎯 Implementation is ready for production!\n');
+                }
+            } catch (error) {
+                log('❌ TEST FAILED: ' + error.message + '\n');
+                setMetric('data-structures', '❌ FAIL');
+            }
+            
+            updateMetrics();
+        }
+        
+        async function testBasicLoading() {
+            log('\n📦 Testing Basic Character Loading...');
+            
+            if (!window.centerData) {
+                log('❌ centerData not available');
+                return;
+            }
+            
+            try {
+                const success = await window.centerData.loadBasicInfoForAllCharacters();
+                log(success ? '✅ Basic loading completed successfully' : '❌ Basic loading failed');
+                log(`✅ Basic characters loaded: ${window.centerData.basicCharacters.size}`);
+                updateMetrics();
+            } catch (error) {
+                log('❌ Basic loading error: ' + error.message);
+            }
+        }
+        
+        async function testDetailedLoading() {
+            log('\n📋 Testing Detailed Character Loading...');
+            
+            if (!window.centerData || !window.centerData.selectedPlayerArr.length) {
+                log('❌ No selected characters to test with');
+                return;
+            }
+            
+            const characterId = window.centerData.selectedPlayerArr[0];
+            log(`🎯 Loading detailed data for: ${characterId}`);
+            
+            try {
+                const result = await window.centerData.loadFullCharacterData(characterId);
+                log(result ? '✅ Detailed loading completed' : '❌ Detailed loading failed');
+                log(`✅ Is fully loaded: ${window.centerData.isCharacterFullyLoaded(characterId)}`);
+                updateMetrics();
+            } catch (error) {
+                log('❌ Detailed loading error: ' + error.message);
+            }
+        }
+        
+        function testGetMergedCharacters() {
+            log('\n🔗 Testing GetMergedCharacters...');
+            
+            if (!window.centerData) {
+                log('❌ centerData not available');
+                return;
+            }
+            
+            try {
+                const merged = window.centerData.GetMergedCharacters();
+                const count = Object.keys(merged).length;
+                log(`✅ GetMergedCharacters() returned ${count} characters`);
+                log(`✅ Basic characters: ${window.centerData.basicCharacters.size}`);
+                log(`✅ Detailed characters: ${window.centerData.detailedCharacters.size}`);
+                updateMetrics();
+            } catch (error) {
+                log('❌ GetMergedCharacters error: ' + error.message);
+            }
+        }
+        
+        async function testSpecificCharacter() {
+            const characterId = document.getElementById('characterId').value;
+            
+            if (!characterId) {
+                log('❌ Please enter a character ID');
+                return;
+            }
+            
+            log(`\n🎯 Testing specific character: ${characterId}`);
+            await window.testManualLoad(characterId);
+            updateMetrics();
+        }
+        
+        function resetCenterData() {
+            if (confirm('⚠️ This will reset centerData and require a page refresh. Continue?')) {
+                window.location.reload();
+            }
+        }
+        
+        // Check environment on load
+        if (typeof window.centerData !== 'undefined') {
+            log('✅ centerData detected - tests ready to run\n');
+            updateMetrics();
+        } else {
+            log('⚠️ centerData not detected - run tests in game environment\n');
+        }
+    </script>
+</body>
+</html>
