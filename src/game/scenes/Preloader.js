@@ -2161,9 +2161,15 @@ export function LoadLobby(scene) {
 
     // load buttons
 
+    // Clear cache cũ trước khi load ảnh mới
+    if (scene.textures.exists('home_lobby_bg')) {
+        scene.textures.remove('home_lobby_bg');
+    }
+    
+    // Load với timestamp để force reload
     scene.load.image(
         "home_lobby_bg",
-        url_r2 + "assets/home_2/home_lobby/home_lobby_bg.webp"
+        url_r2 + "assets/home_2/home_lobby/home_lobby_bg.webp?v=" + Date.now()
     );
 
     scene.load.image(
