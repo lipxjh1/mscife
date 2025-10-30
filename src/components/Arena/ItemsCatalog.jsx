@@ -1,6 +1,6 @@
 // File: src/components/Arena/ItemsCatalog.jsx (NEW FILE)
 import React, { useState, useEffect } from 'react';
-import arenaService from '../services/arena';
+import arenaService from '../../services/arena';
 
 export default function ItemsCatalog({ onSelectItem }) {
   const [loading, setLoading] = useState(false);

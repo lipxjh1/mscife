@@ -1,6 +1,6 @@
 // File: src/components/Arena/BoostPlayer.jsx (NEW FILE)
 import React, { useState } from 'react';
-import arenaService from '../services/arena';
+import arenaService from '../../services/arena';
 
 const VALID_AMOUNTS = [25, 50, 100, 200, 500];
 

@@ -4,7 +4,7 @@ import GameInit from './GameInit';
 import ItemsCatalog from './ItemsCatalog';
 import BoostPlayer from './BoostPlayer';
 import ItemDrop from './ItemDrop';
-import arenaSocket from '../services/arenaSocket';
+import arenaSocket from '../../services/arenaSocket';
 
 export default function ArenaGame() {
   const [sessionId, setSessionId] = useState(null);

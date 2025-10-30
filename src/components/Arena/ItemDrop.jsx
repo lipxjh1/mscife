@@ -1,6 +1,6 @@
 // File: src/components/Arena/ItemDrop.jsx (NEW FILE)
 import React, { useState } from 'react';
-import arenaService from '../services/arena';
+import arenaService from '../../services/arena';
 
 export default function ItemDrop({ sessionId, selectedItem }) {
   const [loading, setLoading] = useState(false);

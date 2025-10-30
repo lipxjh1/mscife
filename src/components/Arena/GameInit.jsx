@@ -1,7 +1,7 @@
 // File: src/components/Arena/GameInit.jsx (NEW FILE)
 import React, { useState } from 'react';
-import arenaService from '../services/arena';
-import arenaSocket from '../services/arenaSocket';
+import arenaService from '../../services/arena';
+import arenaSocket from '../../services/arenaSocket';
 
 export default function ArenaGameInit({ onSessionCreated }) {
   const [loading, setLoading] = useState(false);
