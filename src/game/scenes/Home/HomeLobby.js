@@ -1311,7 +1311,6 @@ function LeftButtonClick(scene) {
         },
     });
 }
-}
 
 function RightButtonClick(scene) {
     if (centerData.selectedPlayerArr.length < 1) {
@@ -1359,7 +1358,6 @@ function RightButtonClick(scene) {
             isTween = false;
         },
     });
-}
 }
 
 let container_player = null;
