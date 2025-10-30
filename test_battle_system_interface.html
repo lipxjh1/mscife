@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle System Optimization Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .criteria {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .criterion {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .criterion.met {
+            border-left: 4px solid #28a745;
+            background: #f0fff4;
+        }
+        .criterion.not-met {
+            border-left: 4px solid #dc3545;
+            background: #fff5f5;
+        }
+        .criterion-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .criterion-result {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+        .test-log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Battle System Optimization Test Interface</h1>
+        <p>Comprehensive testing suite for Battle System Load On Demand optimization.</p>
+        <p><strong>Phase 3.1 Validation</strong> - Testing character preloading, data access optimization, and performance improvements.</p>
+    </div>
+
+    <div class="container">
+        <h2>🧪 Test Controls</h2>
+        <div class="test-controls">
+            <button id="runFullSuite" class="test-button" onclick="runFullTestSuite()">🚀 Run Full Test Suite</button>
+            <button class="test-button" onclick="runIndividualTest('optimizer')">🔧 Test Optimizer Instance</button>
+            <button class="test-button" onclick="runIndividualTest('preloading')">⏳ Test Character Preloading</button>
+            <button class="test-button" onclick="runIndividualTest('dataAccess')">📊 Test Data Access</button>
+            <button class="test-button" onclick="runIndividualTest('selectedChars')">👥 Test Selected Characters</button>
+            <button class="test-button" onclick="runIndividualTest('battleInit')">⚔️ Test Battle Init</button>
+            <button class="test-button" onclick="runIndividualTest('memory')">🧠 Test Memory Usage</button>
+            <button class="test-button" onclick="runIndividualTest('errorHandling')">🛡️ Test Error Handling</button>
+            <button class="test-button" onclick="clearResults()">🗑️ Clear Results</button>
+        </div>
+        
+        <div id="test-progress" style="display: none;">
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+            </div>
+            <div id="progress-text" style="text-align: center; margin-top: 10px;">Initializing test suite...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📈 Performance Metrics</h2>
+        <div class="metrics" id="metrics">
+            <div class="metric">
+                <div class="metric-value" id="preloadTime">--</div>
+                <div class="metric-label">Preload Time (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="dataAccessImprovement">--</div>
+                <div class="metric-label">Data Access Improvement (%)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="battleInitTime">--</div>
+                <div class="metric-label">Battle Init (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="memoryUsage">--</div>
+                <div class="metric-label">Memory Usage (MB)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="cacheAccess">--</div>
+                <div class="metric-label">Cache Access (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="playerLookup">--</div>
+                <div class="metric-label">Player Lookup (ms)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 Success Criteria Evaluation</h2>
+        <div class="criteria" id="criteria">
+            <div class="criterion">
+                <div class="criterion-title">All Tests Pass</div>
+                <div class="criterion-result" id="criteria-tests">--</div>
+            </div>
+            <div class="criterion">
+                <div class="criterion-title">50% Faster Data Access</div>
+                <div class="criterion-result" id="criteria-dataAccess">--</div>
+            </div>
+            <div class="criterion">
+                <div class="criterion-title">Battle Init &lt; 2s</div>
+                <div class="criterion-result" id="criteria-battleInit">--</div>
+            </div>
+            <div class="criterion">
+                <div class="criterion-title">Memory Usage &lt; 10MB</div>
+                <div class="criterion-result" id="criteria-memory">--</div>
+            </div>
+            <div class="criterion">
+                <div class="criterion-title">Cached Access &lt; 5ms</div>
+                <div class="criterion-result" id="criteria-cache">--</div>
+            </div>
+            <div class="criterion">
+                <div class="criterion-title">Player Lookup &lt; 1ms</div>
+                <div class="criterion-result" id="criteria-lookup">--</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Test Results</h2>
+        <div id="test-status"></div>
+        <div class="results" id="results">Click "Run Full Test Suite" to start testing...</div>
+        
+        <h3>📄 Console Log</h3>
+        <div class="test-log" id="test-log">Waiting to start tests...</div>
+    </div>
+
+    <script>
+        let testSuite;
+        let currentResults = [];
+        let originalConsoleLog;
+        let logMessages = [];
+
+        // Enhanced console logging
+        function setupConsoleCapture() {
+            // Override console.log to capture messages
+            originalConsoleLog = console.log;
+            console.log = function(...args) {
+                originalConsoleLog.apply(console, args);
+                const message = args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                ).join(' ');
+                logMessages.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+                
+                // Update log display if available
+                const logElement = document.getElementById('test-log');
+                if (logElement) {
+                    logElement.textContent = logMessages.slice(-50).join('\n'); // Keep last 50 messages
+                    logElement.scrollTop = logElement.scrollHeight;
+                }
+            };
+        }
+
+        // Initialize test suite
+        function initializeTestSuite() {
+            if (typeof BattleSystemTestSuite !== 'undefined') {
+                testSuite = new BattleSystemTestSuite();
+                console.log('✅ Battle System Test Suite initialized');
+                return true;
+            } else {
+                updateStatus('❌ Test suite not loaded. Please ensure the battle system optimization is implemented.', 'fail');
+                return false;
+            }
+        }
+
+        // Update progress
+        function updateProgress(percent, text) {
+            const progressDiv = document.getElementById('test-progress');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            if (percent === 0) {
+                progressDiv.style.display = 'block';
+            }
+            
+            progressBar.style.width = percent + '%';
+            progressText.textContent = text;
+            
+            if (percent === 100) {
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Run full test suite
+        async function runFullTestSuite() {
+            if (!testSuite) {
+                if (!initializeTestSuite()) {
+                    return;
+                }
+            }
+            
+            // Disable buttons during test
+            const buttons = document.querySelectorAll('.test-button');
+            buttons.forEach(btn => btn.disabled = true);
+            
+            try {
+                updateProgress(0, '🚀 Starting full test suite...');
+                updateStatus('🔄 Running full test suite...', 'info');
+                clearResults();
+                logMessages = ['Starting battle system optimization tests...'];
+                
+                // Custom run method with progress updates
+                await runTestSuiteWithProgress();
+                
+                updateResults(testSuite.testResults);
+                updateMetrics(testSuite.performanceMetrics);
+                updateCriteria(testSuite.testResults, testSuite.performanceMetrics);
+                
+                // Overall status
+                const passedTests = testSuite.testResults.filter(r => r.status === 'PASS').length;
+                const totalTests = testSuite.testResults.length;
+                
+                if (passedTests === totalTests) {
+                    updateStatus(`🎉 All tests passed! (${passedTests}/${totalTests}) Ready for Phase 3.2.`, 'pass');
+                } else {
+                    updateStatus(`⚠️ Some tests failed (${passedTests}/${totalTests}). Review results before proceeding.`, 'fail');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Test suite error: ${error.message}`, 'fail');
+                console.error('Test suite error:', error);
+            } finally {
+                // Re-enable buttons
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // Custom test runner with progress
+        async function runTestSuiteWithProgress() {
+            const tests = [
+                { name: 'Optimizer Instance', run: () => testSuite.testOptimizerInstance() },
+                { name: 'Character Preloading', run: () => testSuite.testCharacterPreloading() },
+                { name: 'Optimized Data Access', run: () => testSuite.testOptimizedDataAccess() },
+                { name: 'Selected Characters', run: () => testSuite.testSelectedCharactersOptimization() },
+                { name: 'Battle Initialization', run: () => testSuite.testBattleInitializationPerformance() },
+                { name: 'Memory Usage', run: () => testSuite.testMemoryUsage() },
+                { name: 'Error Handling', run: () => testSuite.testErrorHandlingAndFallback() }
+            ];
+            
+            let passedTests = 0;
+            const totalTests = tests.length;
+            
+            for (let i = 0; i < tests.length; i++) {
+                const test = tests[i];
+                updateProgress(
+                    ((i + 1) / totalTests) * 100,
+                    `Running ${test.name}... (${i + 1}/${totalTests})`
+                );
+                
+                try {
+                    const result = await test.run();
+                    if (result) passedTests++;
+                } catch (error) {
+                    console.error(`Test execution error: ${error.message}`);
+                }
+            }
+            
+            updateProgress(100, `Tests completed! (${passedTests}/${totalTests} passed)`);
+            
+            // Generate final report
+            const criteria = testSuite.evaluateSuccessCriteria();
+            return criteria;
+        }
+
+        // Run individual test
+        async function runIndividualTest(testType) {
+            if (!testSuite) {
+                if (!initializeTestSuite()) {
+                    return;
+                }
+            }
+            
+            updateStatus(`🔄 Running ${testType} test...`, 'info');
+            
+            try {
+                let result;
+                switch (testType) {
+                    case 'optimizer':
+                        result = await testSuite.testOptimizerInstance();
+                        break;
+                    case 'preloading':
+                        result = await testSuite.testCharacterPreloading();
+                        break;
+                    case 'dataAccess':
+                        result = await testSuite.testOptimizedDataAccess();
+                        break;
+                    case 'selectedChars':
+                        result = await testSuite.testSelectedCharactersOptimization();
+                        break;
+                    case 'battleInit':
+                        result = await testSuite.testBattleInitializationPerformance();
+                        break;
+                    case 'memory':
+                        result = await testSuite.testMemoryUsage();
+                        break;
+                    case 'errorHandling':
+                        result = await testSuite.testErrorHandlingAndFallback();
+                        break;
+                    default:
+                        throw new Error(`Unknown test type: ${testType}`);
+                }
+                
+                if (result) {
+                    updateStatus(`✅ ${testType} test passed!`, 'pass');
+                } else {
+                    updateStatus(`❌ ${testType} test failed!`, 'fail');
+                }
+                
+                updateResults(testSuite.testResults);
+                updateMetrics(testSuite.performanceMetrics);
+                updateCriteria(testSuite.testResults, testSuite.performanceMetrics);
+                
+            } catch (error) {
+                updateStatus(`❌ Error running ${testType} test: ${error.message}`, 'fail');
+            }
+        }
+
+        // Update status display
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('test-status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Update results display
+        function updateResults(results) {
+            const resultsDiv = document.getElementById('results');
+            currentResults = results;
+            
+            let html = '';
+            results.forEach((result, index) => {
+                const status = result.status === 'PASS' ? '✅' : '❌';
+                html += `${index + 1}. ${status} ${result.test}: ${result.message}\n`;
+            });
+            
+            resultsDiv.textContent = html || 'No results available';
+        }
+
+        // Update metrics display
+        function updateMetrics(metrics) {
+            document.getElementById('preloadTime').textContent = metrics.preloadTime?.toFixed(2) || '--';
+            document.getElementById('dataAccessImprovement').textContent = metrics.dataAccessImprovement?.toFixed(1) || '--';
+            document.getElementById('battleInitTime').textContent = metrics.battleInitialization?.toFixed(2) || '--';
+            document.getElementById('memoryUsage').textContent = metrics.memoryUsage?.toFixed(2) || '--';
+            document.getElementById('cacheAccess').textContent = metrics.cachedAccess?.toFixed(2) || '--';
+            document.getElementById('playerLookup').textContent = metrics.playerLookup?.toFixed(3) || '--';
+        }
+
+        // Update criteria display
+        function updateCriteria(results, metrics) {
+            const criteria = [
+                {
+                    name: 'All Tests Pass',
+                    id: 'criteria-tests',
+                    met: results.every(r => r.status === 'PASS'),
+                    result: results.filter(r => r.status === 'PASS').length + '/' + results.length
+                },
+                {
+                    name: '50% Faster Data Access',
+                    id: 'criteria-dataAccess',
+                    met: (metrics.dataAccessImprovement || 0) >= 50,
+                    result: (metrics.dataAccessImprovement || 0).toFixed(1) + '% (target: 50%)'
+                },
+                {
+                    name: 'Battle Init < 2s',
+                    id: 'criteria-battleInit',
+                    met: (metrics.battleInitialization || 0) < 2000,
+                    result: (metrics.battleInitialization || 0).toFixed(0) + 'ms (target: <2000ms)'
+                },
+                {
+                    name: 'Memory Usage < 10MB',
+                    id: 'criteria-memory',
+                    met: (metrics.memoryUsage || 0) < 10,
+                    result: (metrics.memoryUsage || 0).toFixed(2) + 'MB (target: <10MB)'
+                },
+                {
+                    name: 'Cached Access < 5ms',
+                    id: 'criteria-cache',
+                    met: (metrics.cachedAccess || 0) < 5,
+                    result: (metrics.cachedAccess || 0).toFixed(2) + 'ms (target: <5ms)'
+                },
+                {
+                    name: 'Player Lookup < 1ms',
+                    id: 'criteria-lookup',
+                    met: (metrics.playerLookup || 0) < 1,
+                    result: (metrics.playerLookup || 0).toFixed(3) + 'ms (target: <1ms)'
+                }
+            ];
+            
+            criteria.forEach(criterion => {
+                const element = document.getElementById(criterion.id);
+                if (element) {
+                    element.textContent = criterion.result;
+                    const parentDiv = element.parentElement;
+                    if (criterion.met) {
+                        parentDiv.className = 'criterion met';
+                    } else {
+                        parentDiv.className = 'criterion not-met';
+                    }
+                }
+            });
+        }
+
+        // Clear results
+        function clearResults() {
+            document.getElementById('results').textContent = 'Running tests...';
+            document.getElementById('test-status').innerHTML = '';
+            logMessages = [];
+            document.getElementById('test-log').textContent = 'Waiting to start tests...';
+            
+            // Reset metrics
+            ['preloadTime', 'dataAccessImprovement', 'battleInitTime', 'memoryUsage', 'cacheAccess', 'playerLookup'].forEach(id => {
+                document.getElementById(id).textContent = '--';
+            });
+            
+            // Reset criteria
+            ['criteria-tests', 'criteria-dataAccess', 'criteria-battleInit', 'criteria-memory', 'criteria-cache', 'criteria-lookup'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = '--';
+                    element.parentElement.className = 'criterion';
+                }
+            });
+        }
+
+        // Initialize page
+        function initializePage() {
+            setupConsoleCapture();
+            
+            // Load test script
+            const script = document.createElement('script');
+            script.src = '/test_battle_system_comprehensive.js';
+            script.onload = function() {
+                console.log('✅ Battle system test script loaded successfully');
+                updateStatus('📊 Test suite loaded. Ready to start testing.', 'info');
+            };
+            script.onerror = function() {
+                updateStatus('❌ Failed to load test script. Please check if the file exists.', 'fail');
+            };
+            document.head.appendChild(script);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

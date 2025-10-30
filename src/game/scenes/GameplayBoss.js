@@ -2,6 +2,9 @@ import { Scene } from "phaser";
 
 import { CreatePlayerSelector } from "./GameplayBoss/GameplayBossPlayerSelector.js";
 
+// ✅ NEW: Use the shared Battle System Optimizer from Gameplay.js
+// Global instance already created in Gameplay.js
+
 import { CreateTopBar } from "./GameplayBoss/GameplayBossTopBar.js";
 import { SetTimeText } from "./GameplayBoss/GameplayBossTopBar.js";
 
@@ -450,6 +453,64 @@ export class GameplayBoss extends Scene {
     }
 
     CreatePlayer(scene) {
+        // ✅ NEW: Optimized async player creation with preloading
+        this.initializeBattleOptimized(scene);
+    }
+
+    // ✅ NEW: Optimized battle initialization with preloading (Boss version)
+    async initializeBattleOptimized(scene) {
+        console.log('GameplayBoss:initializeBattleOptimized: Starting optimized battle initialization');
+        
+        try {
+            // Step 1: Get selected characters optimized
+            const selectedCharacters = window.battleSystemOptimizer.getSelectedCharactersOptimized();
+            console.log('GameplayBoss:initializeBattleOptimized: Selected characters', selectedCharacters);
+            
+            // Step 2: Preload selected characters
+            if (selectedCharacters.length > 0) {
+                await window.battleSystemOptimizer.preloadBattleCharacters(selectedCharacters);
+            }
+            
+            // Step 3: Create player characters with preloaded data
+            for (let i = 0; i < selectedCharacters.length; i++) {
+                const characterId = selectedCharacters[i];
+                const playerData = centerData.getUnlockedPlayerById(characterId);
+                
+                if (playerData) {
+                    this.spawnedPlayerArr.push(
+                        new Player(
+                            scene,
+                            300,
+                            1920,
+                            characterId,
+                            playerData.code,
+                            this.explosionPool,
+                            this.strikePool
+                        )
+                    );
+                } else {
+                    console.error('GameplayBoss:initializeBattleOptimized: Player data not found for', characterId);
+                }
+            }
+            
+            // Step 4: Set player with optimized data
+            if (selectedCharacters.length > 0) {
+                this.SetPlayer(scene, selectedCharacters[0]);
+            }
+            
+            console.log('GameplayBoss:initializeBattleOptimized: Battle initialization completed');
+        } catch (error) {
+            console.error('GameplayBoss:initializeBattleOptimized: Error during battle initialization', error);
+            
+            // Fallback to original implementation if optimization fails
+            this.CreatePlayerFallback(scene);
+        }
+    }
+    
+    // ✅ NEW: Fallback implementation for backward compatibility
+    CreatePlayerFallback(scene) {
+        console.log('GameplayBoss:CreatePlayerFallback: Using fallback implementation');
+        
         for (let i = 0; i < centerData.selectedPlayerArr.length; i++) {
             this.spawnedPlayerArr.push(
                 new Player(
@@ -466,11 +527,47 @@ export class GameplayBoss extends Scene {
             );
         }
 
-        this.SetPlayer(scene, centerData.selectedPlayerArr[0]);
+        this.SetPlayerFallback(scene, centerData.selectedPlayerArr[0]);
     }
 
     SetPlayer(scene, _id) {
-        //console.log("SetPlayer: ", _id);
+        console.log('GameplayBoss:SetPlayer: Setting player', _id);
+        
+        // ✅ NEW: Use optimized player lookup for O(1) access
+        const thisRef = this; // Store reference for async context
+        
+        // Try to use optimized lookup if available, fallback to linear search
+        try {
+            const playerMap = window.battleSystemOptimizer.getOptimizedPlayerLookup(thisRef.spawnedPlayerArr);
+            const player = playerMap.get(_id);
+            
+            if (player) {
+                thisRef.setActivePlayer(player, playerMap);
+            } else {
+                console.error('GameplayBoss:SetPlayer: Player not found in optimized lookup, using fallback');
+                thisRef.SetPlayerFallback(scene, _id);
+            }
+        } catch (error) {
+            console.error('GameplayBoss:SetPlayer: Error with optimized lookup, using fallback', error);
+            thisRef.SetPlayerFallback(scene, _id);
+        }
+    }
+    
+    // ✅ NEW: Optimized player activation with Map
+    setActivePlayer(activePlayer, playerMap) {
+        // Deactivate all players first
+        for (const [id, player] of playerMap) {
+            player.setActive(false);
+        }
+        
+        // Activate the target player
+        activePlayer.setActive(true);
+        this.player = activePlayer;
+    }
+    
+    // ✅ NEW: Fallback SetPlayer implementation
+    SetPlayerFallback(scene, _id) {
+        console.log('GameplayBoss:SetPlayerFallback: Using fallback implementation for', _id);
 
         for (let i = 0; i < this.spawnedPlayerArr.length; i++) {
             let p = this.spawnedPlayerArr[i];

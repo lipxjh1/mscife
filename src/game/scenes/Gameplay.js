@@ -2,6 +2,118 @@ import { Scene } from "phaser";
 
 import { CreatePlayerSelector } from "./Gameplay/GameplayPlayerSelector.js";
 
+// ✅ NEW: Battle System Optimizer for Load On Demand
+class BattleSystemOptimizer {
+    constructor() {
+        this.battleDataCache = new Map();
+        this.preloadedCharacters = new Set();
+        this.loadingPromises = new Map();
+    }
+    
+    // ✅ NEW: Preload battle characters with assets and data
+    async preloadBattleCharacters(characterIds) {
+        console.log('BattleSystemOptimizer: Preloading characters', characterIds);
+        
+        const promises = characterIds.map(id => {
+            if (this.preloadedCharacters.has(id)) {
+                return Promise.resolve();
+            }
+            
+            this.preloadedCharacters.add(id);
+            
+            return Promise.all([
+                this.preloadCharacterAssets(id),
+                this.preloadCharacterData(id)
+            ]);
+        });
+        
+        await Promise.all(promises);
+        console.log('BattleSystemOptimizer: Preloading completed');
+    }
+    
+    // ✅ NEW: Preload character assets
+    async preloadCharacterAssets(characterId) {
+        if (this.loadingPromises.has(characterId)) {
+            return this.loadingPromises.get(characterId);
+        }
+        
+        const promise = new Promise((resolve, reject) => {
+            try {
+                // Use AssetPlayerLoadingManager for asset preloading
+                if (window.AssetPlayerLoadingManager && window.AssetPlayerLoadingManager.getInstance) {
+                    window.AssetPlayerLoadingManager.getInstance().lazyLoadCharacterAssets(characterId, resolve);
+                } else {
+                    resolve(); // Fallback if AssetPlayerLoadingManager not available
+                }
+            } catch (error) {
+                console.error('BattleSystemOptimizer: Error preloading character assets', characterId, error);
+                reject(error);
+            }
+        });
+        
+        this.loadingPromises.set(characterId, promise);
+        return promise;
+    }
+    
+    // ✅ NEW: Preload character data
+    async preloadCharacterData(characterId) {
+        try {
+            if (centerData && centerData.loadCharacterFullInfo) {
+                await centerData.loadCharacterFullInfo(characterId);
+            }
+        } catch (error) {
+            console.error('BattleSystemOptimizer: Error preloading character data', characterId, error);
+        }
+    }
+    
+    // ✅ NEW: Get optimized battle data
+    getOptimizedBattleData(battleId) {
+        if (this.battleDataCache.has(battleId)) {
+            return this.battleDataCache.get(battleId);
+        }
+        
+        // Fallback to GetMergedCharacters if not cached
+        const battleData = centerData ? centerData.GetMergedCharacters() : {};
+        this.battleDataCache.set(battleId, battleData);
+        return battleData;
+    }
+    
+    // ✅ NEW: Cache battle data
+    cacheBattleData(battleId, characterData) {
+        this.battleDataCache.set(battleId, characterData);
+    }
+    
+    // ✅ NEW: Clear cache for specific battle
+    clearBattleCache(battleId) {
+        this.battleDataCache.delete(battleId);
+    }
+    
+    // ✅ NEW: Get selected characters optimized
+    getSelectedCharactersOptimized() {
+        if (!centerData || !centerData.selectedPlayerArr) {
+            return [];
+        }
+        
+        // Return array copy for compatibility
+        return [...centerData.selectedPlayerArr];
+    }
+    
+    // ✅ NEW: Get optimized player lookup using Map for O(1) access
+    getOptimizedPlayerLookup(spawnedPlayerArr) {
+        const playerMap = new Map();
+        for (let i = 0; i < spawnedPlayerArr.length; i++) {
+            const player = spawnedPlayerArr[i];
+            if (player && player._id) {
+                playerMap.set(player._id, player);
+            }
+        }
+        return playerMap;
+    }
+}
+
+// Global instance
+window.battleSystemOptimizer = window.battleSystemOptimizer || new BattleSystemOptimizer();
+
 import { CreateTopBar } from "./Gameplay/GameplayTopBar.js";
 import { SetTimeText } from "./Gameplay/GameplayTopBar.js";
 
@@ -539,6 +651,64 @@ export class Gameplay extends Scene {
     }
 
     CreatePlayer(scene) {
+        // ✅ NEW: Optimized async player creation with preloading
+        this.initializeBattleOptimized(scene);
+    }
+
+    // ✅ NEW: Optimized battle initialization with preloading
+    async initializeBattleOptimized(scene) {
+        console.log('initializeBattleOptimized: Starting optimized battle initialization');
+        
+        try {
+            // Step 1: Get selected characters optimized
+            const selectedCharacters = window.battleSystemOptimizer.getSelectedCharactersOptimized();
+            console.log('initializeBattleOptimized: Selected characters', selectedCharacters);
+            
+            // Step 2: Preload selected characters
+            if (selectedCharacters.length > 0) {
+                await window.battleSystemOptimizer.preloadBattleCharacters(selectedCharacters);
+            }
+            
+            // Step 3: Create player characters with preloaded data
+            for (let i = 0; i < selectedCharacters.length; i++) {
+                const characterId = selectedCharacters[i];
+                const playerData = centerData.getUnlockedPlayerById(characterId);
+                
+                if (playerData) {
+                    this.spawnedPlayerArr.push(
+                        new Player(
+                            scene,
+                            300,
+                            1920,
+                            characterId,
+                            playerData.code,
+                            this.explosionPool,
+                            this.strikePool
+                        )
+                    );
+                } else {
+                    console.error('initializeBattleOptimized: Player data not found for', characterId);
+                }
+            }
+            
+            // Step 4: Set player with optimized data
+            if (selectedCharacters.length > 0) {
+                this.SetPlayer(scene, selectedCharacters[0]);
+            }
+            
+            console.log('initializeBattleOptimized: Battle initialization completed');
+        } catch (error) {
+            console.error('initializeBattleOptimized: Error during battle initialization', error);
+            
+            // Fallback to original implementation if optimization fails
+            this.CreatePlayerFallback(scene);
+        }
+    }
+    
+    // ✅ NEW: Fallback implementation for backward compatibility
+    CreatePlayerFallback(scene) {
+        console.log('CreatePlayerFallback: Using fallback implementation');
+        
         for (let i = 0; i < centerData.selectedPlayerArr.length; i++) {
             this.spawnedPlayerArr.push(
                 new Player(
@@ -555,11 +725,48 @@ export class Gameplay extends Scene {
             );
         }
 
-        this.SetPlayer(scene, centerData.selectedPlayerArr[0]);
+        this.SetPlayerFallback(scene, centerData.selectedPlayerArr[0]);
     }
 
     SetPlayer(scene, _id) {
-        //console.log("SetPlayer: ", _id);
+        console.log('SetPlayer: Setting player', _id);
+        
+        // ✅ NEW: Use optimized player lookup for O(1) access
+        const thisRef = this; // Store reference for async context
+        
+        // Try to use optimized lookup if available, fallback to linear search
+        try {
+            const playerMap = window.battleSystemOptimizer.getOptimizedPlayerLookup(thisRef.spawnedPlayerArr);
+            const player = playerMap.get(_id);
+            
+            if (player) {
+                thisRef.setActivePlayer(player, playerMap);
+                setCurrentPlayerSkill(scene);
+            } else {
+                console.error('SetPlayer: Player not found in optimized lookup, using fallback');
+                thisRef.SetPlayerFallback(scene, _id);
+            }
+        } catch (error) {
+            console.error('SetPlayer: Error with optimized lookup, using fallback', error);
+            thisRef.SetPlayerFallback(scene, _id);
+        }
+    }
+    
+    // ✅ NEW: Optimized player activation with Map
+    setActivePlayer(activePlayer, playerMap) {
+        // Deactivate all players first
+        for (const [id, player] of playerMap) {
+            player.setActive(false);
+        }
+        
+        // Activate the target player
+        activePlayer.setActive(true);
+        this.player = activePlayer;
+    }
+    
+    // ✅ NEW: Fallback SetPlayer implementation
+    SetPlayerFallback(scene, _id) {
+        console.log('SetPlayerFallback: Using fallback implementation for', _id);
 
         for (let i = 0; i < this.spawnedPlayerArr.length; i++) {
             let p = this.spawnedPlayerArr[i];

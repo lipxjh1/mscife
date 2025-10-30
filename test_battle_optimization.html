@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle System Optimization Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #test-results {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .test-status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .test-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Battle System Optimization Test</h1>
+    
+    <div class="test-info">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Open browser developer console to see detailed logs</li>
+            <li>Click "Run Tests" button to start optimization testing</li>
+            <li>Check results below and in console</li>
+        </ol>
+    </div>
+    
+    <div>
+        <button onclick="runTests()">Run Tests</button>
+        <button onclick="runTests()">Run Tests Again</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="test-results">
+        <h3>Test Results will appear here...</h3>
+        <p>Click "Run Tests" to start testing the Battle System Optimization.</p>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-status test-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            resultDiv.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '<h3>Test Results cleared</h3>';
+        }
+        
+        async function runTests() {
+            addResult('Starting Battle System Optimization Tests...', 'info');
+            
+            try {
+                // Test 1: Check if BattleSystemOptimizer exists
+                addResult('Test 1: Checking BattleSystemOptimizer existence...', 'info');
+                if (window.battleSystemOptimizer) {
+                    addResult('✅ BattleSystemOptimizer instance found', 'success');
+                } else {
+                    addResult('❌ BattleSystemOptimizer instance not found', 'error');
+                    return;
+                }
+                
+                // Test 2: Check optimizer methods
+                addResult('Test 2: Checking optimizer methods...', 'info');
+                const methods = [
+                    'preloadBattleCharacters',
+                    'getOptimizedBattleData',
+                    'cacheBattleData',
+                    'getSelectedCharactersOptimized',
+                    'getOptimizedPlayerLookup'
+                ];
+                
+                let methodSuccess = true;
+                methods.forEach(method => {
+                    if (typeof window.battleSystemOptimizer[method] === 'function') {
+                        addResult(`✅ Method ${method}: Available`, 'success');
+                    } else {
+                        addResult(`❌ Method ${method}: Not found`, 'error');
+                        methodSuccess = false;
+                    }
+                });
+                
+                if (!methodSuccess) return;
+                
+                // Test 3: Test character preloading (if characters available)
+                addResult('Test 3: Testing character preloading...', 'info');
+                if (window.centerData && window.centerData.selectedPlayerArr && window.centerData.selectedPlayerArr.length > 0) {
+                    const testCharIds = window.centerData.selectedPlayerArr.slice(0, 1);
+                    addResult(`Testing with ${testCharIds.length} character(s)`, 'info');
+                    
+                    const preloadStart = performance.now();
+                    await window.battleSystemOptimizer.preloadBattleCharacters(testCharIds);
+                    const preloadTime = performance.now() - preloadStart;
+                    addResult(`✅ Preloading completed in ${preloadTime.toFixed(2)}ms`, 'success');
+                    
+                    // Test 4: Test optimized data access
+                    addResult('Test 4: Testing optimized data access...', 'info');
+                    const dataStart = performance.now();
+                    const battleData = window.battleSystemOptimizer.getOptimizedBattleData('test_battle');
+                    const dataTime = performance.now() - dataStart;
+                    addResult(`✅ Data access completed in ${dataTime.toFixed(2)}ms`, 'success');
+                    
+                    // Test 5: Test selected characters optimization
+                    addResult('Test 5: Testing selected characters optimization...', 'info');
+                    const selectedStart = performance.now();
+                    const selectedChars = window.battleSystemOptimizer.getSelectedCharactersOptimized();
+                    const selectedTime = performance.now() - selectedStart;
+                    addResult(`✅ Selected characters access completed in ${selectedTime.toFixed(2)}ms`, 'success');
+                    addResult(`✅ Selected characters: ${selectedChars.length}`, 'success');
+                    
+                    // Test 6: Test player lookup optimization
+                    addResult('Test 6: Testing player lookup optimization...', 'info');
+                    const mockPlayerArr = [{ _id: 'test1', name: 'Player1' }, { _id: 'test2', name: 'Player2' }];
+                    const lookupStart = performance.now();
+                    const playerMap = window.battleSystemOptimizer.getOptimizedPlayerLookup(mockPlayerArr);
+                    const lookupTime = performance.now() - lookupStart;
+                    addResult(`✅ Player lookup completed in ${lookupTime.toFixed(2)}ms`, 'success');
+                    addResult(`✅ Player map size: ${playerMap.size}`, 'success');
+                    
+                } else {
+                    addResult('⚠️ No selected characters available for preloading test', 'warning');
+                }
+                
+                // Test 7: Performance comparison
+                addResult('Test 7: Performance comparison...', 'info');
+                if (window.centerData && window.centerData.GetMergedCharacters) {
+                    const oldStart = performance.now();
+                    const oldData = window.centerData.GetMergedCharacters();
+                    const oldTime = performance.now() - oldStart;
+                    addResult(`✅ GetMergedCharacters() time: ${oldTime.toFixed(2)}ms`, 'info');
+                    
+                    const newStart = performance.now();
+                    const newData = window.battleSystemOptimizer.getOptimizedBattleData('test_battle');
+                    const newTime = performance.now() - newStart;
+                    addResult(`✅ Optimized access time: ${newTime.toFixed(2)}ms`, 'info');
+                    
+                    if (newTime < oldTime) {
+                        const improvement = ((oldTime - newTime) / oldTime * 100).toFixed(1);
+                        addResult(`🎉 Performance improvement: ${improvement}%`, 'success');
+                    } else {
+                        addResult(`ℹ️ First access took ${newTime.toFixed(2)}ms (will be cached for next accesses)`, 'info');
+                    }
+                } else {
+                    addResult('⚠️ GetMergedCharacters not available for comparison', 'warning');
+                }
+                
+                addResult('🎉 All tests completed successfully!', 'success');
+                
+            } catch (error) {
+                addResult(`❌ Test failed with error: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+        
+        // Load test script if available
+        const script = document.createElement('script');
+        script.src = '/test_battle_optimization.js';
+        script.onload = function() {
+            console.log('Battle optimization test script loaded');
+        };
+        script.onerror = function() {
+            console.error('Failed to load battle optimization test script');
+            addResult('❌ Failed to load test script', 'error');
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
