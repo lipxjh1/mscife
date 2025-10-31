@@ -140,6 +140,15 @@ const clearTokens = () => {
     refreshToken = null;
     sessionStorage.removeItem("accessToken");
     sessionStorage.removeItem("refreshToken");
+
+    // ✅ NEW: Also clear Vorld tokens from localStorage
+    try {
+        localStorage.removeItem("vorldAccessToken");
+        localStorage.removeItem("vorldRefreshToken");
+        console.log('[APIBase] Vorld tokens cleared along with backend tokens');
+    } catch (error) {
+        console.error('[APIBase] Error clearing Vorld tokens:', error);
+    }
 };
 
 // Load token từ sessionStorage khi khởi động

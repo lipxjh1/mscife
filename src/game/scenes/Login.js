@@ -3,6 +3,7 @@
 import { EventBus } from "../EventBus";
 import vorldAuth from '../../modules/vorld-auth';
 import { clearTokens, setTokens } from '../Data/APIBase.js';
+import { extractAndSaveVorldTokens, clearVorldTokens } from '../../utils/vorldAuth';
 
 import centerData from "../Data/CenterData.js";
 import { socketService } from "../socket.js";
@@ -1222,18 +1223,24 @@ export class Login extends Scene {
                     // Listen for OTP success
                     EventBus.once('vorld:otp-success', (data) => {
                         console.log('✅ Vorld OTP success:', data);
+
+                        // ✅ NEW: Extract and save Vorld tokens from OTP response
+                        const hasVorldTokens = extractAndSaveVorldTokens(data);
+                        console.log('[Vorld OTP] Vorld tokens saved:', hasVorldTokens ? 'YES' : 'NO');
+
                         this.handleVorldLoginSuccess(data);
                     });
                 } else {
                     console.log('✅ Vorld login OK - No OTP needed');
-                    
+
                     // ✅ FIX: Clear old tokens BEFORE saving new ones
                     console.log('🗑️ Clearing old tokens before saving new ones');
-                    clearTokens();
+                    clearTokens(); // This now also clears Vorld tokens
                     // Also clear localStorage to be safe
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
-                    
+                    clearVorldTokens(); // Explicit clear of Vorld tokens
+
                     // ✅ FIX: Use setTokens() to sync memory and storage
                     if (result.data.data && result.data.data.accessToken) {
                         setTokens(result.data.data.accessToken, result.data.data.refreshToken);
@@ -1242,7 +1249,11 @@ export class Login extends Scene {
                         setTokens(result.data.accessToken, result.data.refreshToken);
                         console.log('✅ Tokens synced to memory and storage (direct)');
                     }
-                    
+
+                    // ✅ NEW: Extract and save Vorld tokens from login response
+                    const hasVorldTokens = extractAndSaveVorldTokens(result.data);
+                    console.log('[Vorld Login] Vorld tokens saved:', hasVorldTokens ? 'YES' : 'NO');
+
                     this.handleVorldLoginSuccess(result.data);
                 }
             } else {
@@ -1259,6 +1270,10 @@ export class Login extends Scene {
     // Vorld Auth: Handle successful login
     handleVorldLoginSuccess(data) {
         console.log('✅ Vorld login complete, loading user data');
+
+        // ✅ NEW: Extract and save Vorld tokens from response
+        const hasVorldTokens = extractAndSaveVorldTokens(data);
+        console.log('[Vorld Login] Vorld tokens saved:', hasVorldTokens ? 'YES' : 'NO');
 
         // Save user data nếu có
         if (data.user) {

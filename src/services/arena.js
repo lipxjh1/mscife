@@ -1,6 +1,7 @@
 // File: src/services/arena.js (NEW FILE)
 import axios from 'axios';
 import ENV from '../config/env.js';
+import { getVorldToken, hasVorldToken } from '../utils/vorldAuth';
 
 // Arena API Configuration
 const ARENA_API_URL = ENV.ARENA_API_URL;
@@ -25,19 +26,30 @@ const arenaClient = axios.create({
 arenaClient.interceptors.request.use(
   (config) => {
     const token = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+    const vorldToken = getVorldToken(); // ✅ NEW: Get Vorld token
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('[Arena] Request with token:', {
+    }
+
+    // ✅ NEW: Add Vorld token header if available
+    if (vorldToken) {
+      config.headers['X-Vorld-Token'] = vorldToken;
+      console.log('[Arena] Request with both tokens:', {
         method: config.method?.toUpperCase(),
         url: config.url,
-        hasToken: true
+        hasBackendToken: !!token,
+        hasVorldToken: true
       });
     } else {
-      console.log('[Arena] Request without token:', {
+      console.log('[Arena] Request without Vorld token:', {
         method: config.method?.toUpperCase(),
-        url: config.url
+        url: config.url,
+        hasBackendToken: !!token,
+        hasVorldToken: false
       });
     }
+
     return config;
   },
   (error) => {
@@ -81,6 +93,13 @@ class ArenaService {
    */
   async initGame(streamUrl = '') {
     try {
+      // ✅ NEW: Validate Vorld token before starting Arena game
+      if (!hasVorldToken()) {
+        const error = new Error('Vorld authentication required. Please login with Vorld account first.');
+        error.code = 'VORLD_TOKEN_REQUIRED';
+        throw error;
+      }
+
       console.log('[Arena] Initializing game session...', { streamUrl });
 
       const response = await arenaClient.post('/api/arena/games/init', {
@@ -201,6 +220,13 @@ class ArenaService {
       throw error;
     }
 
+    // ✅ NEW: Validate Vorld token before boosting
+    if (!hasVorldToken()) {
+      const error = new Error('Vorld authentication required. Please login with Vorld account first.');
+      error.code = 'VORLD_TOKEN_REQUIRED';
+      throw error;
+    }
+
     try {
       console.log('[Arena] Boosting player...', { sessionId, targetUserId, amount });
 
@@ -235,6 +261,13 @@ class ArenaService {
    * @returns {Promise<{dropId, itemId, quantity}>}
    */
   async dropItem(sessionId, itemId, targetUserId, quantity = 1) {
+    // ✅ NEW: Validate Vorld token before dropping item
+    if (!hasVorldToken()) {
+      const error = new Error('Vorld authentication required. Please login with Vorld account first.');
+      error.code = 'VORLD_TOKEN_REQUIRED';
+      throw error;
+    }
+
     try {
       console.log('[Arena] Dropping item...', { sessionId, itemId, targetUserId, quantity });
 

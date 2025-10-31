@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Arena API Test Suite</h1>
+
+    <div class="warning">
+        <strong>⚠️ Important:</strong> This test requires valid backend and Vorld tokens.
+        Make sure you're logged in before running these tests.
+    </div>
+
+    <div class="test-section">
+        <h2>🔑 Check Authentication Status</h2>
+        <button onclick="checkAuthStatus()">Check Auth Status</button>
+        <div id="auth-status-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>💾 Setup Test Tokens</h2>
+        <button onclick="setupTestTokens()">Setup Test Tokens</button>
+        <div id="setup-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Arena Init Game</h2>
+        <button onclick="testArenaInit()">Test Init Game</button>
+        <div id="init-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📦 Test Arena Items Catalog</h2>
+        <button onclick="testItemsCatalog()">Test Items Catalog</button>
+        <div id="catalog-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Test Arena Headers</h2>
+        <button onclick="testArenaHeaders()">Test Arena Headers</button>
+        <div id="arena-headers-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Network Request Inspector</h2>
+        <button onclick="inspectNetworkRequests()">Inspect Last Request</button>
+        <div id="network-result"></div>
+    </div>
+
+    <script type="module">
+        // Import required modules
+        import {
+            getVorldToken,
+            saveVorldTokens,
+            clearVorldTokens,
+            hasVorldToken,
+            getArenaHeaders,
+            validateVorldTokenForArena
+        } from './src/utils/vorldAuth.js';
+
+        // Mock ENV for testing (replace with actual values)
+        const ENV = {
+            ARENA_API_URL: 'https://game.m-sci.net',
+            VORLD_APP_ID: 'test-app-id'
+        };
+
+        let lastRequestDetails = null;
+
+        // Helper function to display results
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        // Get backend token from sessionStorage or localStorage
+        function getBackendToken() {
+            return sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+        }
+
+        // Test functions
+        window.checkAuthStatus = function() {
+            try {
+                const backendToken = getBackendToken();
+                const vorldToken = getVorldToken();
+                const hasVorld = hasVorldToken();
+                const canPlayArena = validateVorldTokenForArena();
+
+                const message = `
+                    <strong>Backend Token:</strong> ${backendToken ? '✅ Present' : '❌ Missing'}<br>
+                    <strong>Vorld Token:</strong> ${vorldToken ? '✅ Present' : '❌ Missing'}<br>
+                    <strong>Has Vorld Token:</strong> ${hasVorld ? 'YES' : 'NO'}<br>
+                    <strong>Can Play Arena:</strong> ${canPlayArena ? '✅ YES' : '❌ NO'}<br>
+                    <br>
+                    <strong>Vorld Token Preview:</strong> ${vorldToken ? vorldToken.substring(0, 50) + '...' : 'N/A'}
+                `;
+
+                showResult('auth-status-result', message, hasVorld && canPlayArena ? 'success' : 'error');
+            } catch (error) {
+                showResult('auth-status-result', `❌ Auth check failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.setupTestTokens = function() {
+            try {
+                // Set up test Vorld tokens
+                const testVorldAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgVXNlciIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoyMDE2MjM5MDIyfQ.test_signature';
+                const testVorldRefreshToken = 'test_refresh_token_12345';
+
+                saveVorldTokens(testVorldAccessToken, testVorldRefreshToken);
+
+                // Set up test backend token if not present
+                if (!getBackendToken()) {
+                    const testBackendToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYWNrZW5kX3VzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.backend_signature';
+                    sessionStorage.setItem("accessToken", testBackendToken);
+                }
+
+                showResult('setup-result', '✅ Test tokens setup successfully!', 'success');
+            } catch (error) {
+                showResult('setup-result', `❌ Setup failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testArenaInit = function() {
+            try {
+                if (!hasVorldToken()) {
+                    showResult('init-result', '❌ No Vorld token available. Please setup test tokens first.', 'error');
+                    return;
+                }
+
+                if (!getBackendToken()) {
+                    showResult('init-result', '❌ No backend token available. Please login first.', 'error');
+                    return;
+                }
+
+                // Create mock arena client for testing
+                const mockArenaClient = {
+                    post: async (url, data) => {
+                        const headers = getArenaHeaders(getBackendToken());
+                        lastRequestDetails = {
+                            method: 'POST',
+                            url: `${ENV.ARENA_API_URL}${url}`,
+                            headers: headers,
+                            data: data
+                        };
+
+                        console.log('[Mock Arena Client] Request details:', lastRequestDetails);
+
+                        // Check if Vorld token is included
+                        const hasVorldHeader = headers['X-Vorld-Token'] && headers['X-Vorld-Token'].length > 0;
+
+                        if (hasVorldHeader) {
+                            return {
+                                data: {
+                                    success: true,
+                                    data: {
+                                        sessionId: 'test_session_123',
+                                        gameId: 'test_game_456',
+                                        status: 'active'
+                                    }
+                                }
+                            };
+                        } else {
+                            throw new Error('Vorld token header missing');
+                        }
+                    }
+                };
+
+                // Test the init game call
+                mockArenaClient.post('/api/arena/games/init', { streamUrl: 'https://twitch.tv/test' })
+                    .then(response => {
+                        const message = `
+                            <strong>✅ Arena Init Test Passed!</strong><br>
+                            <strong>Session ID:</strong> ${response.data.data.sessionId}<br>
+                            <strong>Game ID:</strong> ${response.data.data.gameId}<br>
+                            <strong>Status:</strong> ${response.data.data.status}<br>
+                            <br>
+                            <strong>Request Headers:</strong><br>
+                            <pre>${JSON.stringify(lastRequestDetails.headers, null, 2)}</pre>
+                        `;
+                        showResult('init-result', message, 'success');
+                    })
+                    .catch(error => {
+                        showResult('init-result', `❌ Arena Init Test Failed: ${error.message}`, 'error');
+                    });
+
+            } catch (error) {
+                showResult('init-result', `❌ Arena Init Test Error: ${error.message}`, 'error');
+            }
+        };
+
+        window.testItemsCatalog = function() {
+            try {
+                if (!hasVorldToken()) {
+                    showResult('catalog-result', '❌ No Vorld token available. Please setup test tokens first.', 'error');
+                    return;
+                }
+
+                if (!getBackendToken()) {
+                    showResult('catalog-result', '❌ No backend token available. Please login first.', 'error');
+                    return;
+                }
+
+                // Create mock arena client for testing
+                const mockArenaClient = {
+                    get: async (url, config) => {
+                        const headers = getArenaHeaders(getBackendToken());
+                        lastRequestDetails = {
+                            method: 'GET',
+                            url: `${ENV.ARENA_API_URL}${url}`,
+                            headers: headers,
+                            params: config?.params
+                        };
+
+                        console.log('[Mock Arena Client] Request details:', lastRequestDetails);
+
+                        const hasVorldHeader = headers['X-Vorld-Token'] && headers['X-Vorld-Token'].length > 0;
+
+                        if (hasVorldHeader) {
+                            return {
+                                data: {
+                                    success: true,
+                                    data: {
+                                        items: [
+                                            { id: 'item_1', name: 'Test Item 1', price: 100 },
+                                            { id: 'item_2', name: 'Test Item 2', price: 200 }
+                                        ],
+                                        pagination: { page: 1, total: 2 }
+                                    }
+                                }
+                            };
+                        } else {
+                            throw new Error('Vorld token header missing');
+                        }
+                    }
+                };
+
+                // Test the items catalog call
+                mockArenaClient.get('/api/arena/items-catalog', { params: { page: 1, limit: 10 } })
+                    .then(response => {
+                        const message = `
+                            <strong>✅ Items Catalog Test Passed!</strong><br>
+                            <strong>Items Count:</strong> ${response.data.data.items.length}<br>
+                            <strong>Page:</strong> ${response.data.data.pagination.page}<br>
+                            <strong>Total Items:</strong> ${response.data.data.pagination.total}<br>
+                            <br>
+                            <strong>Request Headers:</strong><br>
+                            <pre>${JSON.stringify(lastRequestDetails.headers, null, 2)}</pre>
+                        `;
+                        showResult('catalog-result', message, 'success');
+                    })
+                    .catch(error => {
+                        showResult('catalog-result', `❌ Items Catalog Test Failed: ${error.message}`, 'error');
+                    });
+
+            } catch (error) {
+                showResult('catalog-result', `❌ Items Catalog Test Error: ${error.message}`, 'error');
+            }
+        };
+
+        window.testArenaHeaders = function() {
+            try {
+                const backendToken = getBackendToken();
+                const vorldToken = getVorldToken();
+
+                if (!backendToken) {
+                    showResult('arena-headers-result', '❌ No backend token available', 'error');
+                    return;
+                }
+
+                const headers = getArenaHeaders(backendToken);
+
+                const hasAuth = headers.Authorization && headers.Authorization.includes('Bearer');
+                const hasVorld = headers['X-Vorld-Token'] && headers['X-Vorld-Token'].length > 0;
+                const hasContentType = headers['Content-Type'] === 'application/json';
+
+                const message = `
+                    <strong>Headers Generated:</strong><br>
+                    <pre>${JSON.stringify(headers, null, 2)}</pre>
+                    <br>
+                    <strong>Validation:</strong><br>
+                    <strong>Authorization Header:</strong> ${hasAuth ? '✅ Present' : '❌ Missing'}<br>
+                    <strong>Vorld Token Header:</strong> ${hasVorld ? '✅ Present' : '❌ Missing'}<br>
+                    <strong>Content-Type Header:</strong> ${hasContentType ? '✅ Present' : '❌ Missing'}<br>
+                    <br>
+                    <strong>Token Status:</strong><br>
+                    <strong>Backend Token:</strong> ${backendToken ? '✅ Available' : '❌ Missing'}<br>
+                    <strong>Vorld Token:</strong> ${vorldToken ? '✅ Available' : '❌ Missing'}
+                `;
+
+                showResult('arena-headers-result', message, hasAuth && hasContentType ? 'success' : 'error');
+            } catch (error) {
+                showResult('arena-headers-result', `❌ Headers Test Error: ${error.message}`, 'error');
+            }
+        };
+
+        window.inspectNetworkRequests = function() {
+            try {
+                if (lastRequestDetails) {
+                    const message = `
+                        <strong>Last Network Request Details:</strong><br>
+                        <strong>Method:</strong> ${lastRequestDetails.method}<br>
+                        <strong>URL:</strong> ${lastRequestDetails.url}<br>
+                        <strong>Data:</strong> ${JSON.stringify(lastRequestDetails.data)}<br>
+                        <br>
+                        <strong>Headers:</strong><br>
+                        <pre>${JSON.stringify(lastRequestDetails.headers, null, 2)}</pre>
+                    `;
+                    showResult('network-result', message, 'info');
+                } else {
+                    showResult('network-result', 'ℹ️ No network requests made yet. Run other tests first.', 'info');
+                }
+            } catch (error) {
+                showResult('network-result', `❌ Network inspection failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Initialize test page
+        console.log('🎮 Arena API Test Suite loaded successfully!');
+    </script>
+</body>
+</html>

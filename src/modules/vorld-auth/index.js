@@ -7,6 +7,7 @@
  */
 
 import { apiClient, clearTokens, setTokens } from '../../game/Data/APIBase';
+import { clearVorldTokens } from '../../utils/vorldAuth';
 
 // ============================================
 // API ENDPOINTS
@@ -41,10 +42,11 @@ class VorldAuthService {
       
       // ✅ FIX: Clear old tokens BEFORE saving new ones
       console.log('🗑️ Clearing old tokens before saving new ones');
-      clearTokens();
+      clearTokens(); // This now also clears Vorld tokens
       // Also clear localStorage to be safe
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      clearVorldTokens(); // Explicit clear of Vorld tokens
       
       // ✅ FIX: Use setTokens() to sync memory and storage
       if (response.data.data && response.data.data.accessToken) {
@@ -90,10 +92,11 @@ class VorldAuthService {
       
       // ✅ FIX: Clear old tokens BEFORE saving new ones
       console.log('🗑️ Clearing old tokens before saving new ones (OTP)');
-      clearTokens();
+      clearTokens(); // This now also clears Vorld tokens
       // Also clear localStorage to be safe
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      clearVorldTokens(); // Explicit clear of Vorld tokens
       
       // Use setTokens() to sync memory and storage
       if (response.data.accessToken) {
