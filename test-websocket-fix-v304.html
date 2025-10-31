@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket Fix v304</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .connecting { background: #fff3cd; color: #856404; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🧪 WebSocket Fix Test - v304</h1>
+    
+    <div class="section">
+        <h2>🎯 Test Arena WebSocket Connection</h2>
+        <p>This test verifies that the WebSocket URL no longer contains the problematic "/ws/" namespace.</p>
+        
+        <div id="status" class="status disconnected">
+            ❌ Disconnected
+        </div>
+        
+        <div>
+            <input type="text" id="sessionId" placeholder="Session ID" value="test_session_123" style="padding: 8px; width: 200px; margin-right: 10px;">
+            <button class="btn-primary" onclick="testWebSocketConnection()">Test WebSocket Connection</button>
+            <button class="btn-danger" onclick="disconnectWebSocket()" id="disconnectBtn" disabled>Disconnect</button>
+        </div>
+        
+        <div id="wsUrlDisplay" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+            <strong>WebSocket URL will be shown here...</strong>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>📊 Connection Logs</h2>
+        <button class="btn-primary" onclick="clearLogs()">Clear Logs</button>
+        <div id="logs" class="log">Test logs will appear here...</div>
+    </div>
+    
+    <div class="section">
+        <h2>✅ Expected Results</h2>
+        <p><strong>Before (v303):</strong> <code style="color: #dc3545;">wss://airdrop-arcade.onrender.com/ws/sess_123456</code> ❌ (Invalid namespace)</p>
+        <p><strong>After (v304):</strong> <code style="color: #28a745;">wss://airdrop-arcade.onrender.com</code> ✅ (No /ws/ namespace)</p>
+        <p><strong>With backend URL:</strong> Uses URL from Arena API response if provided</p>
+        <p><strong>Session ID:</strong> Passed as query parameter, not as part of the path</p>
+    </div>
+    
+    <script type="module">
+        // Mock tokens for testing
+        const TEST_TOKEN = 'test_token_for_websocket_testing';
+        sessionStorage.setItem('accessToken', TEST_TOKEN);
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${timestamp}] ${message}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function updateStatus(status, message = '') {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${status}`;
+            
+            switch(status) {
+                case 'connected':
+                    statusEl.innerHTML = `✅ Connected ${message}`;
+                    break;
+                case 'connecting':
+                    statusEl.innerHTML = `🔄 Connecting... ${message}`;
+                    break;
+                case 'disconnected':
+                    statusEl.innerHTML = `❌ Disconnected ${message}`;
+                    break;
+                case 'error':
+                    statusEl.innerHTML = `❌ Connection Error ${message}`;
+                    break;
+                default:
+                    statusEl.innerHTML = statusEl.innerHTML;
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = 'Logs cleared...\n';
+        }
+        
+        window.testWebSocketConnection = async function() {
+            try {
+                const sessionId = document.getElementById('sessionId').value.trim();
+                if (!sessionId) {
+                    log('❌ Please enter a session ID', 'error');
+                    return;
+                }
+                
+                updateStatus('connecting');
+                log('🧪 Testing WebSocket connection...', 'info');
+                
+                // Import the updated arenaSocket service
+                const arenaSocket = await import('./src/services/arenaSocket.js').then(m => m.default);
+                
+                // Test both scenarios:
+                // 1. Backend provides websocketUrl
+                log('📡 Scenario 1: Using backend WebSocket URL', 'info');
+                arenaSocket.connect(sessionId, 'wss://airdrop-arcade.onrender.com');
+                
+                const connInfo1 = arenaSocket.getConnectionInfo();
+                document.getElementById('wsUrlDisplay').innerHTML = `
+                    <strong>Scenario 1 (Backend URL):</strong><br>
+                    <code style="color: #28a745;">${connInfo1.url}</code>
+                `;
+                
+                if (connInfo1.url) {
+                    if (connInfo1.url.includes('/ws/')) {
+                        log('❌ FAIL: URL still contains /ws/ namespace', 'error');
+                    } else {
+                        log('✅ PASS: URL does not contain /ws/ namespace', 'success');
+                    }
+                    log(`   URL: ${connInfo1.url}`, 'info');
+                }
+                
+                // Disconnect before next test
+                arenaSocket.disconnect();
+                
+                // 2. Backend does not provide websocketUrl (fallback)
+                log('📡 Scenario 2: Using fallback URL construction', 'info');
+                arenaSocket.connect(sessionId, null);
+                
+                const connInfo2 = arenaSocket.getConnectionInfo();
+                document.getElementById('wsUrlDisplay').innerHTML += `<br><br>
+                    <strong>Scenario 2 (Fallback URL):</strong><br>
+                    <code style="color: #007bff;">${connInfo2.url}</code>
+                `;
+                
+                if (connInfo2.url) {
+                    if (connInfo2.url.includes('/ws/')) {
+                        log('❌ FAIL: Fallback URL still contains /ws/ namespace', 'error');
+                    } else {
+                        log('✅ PASS: Fallback URL does not contain /ws/ namespace', 'success');
+                    }
+                    log(`   URL: ${connInfo2.url}`, 'info');
+                }
+                
+                // Update UI
+                updateStatus('connected', 'Test completed');
+                document.getElementById('disconnectBtn').disabled = false;
+                
+                log('🧪 WebSocket fix test completed!', 'success');
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+                updateStatus('error', error.message);
+            }
+        }
+        
+        window.disconnectWebSocket = function() {
+            const arenaSocket = import('./src/services/arenaSocket.js').then(m => m.default);
+            arenaSocket.then(ws => ws.disconnect());
+            updateStatus('disconnected');
+            document.getElementById('disconnectBtn').disabled = true;
+            log('🔌 Disconnected', 'info');
+        }
+        
+        log('🚀 WebSocket fix test ready!', 'success');
+        log('✨ This test validates the v304 WebSocket namespace fix', 'info');
+    </script>
+</body>
+</html>
