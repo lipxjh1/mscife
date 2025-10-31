@@ -25,8 +25,9 @@ class ArenaSocketService {
   /**
    * Connect to Arena WebSocket server
    * @param {string} sessionId - Arena session ID
+   * @param {string} websocketUrl - Optional WebSocket URL from backend
    */
-  connect(sessionId) {
+  connect(sessionId, websocketUrl = null) {
     if (this.socket && this.isConnected) {
       console.warn('[ArenaWS] Already connected to session:', this.sessionId);
       return;
@@ -45,13 +46,26 @@ class ArenaSocketService {
       return;
     }
 
-    const wsUrl = `${ARENA_WS_URL}/ws/${sessionId}`;
+    // ✅ FIXED: Use websocketUrl from backend if provided, otherwise create correctly
+    let wsUrl;
+    if (websocketUrl) {
+      // Use URL provided by backend (recommended by Arena docs)
+      wsUrl = websocketUrl;
+      console.log('[ArenaWS] Using WebSocket URL from backend');
+    } else {
+      // Create correct URL without /ws/ namespace
+      wsUrl = ARENA_WS_URL;
+      console.log('[ArenaWS] Using base URL, sessionId via query param');
+    }
+
     console.log('[ArenaWS] Connecting...', { sessionId, wsUrl });
 
     // Create socket connection
+    // ✅ FIXED: Pass sessionId via query parameter, not as namespace
     this.socket = io(wsUrl, {
       transports: ['websocket'],
       auth: { token },
+      query: websocketUrl ? {} : { sessionId },  // Add sessionId to query if no websocketUrl
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: this.maxReconnectAttempts,
@@ -298,8 +312,22 @@ class ArenaSocketService {
       sessionId: this.sessionId,
       socketId: this.socket?.id,
       reconnectAttempts: this.reconnectAttempts,
-      url: this.sessionId ? `${ARENA_WS_URL}/ws/${this.sessionId}` : null
+      url: this.sessionId ? this._getActualWebSocketUrl() : null
     };
+  }
+
+  /**
+   * Get the actual WebSocket URL being used
+   * @private
+   */
+  _getActualWebSocketUrl() {
+    // If we're connected, the socket should know the URL it's connected to
+    if (this.socket?.io?.uri) {
+      return this.socket.io.uri;
+    }
+    
+    // Fallback to base URL
+    return ARENA_WS_URL;
   }
 }
 

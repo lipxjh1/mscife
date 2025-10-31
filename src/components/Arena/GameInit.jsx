@@ -21,12 +21,12 @@ export default function ArenaGameInit({ onSessionCreated }) {
       const response = await arenaService.initGame(streamUrl);
 
       if (response.success) {
-        const { sessionId, gameId, status } = response.data;
+        const { sessionId, gameId, status, websocketUrl } = response.data;
 
-        console.log('[ArenaGameInit] Game initialized successfully:', { sessionId, gameId, status });
+        console.log('[ArenaGameInit] Game initialized successfully:', { sessionId, gameId, status, hasWebsocketUrl: !!websocketUrl });
 
-        // Connect WebSocket
-        arenaSocket.connect(sessionId);
+        // Connect WebSocket with URL from backend if available
+        arenaSocket.connect(sessionId, websocketUrl);
 
         // Setup WebSocket event listeners
         arenaSocket.on('session_activated', (data) => {
