@@ -1268,6 +1268,7 @@ export class Login extends Scene {
         // ✅ FIX: Load character và item info như Google login
         // Đảm bảo data mới được load vào memory
         centerData.RequestCharacterInfo();
+        centerData.RequestGetNFTCharacterIds(); // ✅ FIX: Load NFT character IDs after Vorld login
         centerData.RequestItemInfo();
 
         // Initialize socket connections

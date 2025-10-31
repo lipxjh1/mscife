@@ -1683,6 +1683,15 @@ export class CenterData {
 
     //request unlocked players
     async RequestCharactersNFT(onSuccess, onError) {
+        // ✅ DEFENSIVE: Check if NFT character IDs array is empty
+        if (!this.unlockedPlayerNFTIds || this.unlockedPlayerNFTIds.length === 0) {
+            console.log('[RequestCharactersNFT] No NFT character IDs to load');
+            if (onSuccess && typeof onSuccess === "function") {
+                onSuccess({ success: true, data: [] });
+            }
+            return;
+        }
+
         const url = `${API_BASE_URL}/api/character/get-info`;
 
         const accessToken = this.GetAccessToken();
