@@ -75,7 +75,7 @@ arenaClient.interceptors.response.use(
 class ArenaService {
 
   /**
-   * Initialize a new Arena game session with auto-retry on 400
+   * Initialize a new Arena game session
    * @param {string} streamUrl - Optional Twitch/YouTube stream URL
    * @returns {Promise<{sessionId, gameId, status, websocketUrl}>}
    */
@@ -98,58 +98,6 @@ class ArenaService {
       return response.data;
 
     } catch (error) {
-      // Handle 400: Already have active session
-      if (error.response?.status === 400) {
-        const errorData = error.response.data;
-        const errorMessage = errorData?.message || errorData?.error || '';
-
-        // Check if it's "already have session" error
-        if (errorMessage.toLowerCase().includes('already have') &&
-            errorMessage.toLowerCase().includes('session')) {
-
-          console.log('[Arena] Active session detected, attempting auto-end and retry');
-
-          // Extract session ID from error
-          const existingSessionId = errorData?.sessionId ||
-                                    errorData?.additionalData?.sessionId;
-
-          if (existingSessionId) {
-            try {
-              // End old session
-              await this.endArenaSession(existingSessionId);
-
-              console.log('[Arena] Old session ended, retrying initialization');
-
-              // Retry with same params (only once)
-              const retryResponse = await arenaClient.post('/api/arena/games/init', {
-                streamUrl
-              });
-
-              if (retryResponse.data.success) {
-                console.log('[Arena] Game initialized successfully on retry:', {
-                  sessionId: retryResponse.data.data.sessionId,
-                  gameId: retryResponse.data.data.gameId,
-                  status: retryResponse.data.data.status
-                });
-              }
-
-              return retryResponse.data;
-
-            } catch (endError) {
-              console.error('[Arena] Failed to end old session:', endError);
-              throw new Error('Failed to end previous session. Please try again.');
-            }
-          }
-        }
-      }
-
-      // Handle 401: Token expired
-      if (error.response?.status === 401) {
-        console.warn('[Arena] Authentication failed, token may be expired');
-        throw new Error('Authentication failed. Please login again.');
-      }
-
-      // Re-throw other errors
       console.error('[Arena] Init game failed:', error.response?.data || error.message);
       throw error;
     }
@@ -275,25 +223,6 @@ class ArenaService {
     } catch (error) {
       console.error('[Arena] Health check failed:', error.message);
       return false;
-    }
-  }
-
-  /**
-   * End an active arena session
-   * @param {string} sessionId - Session ID to end
-   * @returns {Promise<Object>} Response data
-   */
-  async endArenaSession(sessionId) {
-    try {
-      console.log('[Arena] Ending arena session:', sessionId);
-
-      const response = await arenaClient.post(`/api/arena/games/${sessionId}/end`, {});
-
-      console.log('[Arena] Arena session ended successfully:', sessionId);
-      return response.data;
-    } catch (error) {
-      console.error('[Arena] Failed to end arena session:', error);
-      throw error;
     }
   }
 
