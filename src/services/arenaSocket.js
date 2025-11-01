@@ -133,9 +133,9 @@ class ArenaSocketService {
       this._emit('session_activated', data);
     });
 
-    // ✅ COUNTDOWN EVENTS - Added for Arena Timer Support
-    this.socket.on('countdown_started', (data) => {
-      console.log('[ArenaWS] 📥 Event: countdown_started', data);
+    // ✅ COUNTDOWN EVENTS - Fixed event names to match backend
+    this.socket.on('ARENA_COUNTDOWN_START', (data) => {
+      console.log('[ArenaWS] 📥 Event: ARENA_COUNTDOWN_START', data);
       this._emit('countdown_started', data);
     });
 
@@ -144,8 +144,8 @@ class ArenaSocketService {
       this._emit('countdown_update', data);
     });
 
-    this.socket.on('arena_begins', (data) => {
-      console.log('[ArenaWS] 📥 Event: arena_begins', data);
+    this.socket.on('ARENA_ACTIVE', (data) => {
+      console.log('[ArenaWS] 📥 Event: ARENA_ACTIVE', data);
       this._emit('arena_begins', data);
     });
 
@@ -155,13 +155,13 @@ class ArenaSocketService {
       this._emit('arena:joined', data);
     });
 
-    this.socket.on('player_boosted', (data) => {
-      console.log('[ArenaWS] 💰 Player boosted:', data);
+    this.socket.on('BOOST_RECEIVED', (data) => {
+      console.log('[ArenaWS] 💰 Boost received:', data);
       this._emit('player_boosted', data);
     });
 
-    this.socket.on('item_dropped', (data) => {
-      console.log('[ArenaWS] 🎁 Item dropped:', data);
+    this.socket.on('ITEM_RECEIVED', (data) => {
+      console.log('[ArenaWS] 🎁 Item received:', data);
       this._emit('item_dropped', data);
     });
 

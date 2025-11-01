@@ -25,24 +25,27 @@ const arenaClient = axios.create({
 // Request interceptor - Add token
 arenaClient.interceptors.request.use(
   (config) => {
-    // ✅ FIXED: Use Vorld JWT for Arena API authentication
-    const vorldToken = getVorldToken();
+    // ✅ FIXED: Use Backend JWT for Arena API authentication
     const backendToken = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+    const vorldToken = getVorldToken();
 
-    if (vorldToken) {
-      // ✅ Use Vorld JWT as primary Authorization header for Arena API
-      config.headers.Authorization = `Bearer ${vorldToken}`;
-      config.headers['X-Vorld-Token'] = vorldToken; // Redundant but OK
-      console.log('[Arena] Request with Vorld authentication:', {
+    if (backendToken) {
+      // ✅ Use Backend JWT as primary Authorization header for Arena API
+      config.headers.Authorization = `Bearer ${backendToken}`;
+      if (vorldToken) {
+        config.headers['X-Vorld-Token'] = vorldToken; // Send Vorld token for backend to use
+      }
+      console.log('[Arena] Request with Backend authentication:', {
         method: config.method?.toUpperCase(),
         url: config.url,
-        hasVorldToken: true
+        hasBackendToken: true,
+        hasVorldToken: !!vorldToken
       });
     } else {
-      console.warn('[Arena] No Vorld token available for authentication:', {
+      console.warn('[Arena] No Backend token available for authentication:', {
         method: config.method?.toUpperCase(),
         url: config.url,
-        hasVorldToken: false
+        hasBackendToken: false
       });
     }
 
