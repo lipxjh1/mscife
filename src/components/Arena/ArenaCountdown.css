@@ -1,0 +1,191 @@
+/* Arena Countdown Overlay */
+.arena-countdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Countdown Container */
+.countdown-container {
+  text-align: center;
+  color: white;
+  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.countdown-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+/* Countdown Circle */
+.countdown-timer {
+  margin-bottom: 2rem;
+}
+
+.countdown-circle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.countdown-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.countdown-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 4;
+}
+
+.countdown-circle-progress {
+  fill: none;
+  stroke: #00ff88;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  transition: stroke-dashoffset 1s linear;
+  filter: drop-shadow(0 0 10px #00ff88);
+}
+
+.countdown-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+  font-weight: 900;
+  color: #00ff88;
+  text-shadow:
+    0 0 20px #00ff88,
+    0 0 40px #00ff88,
+    0 0 60px #00ff88;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+.countdown-subtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+/* Arena Begins Animation */
+.countdown-begin {
+  text-align: center;
+  animation:
+    explode 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    fadeOut 0.5s 2.5s ease-out forwards;
+}
+
+@keyframes explode {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+
+.begin-text {
+  font-size: 5rem;
+  font-weight: 900;
+  color: #ff6b00;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 20px #ff6b00,
+    0 0 40px #ff6b00,
+    0 0 60px #ff6b00,
+    0 0 80px #ff6b00;
+  margin-bottom: 1rem;
+  letter-spacing: 5px;
+}
+
+.begin-subtitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .countdown-title {
+    font-size: 1.5rem;
+  }
+
+  .countdown-circle {
+    width: 150px;
+    height: 150px;
+  }
+
+  .countdown-number {
+    font-size: 3rem;
+  }
+
+  .countdown-subtitle {
+    font-size: 1rem;
+  }
+
+  .begin-text {
+    font-size: 3rem;
+  }
+
+  .begin-subtitle {
+    font-size: 1.5rem;
+  }
+}

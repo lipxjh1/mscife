@@ -25,27 +25,23 @@ const arenaClient = axios.create({
 // Request interceptor - Add token
 arenaClient.interceptors.request.use(
   (config) => {
-    const token = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
-    const vorldToken = getVorldToken(); // ✅ NEW: Get Vorld token
+    // ✅ FIXED: Use Vorld JWT for Arena API authentication
+    const vorldToken = getVorldToken();
+    const backendToken = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // ✅ NEW: Add Vorld token header if available
     if (vorldToken) {
-      config.headers['X-Vorld-Token'] = vorldToken;
-      console.log('[Arena] Request with both tokens:', {
+      // ✅ Use Vorld JWT as primary Authorization header for Arena API
+      config.headers.Authorization = `Bearer ${vorldToken}`;
+      config.headers['X-Vorld-Token'] = vorldToken; // Redundant but OK
+      console.log('[Arena] Request with Vorld authentication:', {
         method: config.method?.toUpperCase(),
         url: config.url,
-        hasBackendToken: !!token,
         hasVorldToken: true
       });
     } else {
-      console.log('[Arena] Request without Vorld token:', {
+      console.warn('[Arena] No Vorld token available for authentication:', {
         method: config.method?.toUpperCase(),
         url: config.url,
-        hasBackendToken: !!token,
         hasVorldToken: false
       });
     }
@@ -92,30 +88,22 @@ class ArenaService {
    * @returns {Promise<{sessionId, gameId, status, websocketUrl}>}
    */
   async initGame(streamUrl = '') {
+    const vorldToken = getVorldToken();
+
+    if (!vorldToken) {
+      console.error('[Arena] Cannot init game: No Vorld token');
+      throw new Error('Vorld authentication required. Please login to Vorld first.');
+    }
+
+    console.log('[Arena] Initializing game with Vorld authentication');
+
     try {
-      // ✅ NEW: Validate Vorld token before starting Arena game
-      if (!hasVorldToken()) {
-        const error = new Error('Vorld authentication required. Please login with Vorld account first.');
-        error.code = 'VORLD_TOKEN_REQUIRED';
-        throw error;
-      }
-
-      console.log('[Arena] Initializing game session...', { streamUrl });
-
       const response = await arenaClient.post('/api/arena/games/init', {
         streamUrl
       });
 
-      if (response.data.success) {
-        console.log('[Arena] Game initialized successfully:', {
-          sessionId: response.data.data.sessionId,
-          gameId: response.data.data.gameId,
-          status: response.data.data.status
-        });
-      }
-
+      console.log('[Arena] Game initialized successfully:', response.data);
       return response.data;
-
     } catch (error) {
       // Handle 400: Already have active session
       if (error.response?.status === 400) {

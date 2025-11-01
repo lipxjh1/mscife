@@ -40,6 +40,8 @@ const AuthOneTap = lazy(() => import("./auth/AuthOneTap.jsx"));
 // NEW: ARENA GAME IMPORT
 // ========================================
 import ArenaTab from "./components/Arena/ArenaTab.jsx";
+import ArenaUI from "./components/Arena/ArenaUI.jsx";
+import './services/socket.js'; // Initialize socket connection
 
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
@@ -863,6 +865,11 @@ function App() {
                 NEW: ARENA GAME TAB
                 ======================================== */}
             <ArenaTab />
+
+            {/* ========================================
+                NEW: ARENA UI COMPONENTS (Countdown + Notifications)
+                ======================================== */}
+            <ArenaUI />
         </div>
     );
 }

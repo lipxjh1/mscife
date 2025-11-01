@@ -1,0 +1,15 @@
+/* Arena UI Wrapper */
+.arena-ui {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Allow child components to handle their own pointer events */
+.arena-ui > * {
+  pointer-events: auto;
+}
