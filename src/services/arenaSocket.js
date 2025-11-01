@@ -133,6 +133,28 @@ class ArenaSocketService {
       this._emit('session_activated', data);
     });
 
+    // ✅ COUNTDOWN EVENTS - Added for Arena Timer Support
+    this.socket.on('countdown_started', (data) => {
+      console.log('[ArenaWS] 📥 Event: countdown_started', data);
+      this._emit('countdown_started', data);
+    });
+
+    this.socket.on('countdown_update', (data) => {
+      console.log('[ArenaWS] 📥 Event: countdown_update', data);
+      this._emit('countdown_update', data);
+    });
+
+    this.socket.on('arena_begins', (data) => {
+      console.log('[ArenaWS] 📥 Event: arena_begins', data);
+      this._emit('arena_begins', data);
+    });
+
+    // Arena join confirmation (optional)
+    this.socket.on('arena:joined', (data) => {
+      console.log('[ArenaWS] ✅ Successfully joined arena room:', data);
+      this._emit('arena:joined', data);
+    });
+
     this.socket.on('player_boosted', (data) => {
       console.log('[ArenaWS] 💰 Player boosted:', data);
       this._emit('player_boosted', data);
@@ -234,7 +256,7 @@ class ArenaSocketService {
     }
 
     console.log('[ArenaWS] 🎮 Joining session:', this.sessionId);
-    this.socket.emit('join_session', { sessionId: this.sessionId });
+    this.socket.emit('arena:join', this.sessionId);
   }
 
   /**
