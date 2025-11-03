@@ -1,0 +1,794 @@
+// File: src/services/arenaGameService.js (NEW FILE)
+import io from 'socket.io-client';
+import axios from 'axios';
+import ENV from '../config/env.js';
+import { getVorldToken, hasVorldToken } from '../utils/vorldAuth.js';
+
+// Arena Configuration
+const ARENA_CONFIG = {
+  API_URL: ENV.ARENA_API_URL,
+  WS_BASE_URL: ENV.ARENA_WS_URL,
+  VORLD_APP_ID: ENV.VORLD_APP_ID,
+  ARENA_GAME_ID: 'arcade_mh96qa8c_9bd983a7'
+};
+
+console.log('[ArenaGameService] Initializing unified Arena service...', {
+  API_URL: ARENA_CONFIG.API_URL,
+  WS_BASE_URL: ARENA_CONFIG.WS_BASE_URL,
+  VORLD_APP_ID: ARENA_CONFIG.VORLD_APP_ID
+});
+
+/**
+ * ArenaGameService - Unified Arena Game Service
+ * Combines API calls and WebSocket management with 3 initialization methods
+ */
+export class ArenaGameService {
+  constructor() {
+    // WebSocket connection
+    this.socket = null;
+    this.gameState = null;
+
+    // Authentication
+    this.userToken = null;
+    this.vorldToken = null;
+
+    // Event handling
+    this.eventHandlers = new Map();
+
+    // Connection state
+    this.isConnected = false;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
+
+    console.log('[ArenaGameService] Service instance created');
+  }
+
+  // ==========================================
+  // METHOD 1: Basic Initialization (with callbacks)
+  // ==========================================
+  /**
+   * Initialize Arena Game with success/error callbacks
+   * @param {Object} options - Initialization options
+   * @param {string} options.streamUrl - Stream URL (optional)
+   * @param {Function} options.onSuccess - Success callback
+   * @param {Function} options.onError - Error callback
+   * @returns {Promise<{success: boolean, gameState?: Object, error?: string}>}
+   */
+  async initializeArenaGame(options = {}) {
+    const { streamUrl = '', onSuccess, onError } = options;
+
+    console.log('[ArenaGameService] Method 1: Basic initialization with callbacks', { streamUrl });
+
+    try {
+      // Initialize game
+      const initResult = await this.initGame(streamUrl);
+
+      if (initResult.success) {
+        console.log('[ArenaGameService] Game initialized successfully', initResult.gameState);
+
+        // Set game state
+        this.gameState = initResult.gameState;
+
+        // Setup WebSocket if URL available
+        if (this.gameState.websocketUrl) {
+          console.log('[ArenaGameService] Setting up WebSocket connection...');
+          await this.connectWebSocket();
+        }
+
+        // Call success callback
+        onSuccess?.(this.gameState);
+
+        return {
+          success: true,
+          gameState: this.gameState
+        };
+      } else {
+        console.error('[ArenaGameService] Game initialization failed', initResult.error);
+        onError?.(initResult.error);
+
+        return {
+          success: false,
+          error: initResult.error
+        };
+      }
+    } catch (error) {
+      console.error('[ArenaGameService] Basic initialization failed', error);
+      const errorMessage = error.message || 'Unknown error occurred';
+      onError?.(errorMessage);
+
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+  }
+
+  // ==========================================
+  // METHOD 2: Quick Initialization (boolean return)
+  // ==========================================
+  /**
+   * Quick initialize game with stream URL and user token
+   * @param {string} streamUrl - Stream URL (optional)
+   * @param {string} userToken - User authentication token
+   * @returns {Promise<boolean>} - Success status
+   */
+  async quickInitializeGame(streamUrl = '', userToken = '') {
+    console.log('[ArenaGameService] Method 2: Quick initialization', { streamUrl, hasToken: !!userToken });
+
+    // Set token
+    this.userToken = userToken;
+
+    try {
+      const initResult = await this.initGame(streamUrl);
+
+      if (initResult.success) {
+        this.gameState = initResult.gameState;
+        console.log('[ArenaGameService] Quick init successful', {
+          sessionId: this.gameState.sessionId,
+          gameId: this.gameState.gameId
+        });
+        return true;
+      } else {
+        console.error('[ArenaGameService] Quick init failed', initResult.error);
+        return false;
+      }
+    } catch (error) {
+      console.error('[ArenaGameService] Quick initialization failed', error);
+      return false;
+    }
+  }
+
+  // ==========================================
+  // METHOD 3: With WebSocket (auto-connect)
+  // ==========================================
+  /**
+   * Initialize game with automatic WebSocket connection
+   * @param {string} streamUrl - Stream URL (optional)
+   * @param {string} userToken - User authentication token
+   * @returns {Promise<Object|null>} - Game state or null on failure
+   */
+  async initializeGameWithWebSocket(streamUrl = '', userToken = '') {
+    console.log('[ArenaGameService] Method 3: Initialization with WebSocket', { streamUrl, hasToken: !!userToken });
+
+    // Set token
+    this.userToken = userToken;
+
+    try {
+      // Initialize game
+      const initResult = await this.initGame(streamUrl);
+
+      if (initResult.success && initResult.gameState) {
+        this.gameState = initResult.gameState;
+
+        // Auto-connect WebSocket if URL available
+        if (this.gameState.websocketUrl) {
+          console.log('[ArenaGameService] Auto-connecting WebSocket...');
+          const wsConnected = await this.connectWebSocket();
+
+          if (wsConnected) {
+            console.log('[ArenaGameService] WebSocket connected successfully');
+          } else {
+            console.warn('[ArenaGameService] WebSocket connection failed, but game is initialized');
+          }
+        }
+
+        return this.gameState;
+      } else {
+        console.error('[ArenaGameService] Initialization with WebSocket failed', initResult.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('[ArenaGameService] Initialization with WebSocket failed', error);
+      return null;
+    }
+  }
+
+  // ==========================================
+  // CORE METHODS
+  // ==========================================
+
+  /**
+   * Core game initialization method
+   * @param {string} streamUrl - Stream URL
+   * @returns {Promise<{success: boolean, gameState?: Object, error?: string}>}
+   */
+  async initGame(streamUrl = '') {
+    try {
+      console.log('[ArenaGameService] Initializing game...', { streamUrl });
+
+      // Get Vorld token for authentication
+      const vorldToken = getVorldToken();
+
+      if (!vorldToken) {
+        console.error('[ArenaGameService] Cannot init game: No Vorld token');
+        return {
+          success: false,
+          error: 'Vorld authentication required. Please login to Vorld first.'
+        };
+      }
+
+      // Prepare API client
+      const apiClient = axios.create({
+        baseURL: ARENA_CONFIG.API_URL,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-ID': ARENA_CONFIG.VORLD_APP_ID
+        }
+      });
+
+      // Add authentication headers
+      const backendToken = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+      if (backendToken) {
+        apiClient.defaults.headers.Authorization = `Bearer ${backendToken}`;
+        apiClient.defaults.headers['X-Vorld-Token'] = vorldToken;
+      }
+
+      console.log('[ArenaGameService] Making API request to initialize game...');
+
+      const response = await apiClient.post('/api/arena/games/init', {
+        streamUrl
+      });
+
+      if (response.data.success) {
+        const gameState = response.data.data;
+        console.log('[ArenaGameService] Game initialized successfully:', {
+          sessionId: gameState.sessionId,
+          gameId: gameState.gameId,
+          status: gameState.status,
+          hasWebsocketUrl: !!gameState.websocketUrl
+        });
+
+        return {
+          success: true,
+          gameState: gameState
+        };
+      } else {
+        return {
+          success: false,
+          error: response.data.message || 'Failed to initialize game'
+        };
+      }
+    } catch (error) {
+      console.error('[ArenaGameService] Init game failed:', error);
+
+      // Handle 400: Already have active session
+      if (error.response?.status === 400) {
+        const errorData = error.response.data;
+        const errorMessage = errorData?.message || errorData?.error || '';
+
+        if (errorMessage.toLowerCase().includes('already have') &&
+            errorMessage.toLowerCase().includes('session')) {
+
+          console.log('[ArenaGameService] Active session detected, attempting auto-end and retry');
+
+          const existingSessionId = errorData?.sessionId || errorData?.additionalData?.sessionId;
+
+          if (existingSessionId) {
+            try {
+              await this.endGame(existingSessionId);
+              console.log('[ArenaGameService] Old session ended, retrying initialization');
+
+              // Retry initialization
+              return await this.initGame(streamUrl);
+            } catch (endError) {
+              console.error('[ArenaGameService] Failed to end old session:', endError);
+              return {
+                success: false,
+                error: 'Failed to end previous session. Please try again.'
+              };
+            }
+          }
+        }
+      }
+
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Failed to initialize game'
+      };
+    }
+  }
+
+  /**
+   * Connect WebSocket server
+   * @returns {Promise<boolean>} - Connection success status
+   */
+  async connectWebSocket() {
+    if (!this.gameState?.sessionId) {
+      console.error('[ArenaGameService] Cannot connect WebSocket: No session ID');
+      return false;
+    }
+
+    if (this.socket && this.isConnected) {
+      console.warn('[ArenaGameService] WebSocket already connected');
+      return true;
+    }
+
+    try {
+      const { sessionId, websocketUrl } = this.gameState;
+      const token = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+
+      if (!token) {
+        console.error('[ArenaGameService] Cannot connect WebSocket: No authentication token');
+        return false;
+      }
+
+      // Use WebSocket URL from backend if available
+      const wsUrl = websocketUrl || ARENA_CONFIG.WS_BASE_URL;
+
+      console.log('[ArenaGameService] Connecting WebSocket...', {
+        sessionId,
+        wsUrl,
+        hasCustomUrl: !!websocketUrl
+      });
+
+      this.socket = io(wsUrl, {
+        transports: ['websocket'],
+        auth: { token },
+        query: websocketUrl ? {} : { sessionId },
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: this.maxReconnectAttempts,
+        timeout: 10000
+      });
+
+      // Setup event listeners
+      this.setupEventListeners();
+
+      // Return connection promise
+      return new Promise((resolve) => {
+        this.socket.on('connect', () => {
+          console.log('[ArenaGameService] WebSocket connected successfully');
+          this.isConnected = true;
+          this.reconnectAttempts = 0;
+
+          // Auto join session
+          this.joinSession();
+          resolve(true);
+        });
+
+        this.socket.on('connect_error', (error) => {
+          console.error('[ArenaGameService] WebSocket connection error:', error.message);
+          this.isConnected = false;
+          resolve(false);
+        });
+      });
+    } catch (error) {
+      console.error('[ArenaGameService] WebSocket connection failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Setup WebSocket event listeners
+   */
+  setupEventListeners() {
+    if (!this.socket) return;
+
+    console.log('[ArenaGameService] Setting up WebSocket event listeners...');
+
+    // Connection events
+    this.socket.on('connect', () => {
+      console.log('[ArenaGameService] ✅ WebSocket connected');
+      this._emit('connected', { socketId: this.socket.id });
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('[ArenaGameService] ❌ WebSocket disconnected:', reason);
+      this.isConnected = false;
+      this._emit('disconnected', { reason });
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('[ArenaGameService] ❌ WebSocket error:', error.message);
+      this._emit('error', { type: 'connection_error', message: error.message });
+    });
+
+    // Arena countdown events
+    this.socket.on('ARENA_COUNTDOWN_START', (data) => {
+      console.log('[ArenaGameService] 📥 Event: ARENA_COUNTDOWN_START', data);
+      this.onArenaCountdownStarted?.(data);
+      this._emit('countdown_started', data);
+    });
+
+    this.socket.on('countdown_update', (data) => {
+      console.log('[ArenaGameService] 📥 Event: countdown_update', data);
+      this.onCountdownUpdate?.(data);
+      this._emit('countdown_update', data);
+    });
+
+    this.socket.on('ARENA_ACTIVE', (data) => {
+      console.log('[ArenaGameService] 📥 Event: ARENA_ACTIVE', data);
+      this.onArenaBegins?.(data);
+      this._emit('arena_begins', data);
+    });
+
+    // Boost events
+    this.socket.on('BOOST_RECEIVED', (data) => {
+      console.log('[ArenaGameService] 📥 Event: BOOST_RECEIVED', data);
+      this.onPlayerBoostActivated?.(data);
+      this._emit('player_boosted', data);
+    });
+
+    this.socket.on('boost_cycle_update', (data) => {
+      console.log('[ArenaGameService] 📥 Event: boost_cycle_update', data);
+      this.onBoostCycleUpdate?.(data);
+      this._emit('boost_cycle_update', data);
+    });
+
+    // Item/Package events
+    this.socket.on('ITEM_RECEIVED', (data) => {
+      console.log('[ArenaGameService] 📥 Event: ITEM_RECEIVED', data);
+      this.onPackageDrop?.(data);
+      this._emit('item_dropped', data);
+    });
+
+    this.socket.on('immediate_item_drop', (data) => {
+      console.log('[ArenaGameService] 📥 Event: immediate_item_drop', data);
+      this.onImmediateItemDrop?.(data);
+      this._emit('immediate_item_drop', data);
+    });
+
+    // Session events
+    this.socket.on('session_created', (data) => {
+      console.log('[ArenaGameService] 📥 Event: session_created', data);
+      this._emit('session_created', data);
+    });
+
+    this.socket.on('session_activated', (data) => {
+      console.log('[ArenaGameService] 📥 Event: session_activated', data);
+      this._emit('session_activated', data);
+    });
+
+    this.socket.on('session_ended', (data) => {
+      console.log('[ArenaGameService] 📥 Event: session_ended', data);
+      this.onSessionEnded?.(data);
+      this._emit('session_ended', data);
+      this.isConnected = false;
+    });
+
+    // Error handling
+    this.socket.on('error', (error) => {
+      console.error('[ArenaGameService] ❌ Socket error:', error);
+      this.onError?.(error);
+      this._emit('error', { type: 'server_error', error });
+    });
+
+    // Debug: Log all events
+    if (ENV.ENABLE_DEBUG) {
+      this.socket.onAny((eventName, data) => {
+        if (eventName !== 'connect' && eventName !== 'disconnect') {
+          console.log(`[ArenaGameService] 📥 Event: ${eventName}`, data);
+        }
+      });
+    }
+  }
+
+  // ==========================================
+  // ARENA ACTIONS
+  // ==========================================
+
+  /**
+   * End an active game session
+   * @param {string} sessionId - Session ID (optional, uses current session)
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async endGame(sessionId = null) {
+    try {
+      const targetSessionId = sessionId || this.gameState?.sessionId;
+
+      if (!targetSessionId) {
+        return { success: false, error: 'No session ID provided' };
+      }
+
+      console.log('[ArenaGameService] Ending game session:', targetSessionId);
+
+      const apiClient = axios.create({
+        baseURL: ARENA_CONFIG.API_URL,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-ID': ARENA_CONFIG.VORLD_APP_ID
+        }
+      });
+
+      const token = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+      if (token) {
+        apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await apiClient.post(`/api/arena/games/${targetSessionId}/end`, {});
+
+      // Disconnect WebSocket
+      this.disconnect();
+
+      console.log('[ArenaGameService] Game session ended successfully');
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('[ArenaGameService] Failed to end game session:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Boost a player with chips
+   * @param {string} sessionId - Session ID
+   * @param {string} playerId - Player ID
+   * @param {number} amount - Boost amount
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async boostPlayer(sessionId, playerId, amount) {
+    try {
+      console.log('[ArenaGameService] Boosting player...', { sessionId, playerId, amount });
+
+      const apiClient = axios.create({
+        baseURL: ARENA_CONFIG.API_URL,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-ID': ARENA_CONFIG.VORLD_APP_ID
+        }
+      });
+
+      const token = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+      if (token) {
+        apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await apiClient.post('/api/arena/boost', {
+        sessionId,
+        targetUserId: playerId,
+        amount
+      });
+
+      console.log('[ArenaGameService] Boost successful:', response.data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('[ArenaGameService] Boost failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Drop an item to a player
+   * @param {string} sessionId - Session ID
+   * @param {string} itemId - Item ID
+   * @param {string} targetUserId - Target user ID
+   * @param {number} quantity - Item quantity
+   * @returns {Promise<{success: boolean, error?: string}>}
+   */
+  async dropItem(sessionId, itemId, targetUserId, quantity = 1) {
+    try {
+      console.log('[ArenaGameService] Dropping item...', { sessionId, itemId, targetUserId, quantity });
+
+      const apiClient = axios.create({
+        baseURL: ARENA_CONFIG.API_URL,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-ID': ARENA_CONFIG.VORLD_APP_ID
+        }
+      });
+
+      const token = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+      if (token) {
+        apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await apiClient.post('/api/arena/item-drop', {
+        sessionId,
+        itemId,
+        targetUserId,
+        quantity
+      });
+
+      console.log('[ArenaGameService] Item dropped successfully:', response.data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('[ArenaGameService] Drop item failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get items catalog
+   * @param {number} page - Page number
+   * @param {number} limit - Items per page
+   * @param {string} category - Category filter
+   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
+   */
+  async getItemsCatalog(page = 1, limit = 10, category = '') {
+    try {
+      console.log('[ArenaGameService] Fetching items catalog...', { page, limit, category });
+
+      const apiClient = axios.create({
+        baseURL: ARENA_CONFIG.API_URL,
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-App-ID': ARENA_CONFIG.VORLD_APP_ID
+        }
+      });
+
+      const token = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+      if (token) {
+        apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await apiClient.get('/api/arena/items-catalog', {
+        params: { page, limit, category }
+      });
+
+      console.log('[ArenaGameService] Items catalog loaded:', response.data);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('[ArenaGameService] Get catalog failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ==========================================
+  // UTILITY METHODS
+  // ==========================================
+
+  /**
+   * Set authentication tokens
+   * @param {string} userToken - Backend JWT token
+   * @param {string} vorldToken - Vorld authentication token
+   */
+  setTokens(userToken, vorldToken = '') {
+    this.userToken = userToken;
+    this.vorldToken = vorldToken;
+    console.log('[ArenaGameService] Tokens set', {
+      hasUserToken: !!userToken,
+      hasVorldToken: !!vorldToken
+    });
+  }
+
+  /**
+   * Join WebSocket session
+   */
+  joinSession() {
+    if (!this.socket || !this.isConnected || !this.gameState?.sessionId) {
+      console.warn('[ArenaGameService] Cannot join session: Not ready');
+      return;
+    }
+
+    console.log('[ArenaGameService] Joining session:', this.gameState.sessionId);
+    this.socket.emit('arena:join', this.gameState.sessionId);
+  }
+
+  /**
+   * Emit event to registered handlers
+   * @private
+   */
+  _emit(eventName, data) {
+    const handlers = this.eventHandlers.get(eventName) || [];
+    handlers.forEach(handler => {
+      try {
+        handler(data);
+      } catch (error) {
+        console.error(`[ArenaGameService] Handler error for ${eventName}:`, error);
+      }
+    });
+  }
+
+  /**
+   * Register event handler
+   * @param {string} eventName - Event name
+   * @param {Function} handler - Handler function
+   */
+  on(eventName, handler) {
+    if (!this.eventHandlers.has(eventName)) {
+      this.eventHandlers.set(eventName, []);
+    }
+    this.eventHandlers.get(eventName).push(handler);
+    console.log(`[ArenaGameService] 📝 Registered handler for: ${eventName}`);
+  }
+
+  /**
+   * Unregister event handler
+   * @param {string} eventName - Event name
+   * @param {Function} handler - Handler function
+   */
+  off(eventName, handler) {
+    const handlers = this.eventHandlers.get(eventName);
+    if (handlers) {
+      const index = handlers.indexOf(handler);
+      if (index > -1) {
+        handlers.splice(index, 1);
+        console.log(`[ArenaGameService] 🗑️ Unregistered handler for: ${eventName}`);
+      }
+    }
+  }
+
+  /**
+   * Disconnect WebSocket and cleanup
+   */
+  disconnect() {
+    if (this.socket) {
+      console.log('[ArenaGameService] 🔌 Disconnecting WebSocket...');
+      this.socket.disconnect();
+      this.socket = null;
+    }
+
+    this.isConnected = false;
+    this.gameState = null;
+    this.reconnectAttempts = 0;
+    this.eventHandlers.clear();
+  }
+
+  /**
+   * Get connection status
+   * @returns {Object} Connection info
+   */
+  getConnectionInfo() {
+    return {
+      connected: this.isConnected,
+      sessionId: this.gameState?.sessionId,
+      gameId: this.gameState?.gameId,
+      socketId: this.socket?.id,
+      hasGameState: !!this.gameState,
+      reconnectAttempts: this.reconnectAttempts
+    };
+  }
+
+  // ==========================================
+  // EVENT CALLBACKS (to be overridden)
+  // ==========================================
+
+  onArenaCountdownStarted = (data) => {
+    console.log('[ArenaGameService] Countdown started:', data);
+  }
+
+  onCountdownUpdate = (data) => {
+    console.log('[ArenaGameService] Countdown update:', data);
+  }
+
+  onArenaBegins = (data) => {
+    console.log('[ArenaGameService] Arena begins:', data);
+  }
+
+  onPlayerBoostActivated = (data) => {
+    console.log('[ArenaGameService] Player boost activated:', data);
+  }
+
+  onBoostCycleUpdate = (data) => {
+    console.log('[ArenaGameService] Boost cycle update:', data);
+  }
+
+  onPackageDrop = (data) => {
+    console.log('[ArenaGameService] Package drop:', data);
+  }
+
+  onImmediateItemDrop = (data) => {
+    console.log('[ArenaGameService] Immediate item drop:', data);
+  }
+
+  onSessionEnded = (data) => {
+    console.log('[ArenaGameService] Session ended:', data);
+  }
+
+  onError = (error) => {
+    console.error('[ArenaGameService] Error:', error);
+  }
+}
+
+// Create singleton instance
+const arenaGameService = new ArenaGameService();
+
+// Export default instance (class already exported above)
+export default arenaGameService;
+
+// Log service initialization
+console.log('[ArenaGameService] Unified Arena Game Service initialized and exported');
+console.log('[ArenaGameService] Available methods:');
+console.log('  - initializeArenaGame(options) - Method 1: With callbacks');
+console.log('  - quickInitializeGame(streamUrl, userToken) - Method 2: Quick boolean');
+console.log('  - initializeGameWithWebSocket(streamUrl, userToken) - Method 3: With WebSocket');
+console.log('  - endGame(sessionId) - End session');
+console.log('  - boostPlayer(sessionId, playerId, amount) - Boost player');
+console.log('  - dropItem(sessionId, itemId, targetUserId, quantity) - Drop item');
+console.log('  - getItemsCatalog(page, limit, category) - Get catalog');
+console.log('  - setTokens(userToken, vorldToken) - Set auth tokens');
+console.log('  - disconnect() - Disconnect WebSocket');

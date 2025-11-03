@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArenaGameService - 3 Methods Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .method-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .method-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        .method-btn.active {
+            transform: scale(1.05);
+        }
+        .method1 { background-color: #007bff; }
+        .method2 { background-color: #28a745; }
+        .method3 { background-color: #6f42c1; }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin-right: 10px;
+        }
+        .btn-primary { background-color: #007bff; }
+        .btn-success { background-color: #28a745; }
+        .btn-danger { background-color: #dc3545; }
+        .btn:disabled { background-color: #6c757d; cursor: not-allowed; }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .session-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+        .session-info h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .console-output {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .method-description {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #1565c0;
+        }
+
+        .ws-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .ws-connected { background-color: #28a745; }
+        .ws-disconnected { background-color: #dc3545; }
+        .ws-error { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🎮 ArenaGameService - 3 Initialization Methods Test</h1>
+
+    <div class="test-container">
+        <h2>Test Configuration</h2>
+
+        <div class="method-selector">
+            <button class="method-btn method1 active" onclick="selectMethod('method1')">
+                🎯 Method 1: Callbacks
+            </button>
+            <button class="method-btn method2" onclick="selectMethod('method2')">
+                ⚡ Method 2: Quick Boolean
+            </button>
+            <button class="method-btn method3" onclick="selectMethod('method3')">
+                🌐 Method 3: WebSocket Auto
+            </button>
+        </div>
+
+        <div id="methodDescription" class="method-description">
+            <strong>🎯 Method 1: initializeArenaGame(options)</strong><br/>
+            • Parameters: streamUrl, onSuccess callback, onError callback<br/>
+            • Returns: {success: boolean, gameState?: Object, error?: string}<br/>
+            • Features: Full control with callbacks
+        </div>
+
+        <div class="input-group">
+            <label for="streamUrl">Stream URL (Optional):</label>
+            <input type="text" id="streamUrl" placeholder="https://twitch.tv/gint0ky" value="https://twitch.tv/gint0ky">
+        </div>
+
+        <div class="input-group">
+            <label for="userToken">User Token (Required for testing):</label>
+            <input type="text" id="userToken" placeholder="Paste your accessToken here">
+            <small style="color: #666; font-size: 11px;">Get this from browser localStorage after login</small>
+        </div>
+
+        <div class="input-group">
+            <label for="vorldToken">Vorld Token (Optional):</label>
+            <input type="text" id="vorldToken" placeholder="Paste your vorldAccessToken here">
+            <small style="color: #666; font-size: 11px;">Get this from browser localStorage after Vorld login</small>
+        </div>
+
+        <div>
+            <button id="initBtn" class="btn btn-primary" onclick="testInitialization()">
+                🎯 Test Method 1
+            </button>
+            <button id="clearBtn" class="btn btn-danger" onclick="clearSession()" style="display: none;">
+                🔄 Clear Session
+            </button>
+            <button onclick="clearConsole()" class="btn" style="background-color: #6c757d;">
+                🧹 Clear Console
+            </button>
+        </div>
+
+        <div id="statusArea"></div>
+        <div id="sessionInfo" style="display: none;"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Console Output</h2>
+        <div id="consoleOutput" class="console-output">
+            Ready to test ArenaGameService methods...
+
+Select a method above and enter your tokens to begin testing.
+
+📝 Test Steps:
+1. Login to get userToken (localStorage.getItem('accessToken'))
+2. Login with Vorld to get vorldToken (localStorage.getItem('vorldAccessToken'))
+3. Select an initialization method
+4. Click "Test Method X" button
+5. Watch console output for detailed logs
+6. Check session info and WebSocket status
+
+🎯 Expected Results:
+• Method 1: Success callback called with gameState
+• Method 2: Returns true for successful initialization
+• Method 3: Returns gameState object + auto WebSocket connection
+        </div>
+    </div>
+
+    <script type="module">
+        // Mock ArenaGameService for testing
+        // In real implementation, this would import from '../../services/arenaGameService.js'
+
+        window.currentMethod = 'method1';
+        window.arenaGameService = null;
+        window.gameState = null;
+
+        // Simulate the ArenaGameService class
+        class MockArenaGameService {
+            constructor() {
+                this.socket = null;
+                this.gameState = null;
+                this.userToken = null;
+                this.vorldToken = null;
+                this.eventHandlers = new Map();
+                this.isConnected = false;
+            }
+
+            // Method 1: initializeArenaGame(options)
+            async initializeArenaGame(options = {}) {
+                const { streamUrl = '', onSuccess, onError } = options;
+
+                logToConsole('🎯 METHOD 1: initializeArenaGame() called');
+                logToConsole('Parameters:', { streamUrl, hasOnSuccess: !!onSuccess, hasOnError: !!onError });
+
+                try {
+                    // Simulate API call
+                    const result = await this.mockInitGame(streamUrl);
+
+                    if (result.success) {
+                        this.gameState = result.gameState;
+                        logToConsole('✅ Method 1: Game initialized successfully');
+                        logToConsole('GameState:', this.gameState);
+
+                        // Call success callback
+                        if (onSuccess) {
+                            logToConsole('📞 Calling onSuccess callback...');
+                            onSuccess(this.gameState);
+                        }
+
+                        return { success: true, gameState: this.gameState };
+                    } else {
+                        logToConsole('❌ Method 1: Initialization failed');
+                        if (onError) {
+                            onError(result.error);
+                        }
+                        return { success: false, error: result.error };
+                    }
+                } catch (error) {
+                    logToConsole('❌ Method 1: Exception occurred:', error.message);
+                    if (onError) {
+                        onError(error.message);
+                    }
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // Method 2: quickInitializeGame(streamUrl, userToken)
+            async quickInitializeGame(streamUrl = '', userToken = '') {
+                logToConsole('⚡ METHOD 2: quickInitializeGame() called');
+                logToConsole('Parameters:', { streamUrl, hasUserToken: !!userToken });
+
+                this.userToken = userToken;
+
+                try {
+                    const result = await this.mockInitGame(streamUrl);
+
+                    if (result.success) {
+                        this.gameState = result.gameState;
+                        logToConsole('✅ Method 2: Quick init successful');
+                        logToConsole('GameState:', this.gameState);
+                        return true;
+                    } else {
+                        logToConsole('❌ Method 2: Quick init failed');
+                        return false;
+                    }
+                } catch (error) {
+                    logToConsole('❌ Method 2: Exception occurred:', error.message);
+                    return false;
+                }
+            }
+
+            // Method 3: initializeGameWithWebSocket(streamUrl, userToken)
+            async initializeGameWithWebSocket(streamUrl = '', userToken = '') {
+                logToConsole('🌐 METHOD 3: initializeGameWithWebSocket() called');
+                logToConsole('Parameters:', { streamUrl, hasUserToken: !!userToken });
+
+                this.userToken = userToken;
+
+                try {
+                    const result = await this.mockInitGame(streamUrl);
+
+                    if (result.success && result.gameState) {
+                        this.gameState = result.gameState;
+                        logToConsole('✅ Method 3: Game initialized successfully');
+                        logToConsole('GameState:', this.gameState);
+
+                        // Simulate WebSocket connection
+                        if (this.gameState.websocketUrl) {
+                            logToConsole('🔌 Auto-connecting WebSocket...');
+                            await this.mockConnectWebSocket();
+                        }
+
+                        return this.gameState;
+                    } else {
+                        logToConsole('❌ Method 3: Initialization with WebSocket failed');
+                        return null;
+                    }
+                } catch (error) {
+                    logToConsole('❌ Method 3: Exception occurred:', error.message);
+                    return null;
+                }
+            }
+
+            // Mock methods
+            async mockInitGame(streamUrl) {
+                logToConsole('📡 Simulating API call to /api/arena/games/init');
+                logToConsole('Stream URL:', streamUrl || '(empty)');
+
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Mock successful response
+                const mockGameState = {
+                    sessionId: 'sess_' + Math.random().toString(36).substr(2, 9),
+                    gameId: 'arcade_' + Math.random().toString(36).substr(2, 9),
+                    status: 'active',
+                    websocketUrl: 'wss://airdrop-arcade.onrender.com/ws/' + Math.random().toString(36).substr(2, 6),
+                    createdAt: new Date().toISOString()
+                };
+
+                logToConsole('📨 Mock API response received');
+                return {
+                    success: true,
+                    gameState: mockGameState
+                };
+            }
+
+            async mockConnectWebSocket() {
+                logToConsole('🔌 Simulating WebSocket connection...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                this.isConnected = true;
+                this.socket = { id: 'socket_' + Math.random().toString(36).substr(2, 6) };
+
+                logToConsole('✅ WebSocket connected successfully');
+                logToConsole('Socket ID:', this.socket.id);
+
+                // Simulate receiving some events
+                setTimeout(() => {
+                    logToConsole('📥 WebSocket Event: countdown_started', { remainingTime: 60 });
+                    logToConsole('📥 WebSocket Event: arena_begins', { status: 'active' });
+                }, 1000);
+            }
+
+            // Utility methods
+            setTokens(userToken, vorldToken) {
+                this.userToken = userToken;
+                this.vorldToken = vorldToken;
+                logToConsole('🔑 Tokens set', { hasUserToken: !!userToken, hasVorldToken: !!vorldToken });
+            }
+
+            getConnectionInfo() {
+                return {
+                    connected: this.isConnected,
+                    sessionId: this.gameState?.sessionId,
+                    gameId: this.gameState?.gameId,
+                    socketId: this.socket?.id,
+                    hasGameState: !!this.gameState
+                };
+            }
+
+            disconnect() {
+                logToConsole('🔌 Disconnecting WebSocket...');
+                this.socket = null;
+                this.isConnected = false;
+                this.gameState = null;
+            }
+
+            on(eventName, handler) {
+                if (!this.eventHandlers.has(eventName)) {
+                    this.eventHandlers.set(eventName, []);
+                }
+                this.eventHandlers.get(eventName).push(handler);
+                logToConsole(`📝 Event handler registered for: ${eventName}`);
+            }
+        }
+
+        // Initialize service
+        window.arenaGameService = new MockArenaGameService();
+
+        // Helper functions
+        window.selectMethod = function(method) {
+            currentMethod = method;
+
+            // Update UI
+            document.querySelectorAll('.method-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.method-${method.slice(-1)}`).classList.add('active');
+
+            // Update description
+            const descriptions = {
+                method1: `<strong>🎯 Method 1: initializeArenaGame(options)</strong><br/>
+                         • Parameters: streamUrl, onSuccess callback, onError callback<br/>
+                         • Returns: {success: boolean, gameState?: Object, error?: string}<br/>
+                         • Features: Full control with callbacks`,
+
+                method2: `<strong>⚡ Method 2: quickInitializeGame(streamUrl, userToken)</strong><br/>
+                         • Parameters: streamUrl, userToken<br/>
+                         • Returns: boolean (success status)<br/>
+                         • Features: Simple and fast`,
+
+                method3: `<strong>🌐 Method 3: initializeGameWithWebSocket(streamUrl, userToken)</strong><br/>
+                         • Parameters: streamUrl, userToken<br/>
+                         • Returns: GameState | null<br/>
+                         • Features: Auto WebSocket connection`
+            };
+
+            document.getElementById('methodDescription').innerHTML = descriptions[method];
+
+            // Update button text
+            const initBtn = document.getElementById('initBtn');
+            initBtn.textContent = method === 'method1' ? '🎯 Test Method 1' :
+                                   method === 'method2' ? '⚡ Test Method 2' :
+                                   '🌐 Test Method 3';
+            initBtn.className = `btn ${method === 'method1' ? 'btn-primary' :
+                                       method === 'method2' ? 'btn-success' : 'btn-primary'}`;
+
+            logToConsole(`🔄 Switched to ${method}`);
+        };
+
+        window.testInitialization = async function() {
+            const streamUrl = document.getElementById('streamUrl').value;
+            const userToken = document.getElementById('userToken').value;
+            const vorldToken = document.getElementById('vorldToken').value;
+
+            if (!userToken) {
+                showStatus('error', '❌ User token is required for testing');
+                return;
+            }
+
+            // Set tokens
+            arenaGameService.setTokens(userToken, vorldToken);
+
+            // Disable button
+            const initBtn = document.getElementById('initBtn');
+            initBtn.disabled = true;
+            initBtn.textContent = '⏳ Testing...';
+
+            showStatus('info', `🔄 Testing ${currentMethod}...`);
+
+            try {
+                let result;
+
+                switch (currentMethod) {
+                    case 'method1':
+                        result = await arenaGameService.initializeArenaGame({
+                            streamUrl,
+                            onSuccess: (gameState) => {
+                                logToConsole('📞 SUCCESS CALLBACK called!');
+                                showStatus('success', `✅ Method 1: Success callback executed! Session: ${gameState.sessionId}`);
+                                updateSessionInfo(gameState);
+                            },
+                            onError: (error) => {
+                                logToConsole('📞 ERROR CALLBACK called!');
+                                showStatus('error', `❌ Method 1: Error callback: ${error}`);
+                            }
+                        });
+
+                        if (result.success) {
+                            logToConsole('🎯 Method 1 returned:', result);
+                        } else {
+                            logToConsole('❌ Method 1 failed:', result);
+                        }
+                        break;
+
+                    case 'method2':
+                        const isSuccess = await arenaGameService.quickInitializeGame(streamUrl, userToken);
+                        logToConsole('⚡ Method 2 returned:', isSuccess);
+
+                        if (isSuccess) {
+                            showStatus('success', '✅ Method 2: Returned true (success)');
+                            const connInfo = arenaGameService.getConnectionInfo();
+                            updateSessionInfo({
+                                sessionId: connInfo.sessionId,
+                                gameId: connInfo.gameId,
+                                status: 'active'
+                            });
+                        } else {
+                            showStatus('error', '❌ Method 2: Returned false (failed)');
+                        }
+                        break;
+
+                    case 'method3':
+                        const gameState = await arenaGameService.initializeGameWithWebSocket(streamUrl, userToken);
+                        logToConsole('🌐 Method 3 returned:', gameState);
+
+                        if (gameState) {
+                            showStatus('success', `✅ Method 3: GameState returned + WebSocket auto-connected! Session: ${gameState.sessionId}`);
+                            updateSessionInfo(gameState);
+                        } else {
+                            showStatus('error', '❌ Method 3: Returned null (failed)');
+                        }
+                        break;
+                }
+
+                // Show clear button if we have a session
+                if (arenaGameService.gameState) {
+                    document.getElementById('clearBtn').style.display = 'inline-block';
+                }
+
+            } catch (error) {
+                logToConsole('❌ Test failed with exception:', error);
+                showStatus('error', `❌ Test failed: ${error.message}`);
+            } finally {
+                // Re-enable button
+                initBtn.disabled = false;
+                initBtn.textContent = currentMethod === 'method1' ? '🎯 Test Method 1' :
+                                       currentMethod === 'method2' ? '⚡ Test Method 2' :
+                                       '🌐 Test Method 3';
+            }
+        };
+
+        window.clearSession = function() {
+            arenaGameService.disconnect();
+            gameState = null;
+
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('sessionInfo').style.display = 'none';
+
+            showStatus('info', '🔄 Session cleared');
+            logToConsole('🔄 Session cleared');
+        };
+
+        window.clearConsole = function() {
+            document.getElementById('consoleOutput').textContent = 'Console cleared...\n\n';
+        };
+
+        function showStatus(type, message) {
+            const statusArea = document.getElementById('statusArea');
+            statusArea.innerHTML = `<div class="status ${type}">${message}</div>`;
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (statusArea.innerHTML.includes(message)) {
+                    statusArea.innerHTML = '';
+                }
+            }, 5000);
+        }
+
+        function updateSessionInfo(gameState) {
+            const connInfo = arenaGameService.getConnectionInfo();
+
+            const sessionHtml = `
+                <div class="session-info">
+                    <h4>📊 Session Information:</h4>
+                    <div class="grid-2">
+                        <div><strong>Session ID:</strong> <code>${gameState.sessionId}</code></div>
+                        <div><strong>Game ID:</strong> <code>${gameState.gameId}</code></div>
+                        <div><strong>Status:</strong> <span style="color: #28a745;">${gameState.status}</span></div>
+                        <div>
+                            <strong>WebSocket:</strong>
+                            <span class="ws-indicator ${connInfo.connected ? 'ws-connected' : 'ws-disconnected'}"></span>
+                            ${connInfo.connected ? '🟢 Connected' : '🔴 Disconnected'}
+                        </div>
+                    </div>
+                    ${gameState.websocketUrl ? `<div style="margin-top: 10px;"><strong>WebSocket URL:</strong> <code>${gameState.websocketUrl}</code></div>` : ''}
+                </div>
+            `;
+
+            document.getElementById('sessionInfo').innerHTML = sessionHtml;
+            document.getElementById('sessionInfo').style.display = 'block';
+        }
+
+        function logToConsole(...args) {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+
+            consoleOutput.textContent += `[${timestamp}] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Initial log
+        logToConsole('🚀 ArenaGameService Test Interface Loaded');
+        logToConsole('📝 This is a mock implementation for testing the 3 initialization methods');
+        logToConsole('🔧 In production, replace MockArenaGameService with the real import from services/arenaGameService.js');
+    </script>
+</body>
+</html>
