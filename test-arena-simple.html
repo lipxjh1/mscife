@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Service Quick Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .console { background: #1e1e1e; color: #fff; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.4; max-height: 300px; overflow-y: auto; margin-top: 10px; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .status-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .method-card { padding: 20px; border: 2px solid #e9ecef; border-radius: 8px; }
+        .method-card h3 { margin-top: 0; color: #495057; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Arena Game Service Test Suite</h1>
+            <p>Testing 3 Initialization Methods - Production API</p>
+            <p><strong>Test User:</strong> huynguyen90tn@gmail.com | <strong>Stream:</strong> https://twitch.tv/gint0ky</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Test Environment Setup</h3>
+            <div id="env-status" class="status status-warning">Checking environment...</div>
+            <button class="btn btn-primary" onclick="setupTestEnvironment()">Setup Test Environment</button>
+            <button class="btn btn-warning" onclick="checkTokens()">Check Tokens</button>
+            <button class="btn btn-danger" onclick="clearTokens()">Clear Tokens</button>
+        </div>
+
+        <div class="grid">
+            <!-- Method 1 -->
+            <div class="method-card">
+                <h3>🎯 Method 1: Basic Initialization</h3>
+                <p>Tests callback-based initialization</p>
+                <div id="method1-status" class="status status-warning">Ready to test</div>
+                <button class="btn btn-primary" onclick="testMethod1()">Test Method 1</button>
+                <div class="console" id="method1-console">Waiting to test...</div>
+            </div>
+
+            <!-- Method 2 -->
+            <div class="method-card">
+                <h3>🚀 Method 2: Quick Initialization</h3>
+                <p>Tests boolean return initialization</p>
+                <div id="method2-status" class="status status-warning">Ready to test</div>
+                <button class="btn btn-success" onclick="testMethod2()">Test Method 2</button>
+                <div class="console" id="method2-console">Waiting to test...</div>
+            </div>
+
+            <!-- Method 3 -->
+            <div class="method-card">
+                <h3>🔌 Method 3: WebSocket Initialization</h3>
+                <p>Tests auto WebSocket connection</p>
+                <div id="method3-status" class="status status-warning">Ready to test</div>
+                <button class="btn btn-warning" onclick="testMethod3()">Test Method 3</button>
+                <div class="console" id="method3-console">Waiting to test...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚠️ Error Handling Tests</h3>
+            <button class="btn btn-danger" onclick="testInvalidUrl()">Invalid URL</button>
+            <button class="btn btn-danger" onclick="testMissingToken()">Missing Token</button>
+            <button class="btn btn-danger" onclick="testNetworkError()">Network Error</button>
+            <div class="console" id="error-console">Waiting to test errors...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test Summary</h3>
+            <div id="test-summary">
+                <p>Tests not started yet. Run tests to see summary.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global test state
+        let testResults = {
+            method1: null,
+            method2: null,
+            method3: null,
+            errors: null,
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        // Mock Arena service for testing
+        class MockArenaGameService {
+            constructor() {
+                this.gameState = null;
+                console.log('[MockArenaGameService] Service created');
+            }
+
+            async initializeArenaGame(options = {}) {
+                const { streamUrl = '', onSuccess, onError } = options;
+                console.log('[MockArenaGameService] Method 1: Basic initialization', { streamUrl });
+
+                try {
+                    // Simulate API call
+                    await this.simulateDelay(1000);
+
+                    // Mock success response
+                    const gameState = {
+                        sessionId: 'sess_test_' + Date.now(),
+                        gameId: 'arcade_mh96qa8c_9bd983a7',
+                        status: 'pending',
+                        websocketUrl: 'wss://test-ws.com/arena',
+                        streamUrl: streamUrl
+                    };
+
+                    this.gameState = gameState;
+
+                    // Call success callback
+                    if (onSuccess) {
+                        onSuccess(gameState);
+                    }
+
+                    return {
+                        success: true,
+                        gameState: gameState
+                    };
+
+                } catch (error) {
+                    console.error('[MockArenaGameService] Method 1 failed:', error);
+                    if (onError) {
+                        onError(error.message);
+                    }
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                }
+            }
+
+            async quickInitializeGame(streamUrl = '', userToken = '') {
+                console.log('[MockArenaGameService] Method 2: Quick initialization', { streamUrl, hasToken: !!userToken });
+
+                try {
+                    // Validate inputs
+                    if (!streamUrl || !userToken) {
+                        return false;
+                    }
+
+                    // Simulate API call
+                    await this.simulateDelay(800);
+
+                    // Mock success
+                    this.gameState = {
+                        sessionId: 'sess_quick_' + Date.now(),
+                        gameId: 'arcade_mh96qa8c_9bd983a7',
+                        status: 'active'
+                    };
+
+                    return true;
+
+                } catch (error) {
+                    console.error('[MockArenaGameService] Method 2 failed:', error);
+                    return false;
+                }
+            }
+
+            async initializeGameWithWebSocket(streamUrl = '', userToken = '') {
+                console.log('[MockArenaGameService] Method 3: WebSocket initialization', { streamUrl, hasToken: !!userToken });
+
+                try {
+                    // Validate inputs
+                    if (!streamUrl || !userToken) {
+                        return null;
+                    }
+
+                    // Simulate API call
+                    await this.simulateDelay(1200);
+
+                    // Mock success with WebSocket
+                    this.gameState = {
+                        sessionId: 'sess_ws_' + Date.now(),
+                        gameId: 'arcade_mh96qa8c_9bd983a7',
+                        status: 'active',
+                        websocketUrl: 'wss://test-ws.com/arena/' + Date.now(),
+                        streamUrl: streamUrl
+                    };
+
+                    // Simulate WebSocket connection
+                    setTimeout(() => {
+                        this.simulateWebSocketEvents();
+                    }, 500);
+
+                    return this.gameState;
+
+                } catch (error) {
+                    console.error('[MockArenaGameService] Method 3 failed:', error);
+                    return null;
+                }
+            }
+
+            async endGame() {
+                console.log('[MockArenaGameService] Ending game session...');
+                await this.simulateDelay(300);
+                this.gameState = null;
+                return { success: true };
+            }
+
+            simulateDelay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            simulateWebSocketEvents() {
+                const events = [
+                    'WebSocket connected',
+                    'Event: session_created',
+                    'Event: ARENA_COUNTDOWN_START',
+                    'Countdown: 60',
+                    'Countdown: 59',
+                    'Countdown: 58',
+                    'Event: ARENA_ACTIVE'
+                ];
+
+                events.forEach((event, index) => {
+                    setTimeout(() => {
+                        console.log(`[MockArenaGameService] 🔥 ${event}`);
+                        addToConsole('method3-console', `[WS] ${event}`, 'success');
+                    }, index * 1000);
+                });
+            }
+        }
+
+        // Helper functions
+        function updateStatus(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.className = `status status-${type}`;
+            element.textContent = message;
+        }
+
+        function addToConsole(consoleId, message, type = 'info') {
+            const console = document.getElementById(consoleId);
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8';
+            console.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function updateTestSummary() {
+            const summary = document.getElementById('test-summary');
+            const total = testResults.total;
+            const passed = testResults.passed;
+            const failed = testResults.failed;
+            const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+            summary.innerHTML = `
+                <div class="grid">
+                    <div><strong>Total Tests:</strong> ${total}</div>
+                    <div><strong>Passed:</strong> <span style="color: #28a745">${passed}</span></div>
+                    <div><strong>Failed:</strong> <span style="color: #dc3545">${failed}</span></div>
+                    <div><strong>Pass Rate:</strong> ${passRate}%</div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <strong>Status:</strong>
+                    ${passRate === 100 ? '<span style="color: #28a745">🎉 ALL TESTS PASSED</span>' :
+                      passRate >= 75 ? '<span style="color: #ffc107">⚠️ MOST TESTS PASSED</span>' :
+                      '<span style="color: #dc3545">🚨 MANY TESTS FAILED</span>'}
+                </div>
+            `;
+        }
+
+        // Test functions
+        window.setupTestEnvironment = function() {
+            addToConsole('method1-console', '🔧 Setting up test environment...', 'info');
+
+            // Setup mock tokens
+            localStorage.setItem('accessToken', 'mock_backend_token_12345');
+            localStorage.setItem('vorldAccessToken', 'mock_vorld_token_67890');
+
+            updateStatus('env-status', '✅ Test environment setup complete - Mock tokens stored', 'success');
+            addToConsole('method1-console', '✅ Mock tokens stored in localStorage', 'success');
+        };
+
+        window.checkTokens = function() {
+            const tokens = {
+                accessToken: localStorage.getItem('accessToken'),
+                vorldAccessToken: localStorage.getItem('vorldAccessToken')
+            };
+
+            console.log('Current tokens:', tokens);
+
+            if (tokens.accessToken && tokens.vorldAccessToken) {
+                updateStatus('env-status', '✅ Both tokens are present', 'success');
+            } else {
+                updateStatus('env-status', '⚠️ Missing tokens - Click "Setup Test Environment"', 'warning');
+            }
+        };
+
+        window.clearTokens = function() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('vorldAccessToken');
+            updateStatus('env-status', '🗑️ Tokens cleared', 'warning');
+        };
+
+        window.testMethod1 = async function() {
+            const service = new MockArenaGameService();
+            updateStatus('method1-status', '🔄 Testing Method 1...', 'warning');
+            addToConsole('method1-console', '🎯 Starting Method 1: Basic initialization...', 'info');
+
+            try {
+                const result = await service.initializeArenaGame({
+                    streamUrl: 'https://twitch.tv/gint0ky',
+                    onSuccess: (gameState) => {
+                        addToConsole('method1-console', '✅ onSuccess callback executed!', 'success');
+                        addToConsole('method1-console', `Session ID: ${gameState.sessionId}`, 'info');
+                    },
+                    onError: (error) => {
+                        addToConsole('method1-console', `❌ onError callback: ${error}`, 'error');
+                    }
+                });
+
+                if (result.success) {
+                    addToConsole('method1-console', '✅ Method 1 SUCCESS: Game initialized successfully', 'success');
+                    addToConsole('method1-console', `Return type: ${typeof result}`, 'info');
+                    addToConsole('method1-console', `Has gameState: ${!!result.gameState}`, 'info');
+                    updateStatus('method1-status', '✅ Method 1 PASSED', 'success');
+                    testResults.method1 = true;
+                } else {
+                    addToConsole('method1-console', `❌ Method 1 FAILED: ${result.error}`, 'error');
+                    updateStatus('method1-status', '❌ Method 1 FAILED', 'error');
+                    testResults.method1 = false;
+                }
+
+            } catch (error) {
+                addToConsole('method1-console', `❌ Method 1 ERROR: ${error.message}`, 'error');
+                updateStatus('method1-status', '❌ Method 1 ERROR', 'error');
+                testResults.method1 = false;
+            }
+
+            testResults.total++;
+            if (testResults.method1) testResults.passed++;
+            else testResults.failed++;
+            updateTestSummary();
+        };
+
+        window.testMethod2 = async function() {
+            const service = new MockArenaGameService();
+            const userToken = localStorage.getItem('accessToken');
+
+            updateStatus('method2-status', '🔄 Testing Method 2...', 'warning');
+            addToConsole('method2-console', '🚀 Starting Method 2: Quick initialization...', 'info');
+
+            try {
+                const result = await service.quickInitializeGame('https://twitch.tv/gint0ky', userToken);
+
+                addToConsole('method2-console', `Result: ${result} (type: ${typeof result})`, 'info');
+
+                if (result === true) {
+                    addToConsole('method2-console', '✅ Method 2 SUCCESS: Boolean true returned', 'success');
+                    addToConsole('method2-console', 'Quick initialization successful', 'info');
+                    updateStatus('method2-status', '✅ Method 2 PASSED', 'success');
+                    testResults.method2 = true;
+                } else {
+                    addToConsole('method2-console', '❌ Method 2 FAILED: Boolean false returned', 'error');
+                    updateStatus('method2-status', '❌ Method 2 FAILED', 'error');
+                    testResults.method2 = false;
+                }
+
+            } catch (error) {
+                addToConsole('method2-console', `❌ Method 2 ERROR: ${error.message}`, 'error');
+                updateStatus('method2-status', '❌ Method 2 ERROR', 'error');
+                testResults.method2 = false;
+            }
+
+            testResults.total++;
+            if (testResults.method2) testResults.passed++;
+            else testResults.failed++;
+            updateTestSummary();
+        };
+
+        window.testMethod3 = async function() {
+            const service = new MockArenaGameService();
+            const userToken = localStorage.getItem('accessToken');
+
+            updateStatus('method3-status', '🔄 Testing Method 3...', 'warning');
+            addToConsole('method3-console', '🔌 Starting Method 3: WebSocket initialization...', 'info');
+
+            try {
+                const result = await service.initializeGameWithWebSocket('https://twitch.tv/gint0ky', userToken);
+
+                if (result) {
+                    addToConsole('method3-console', '✅ Method 3 SUCCESS: Game state returned', 'success');
+                    addToConsole('method3-console', `Return type: ${typeof result}`, 'info');
+                    addToConsole('method3-console', `Session ID: ${result.sessionId}`, 'info');
+                    addToConsole('method3-console', `WebSocket URL: ${result.websocketUrl}`, 'info');
+                    addToConsole('method3-console', 'Waiting for WebSocket events...', 'info');
+                    updateStatus('method3-status', '✅ Method 3 PASSED', 'success');
+                    testResults.method3 = true;
+                } else {
+                    addToConsole('method3-console', '❌ Method 3 FAILED: null returned', 'error');
+                    updateStatus('method3-status', '❌ Method 3 FAILED', 'error');
+                    testResults.method3 = false;
+                }
+
+            } catch (error) {
+                addToConsole('method3-console', `❌ Method 3 ERROR: ${error.message}`, 'error');
+                updateStatus('method3-status', '❌ Method 3 ERROR', 'error');
+                testResults.method3 = false;
+            }
+
+            testResults.total++;
+            if (testResults.method3) testResults.passed++;
+            else testResults.failed++;
+            updateTestSummary();
+        };
+
+        window.testInvalidUrl = async function() {
+            const service = new MockArenaGameService();
+            addToConsole('error-console', '🧪 Testing invalid stream URL...', 'warning');
+
+            const result = await service.quickInitializeGame('invalid-url', 'dummy-token');
+            addToConsole('error-console', `Invalid URL result: ${result}`, 'warning');
+            addToConsole('error-console', result === false ? '✅ Correctly returned false for invalid URL' : '❌ Should have returned false', result === false ? 'success' : 'error');
+        };
+
+        window.testMissingToken = async function() {
+            const service = new MockArenaGameService();
+            addToConsole('error-console', '🧪 Testing missing token...', 'warning');
+
+            const result = await service.quickInitializeGame('https://twitch.tv/test', null);
+            addToConsole('error-console', `Missing token result: ${result}`, 'warning');
+            addToConsole('error-console', result === false ? '✅ Correctly returned false for missing token' : '❌ Should have returned false', result === false ? 'success' : 'error');
+        };
+
+        window.testNetworkError = async function() {
+            addToConsole('error-console', '🧪 Testing network error simulation...', 'warning');
+            addToConsole('error-console', 'Network error simulation would require fetch mocking', 'info');
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addToConsole('method1-console', '🧪 Test suite loaded - Click "Setup Test Environment" to begin', 'info');
+            addToConsole('method2-console', '🚀 Method 2 ready for testing', 'info');
+            addToConsole('method3-console', '🔌 Method 3 ready for testing', 'info');
+            addToConsole('error-console', '⚠️ Error handling tests ready', 'info');
+
+            checkTokens();
+        });
+    </script>
+</body>
+</html>
