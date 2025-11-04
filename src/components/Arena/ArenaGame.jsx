@@ -4,7 +4,7 @@ import GameInit from './GameInit';
 import ItemsCatalog from './ItemsCatalog';
 import BoostPlayer from './BoostPlayer';
 import ItemDrop from './ItemDrop';
-import arenaSocket from '../../services/arenaSocket';
+import arenaGameService from '../../services/arenaGameService';
 
 export default function ArenaGame() {
   const [sessionId, setSessionId] = useState(null);
@@ -17,22 +17,22 @@ export default function ArenaGame() {
     if (sessionId) {
       console.log('[ArenaGame] Setting up WebSocket listeners for session:', sessionId);
 
-      arenaSocket.on('connected', (data) => {
+      arenaGameService.on('connected', (data) => {
         console.log('[ArenaGame] WebSocket connected:', data);
         setWsStatus('connected');
       });
 
-      arenaSocket.on('disconnected', (data) => {
+      arenaGameService.on('disconnected', (data) => {
         console.log('[ArenaGame] WebSocket disconnected:', data);
         setWsStatus('disconnected');
       });
 
-      arenaSocket.on('session_activated', (data) => {
+      arenaGameService.on('session_activated', (data) => {
         console.log('[ArenaGame] Session activated:', data);
         // Session is now ready for actions
       });
 
-      arenaSocket.on('player_boosted', (data) => {
+      arenaGameService.on('player_boosted', (data) => {
         console.log('[ArenaGame] Player boosted event received:', data);
 
         // Update balance if we boosted someone
@@ -48,20 +48,20 @@ export default function ArenaGame() {
         }
       });
 
-      arenaSocket.on('item_dropped', (data) => {
+      arenaGameService.on('item_dropped', (data) => {
         console.log('[ArenaGame] Item dropped event received:', data);
 
         // Show notification
         alert(`🎁 Successfully dropped ${data.quantity || 1}x item to player ${data.targetUserId || 'Unknown'}!`);
       });
 
-      arenaSocket.on('session_ended', (data) => {
+      arenaGameService.on('session_ended', (data) => {
         console.log('[ArenaGame] Session ended:', data);
         setWsStatus('ended');
         alert('🏁 Game session has ended!');
       });
 
-      arenaSocket.on('error', (data) => {
+      arenaGameService.on('error', (data) => {
         console.error('[ArenaGame] WebSocket error:', data);
         setWsStatus('error');
       });
@@ -74,13 +74,13 @@ export default function ArenaGame() {
     return () => {
       if (sessionId) {
         console.log('[ArenaGame] Cleaning up WebSocket listeners');
-        arenaSocket.off('connected');
-        arenaSocket.off('disconnected');
-        arenaSocket.off('session_activated');
-        arenaSocket.off('player_boosted');
-        arenaSocket.off('item_dropped');
-        arenaSocket.off('session_ended');
-        arenaSocket.off('error');
+        arenaGameService.off('connected');
+        arenaGameService.off('disconnected');
+        arenaGameService.off('session_activated');
+        arenaGameService.off('player_boosted');
+        arenaGameService.off('item_dropped');
+        arenaGameService.off('session_ended');
+        arenaGameService.off('error');
       }
     };
   }, [sessionId]);
@@ -111,7 +111,7 @@ export default function ArenaGame() {
     console.log('[ArenaGame] Ending session...');
 
     // Disconnect WebSocket
-    arenaSocket.disconnect();
+    arenaGameService.disconnect();
 
     // Reset state
     setSessionId(null);

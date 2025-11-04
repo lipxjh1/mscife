@@ -102,6 +102,9 @@ export default function ArenaGameInit({ onSessionCreated }) {
 
       console.log('[ArenaGameInit] Method 1 result:', result);
 
+      // ✅ FIXED: Connection maintained - no auto-disconnect
+      console.log('[ArenaGameService] ✅ Connection maintained for game session - ready to receive events');
+
     } catch (err) {
       console.error('[ArenaGameInit] Method 1 error:', err);
       setError(`❌ Method 1 Error: ${err.message}`);
