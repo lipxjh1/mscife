@@ -3,12 +3,20 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import ENV from '../config/env.js';
 import { getVorldToken, hasVorldToken } from '../utils/vorldAuth.js';
+import {
+  cleanWebSocketUrl,
+  getVorldAppId,
+  getUserToken,
+  validateWebSocketConfig,
+  createSocketConfig,
+  debugWebSocket
+} from '../lib/websocketUtils.js';
 
 // Arena Configuration
 const ARENA_CONFIG = {
   API_URL: ENV.ARENA_API_URL,
   WS_BASE_URL: ENV.ARENA_WS_URL,
-  VORLD_APP_ID: ENV.VORLD_APP_ID,
+  VORLD_APP_ID: getVorldAppId(), // Use utility to get appId with fallbacks
   ARENA_GAME_ID: 'arcade_mh96qa8c_9bd983a7'
 };
 
@@ -290,7 +298,7 @@ export class ArenaGameService {
   }
 
   /**
-   * Connect WebSocket server
+   * Connect WebSocket server with proper URL cleaning and authentication
    * @returns {Promise<boolean>} - Connection success status
    */
   async connectWebSocket() {
@@ -306,39 +314,106 @@ export class ArenaGameService {
 
     try {
       const { sessionId, websocketUrl } = this.gameState;
-      const token = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+
+      debugWebSocket('CONNECTION_START', {
+        sessionId,
+        originalWebsocketUrl: websocketUrl,
+        fallbackUrl: ARENA_CONFIG.WS_BASE_URL
+      });
+
+      // Get authentication tokens
+      const token = this.userToken || getUserToken();
+      const appId = ARENA_CONFIG.VORLD_APP_ID;
 
       if (!token) {
         console.error('[ArenaGameService] Cannot connect WebSocket: No authentication token');
         return false;
       }
 
-      // Use WebSocket URL from backend if available
-      const wsUrl = websocketUrl || ARENA_CONFIG.WS_BASE_URL;
+      // ✅ FIXED: Clean WebSocket URL to remove /ws/ path (prevents Invalid namespace)
+      let finalUrl, finalSessionId;
 
-      console.log('[ArenaGameService] Connecting WebSocket...', {
-        sessionId,
-        wsUrl,
-        hasCustomUrl: !!websocketUrl
-      });
+      if (websocketUrl) {
+        // Clean the backend-provided URL and extract session ID
+        finalUrl = cleanWebSocketUrl(websocketUrl);
+        finalSessionId = this.extractSessionIdFromGamestate() || sessionId;
 
-      this.socket = io(wsUrl, {
+        debugWebSocket('URL_CLEANING', {
+          originalUrl: websocketUrl,
+          cleanedUrl: finalUrl,
+          sessionId: finalSessionId
+        });
+      } else {
+        // Use base URL with session ID in query
+        finalUrl = ARENA_CONFIG.WS_BASE_URL;
+        finalSessionId = sessionId;
+      }
+
+      // ✅ FIXED: Validate configuration before connection
+      const validation = validateWebSocketConfig(finalUrl, token, appId);
+      if (!validation.valid) {
+        console.error('[ArenaGameService] Invalid WebSocket configuration:', validation.errors);
+        return false;
+      }
+
+      if (validation.warnings.length > 0) {
+        console.warn('[ArenaGameService] WebSocket configuration warnings:', validation.warnings);
+      }
+
+      // ✅ FIXED: Create proper socket configuration with appId in auth
+      const { config } = createSocketConfig({
+        url: finalUrl,
+        token: token,
+        appId: appId,
+        sessionId: finalSessionId,
         transports: ['websocket'],
-        auth: { token },
-        query: websocketUrl ? {} : { sessionId },
+        timeout: 10000,
         reconnection: true,
         reconnectionDelay: 1000,
-        reconnectionAttempts: this.maxReconnectAttempts,
-        timeout: 10000
+        reconnectionAttempts: this.maxReconnectAttempts
       });
+
+      debugWebSocket('SOCKET_CONFIG', {
+        url: finalUrl,
+        hasAuth: !!config.auth,
+        authKeys: config.auth ? Object.keys(config.auth) : [],
+        hasQuery: !!config.query,
+        queryKeys: config.query ? Object.keys(config.query) : [],
+        transports: config.transports
+      });
+
+      console.log('[ArenaGameService] Connecting WebSocket...', {
+        sessionId: finalSessionId,
+        finalUrl: finalUrl,
+        hasToken: !!token,
+        hasAppId: !!appId,
+        appId: appId,
+        authProvided: !!config.auth
+      });
+
+      // Create socket connection with proper configuration
+      this.socket = io(finalUrl, config);
 
       // Setup event listeners
       this.setupEventListeners();
 
       // Return connection promise
       return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          console.error('[ArenaGameService] Connection timeout after 15s');
+          this.isConnected = false;
+          resolve(false);
+        }, 15000);
+
         this.socket.on('connect', () => {
-          console.log('[ArenaGameService] WebSocket connected successfully');
+          clearTimeout(timeout);
+          console.log('[ArenaGameService] ✅ WebSocket connected successfully');
+          debugWebSocket('CONNECTION_SUCCESS', {
+            socketId: this.socket.id,
+            connected: true,
+            sessionId: finalSessionId
+          });
+
           this.isConnected = true;
           this.reconnectAttempts = 0;
 
@@ -348,15 +423,50 @@ export class ArenaGameService {
         });
 
         this.socket.on('connect_error', (error) => {
-          console.error('[ArenaGameService] WebSocket connection error:', error.message);
+          clearTimeout(timeout);
+          console.error('[ArenaGameService] ❌ WebSocket connection error:', {
+            message: error.message,
+            description: error.description,
+            context: error.context,
+            type: error.type
+          });
+
+          debugWebSocket('CONNECTION_ERROR', {
+            error: error.message,
+            url: finalUrl,
+            hasAuth: !!config.auth,
+            sessionId: finalSessionId
+          });
+
           this.isConnected = false;
           resolve(false);
         });
       });
     } catch (error) {
-      console.error('[ArenaGameService] WebSocket connection failed:', error);
+      console.error('[ArenaGameService] ❌ WebSocket connection failed:', error);
+      debugWebSocket('CONNECTION_FAILED', {
+        error: error.message,
+        stack: error.stack,
+        sessionId: this.gameState?.sessionId
+      });
       return false;
     }
+  }
+
+  /**
+   * Helper method to extract session ID from game state WebSocket URL
+   * @returns {string|null} Session ID or null
+   */
+  extractSessionIdFromGamestate() {
+    if (!this.gameState?.websocketUrl) return null;
+
+    // Extract session ID from /ws/SESSION_ID pattern
+    const urlParts = this.gameState.websocketUrl.split('/ws/');
+    if (urlParts.length > 1) {
+      return urlParts[1].split('?')[0].split('#')[0];
+    }
+
+    return null;
   }
 
   /**

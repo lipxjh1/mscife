@@ -1,11 +1,22 @@
 // File: src/services/arenaSocket.js (NEW FILE)
 import io from 'socket.io-client';
 import ENV from '../config/env.js';
+import {
+  cleanWebSocketUrl,
+  getVorldAppId,
+  getUserToken,
+  validateWebSocketConfig,
+  createSocketConfig,
+  debugWebSocket
+} from '../lib/websocketUtils.js';
 
 const ARENA_WS_URL = ENV.ARENA_WS_URL;
+const VORLD_APP_ID = getVorldAppId(); // Use utility to get appId with fallbacks
 
 console.log('[ArenaWS] Initializing Arena WebSocket service...', {
-  WS_URL: ARENA_WS_URL
+  WS_URL: ARENA_WS_URL,
+  VORLD_APP_ID: VORLD_APP_ID,
+  hasAppId: !!VORLD_APP_ID
 });
 
 /**
@@ -23,7 +34,7 @@ class ArenaSocketService {
   }
 
   /**
-   * Connect to Arena WebSocket server
+   * Connect to Arena WebSocket server with proper URL cleaning and authentication
    * @param {string} sessionId - Arena session ID
    * @param {string} websocketUrl - Optional WebSocket URL from backend
    */
@@ -39,40 +50,109 @@ class ArenaSocketService {
     }
 
     this.sessionId = sessionId;
-    const token = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+
+    debugWebSocket('ARENA_CONNECT_START', {
+      sessionId,
+      websocketUrl,
+      fallbackUrl: ARENA_WS_URL
+    });
+
+    // Get authentication tokens
+    const token = getUserToken();
+    const appId = VORLD_APP_ID;
 
     if (!token) {
       console.error('[ArenaWS] Cannot connect: No authentication token found');
       return;
     }
 
-    // ✅ FIXED: Use websocketUrl from backend if provided, otherwise create correctly
-    let wsUrl;
-    if (websocketUrl) {
-      // Use URL provided by backend (recommended by Arena docs)
-      wsUrl = websocketUrl;
-      console.log('[ArenaWS] Using WebSocket URL from backend');
-    } else {
-      // Create correct URL without /ws/ namespace
-      wsUrl = ARENA_WS_URL;
-      console.log('[ArenaWS] Using base URL, sessionId via query param');
+    if (!appId) {
+      console.error('[ArenaWS] Cannot connect: No Vorld App ID available');
+      return;
     }
 
-    console.log('[ArenaWS] Connecting...', { sessionId, wsUrl });
+    // ✅ FIXED: Clean WebSocket URL to remove /ws/ path (prevents Invalid namespace)
+    let finalUrl, finalSessionId;
 
-    // Create socket connection
-    // ✅ FIXED: Pass sessionId via query parameter, not as namespace
-    this.socket = io(wsUrl, {
+    if (websocketUrl) {
+      // Clean the backend-provided URL and extract session ID
+      finalUrl = cleanWebSocketUrl(websocketUrl);
+      finalSessionId = this.extractSessionIdFromUrl(websocketUrl) || sessionId;
+
+      debugWebSocket('ARENA_URL_CLEANING', {
+        originalUrl: websocketUrl,
+        cleanedUrl: finalUrl,
+        sessionId: finalSessionId
+      });
+    } else {
+      // Use base URL with session ID in query
+      finalUrl = ARENA_WS_URL;
+      finalSessionId = sessionId;
+    }
+
+    // ✅ FIXED: Validate configuration before connection
+    const validation = validateWebSocketConfig(finalUrl, token, appId);
+    if (!validation.valid) {
+      console.error('[ArenaWS] Invalid WebSocket configuration:', validation.errors);
+      return;
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn('[ArenaWS] WebSocket configuration warnings:', validation.warnings);
+    }
+
+    // ✅ FIXED: Create proper socket configuration with appId in auth
+    const { config } = createSocketConfig({
+      url: finalUrl,
+      token: token,
+      appId: appId,
+      sessionId: finalSessionId,
       transports: ['websocket'],
-      auth: { token },
-      query: websocketUrl ? {} : { sessionId },  // Add sessionId to query if no websocketUrl
+      timeout: 10000,
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: this.maxReconnectAttempts,
-      timeout: 10000
+      reconnectionAttempts: this.maxReconnectAttempts
     });
 
+    debugWebSocket('ARENA_SOCKET_CONFIG', {
+      url: finalUrl,
+      hasAuth: !!config.auth,
+      authKeys: config.auth ? Object.keys(config.auth) : [],
+      hasQuery: !!config.query,
+      queryKeys: config.query ? Object.keys(config.query) : [],
+      transports: config.transports
+    });
+
+    console.log('[ArenaWS] Connecting...', {
+      sessionId: finalSessionId,
+      finalUrl: finalUrl,
+      hasToken: !!token,
+      hasAppId: !!appId,
+      appId: appId,
+      authProvided: !!config.auth
+    });
+
+    // Create socket connection with proper configuration
+    this.socket = io(finalUrl, config);
+
     this._setupEventHandlers();
+  }
+
+  /**
+   * Helper method to extract session ID from WebSocket URL
+   * @param {string} url - WebSocket URL containing session ID
+   * @returns {string|null} Session ID or null
+   */
+  extractSessionIdFromUrl(url) {
+    if (!url) return null;
+
+    // Extract session ID from /ws/SESSION_ID pattern
+    const urlParts = url.split('/ws/');
+    if (urlParts.length > 1) {
+      return urlParts[1].split('?')[0].split('#')[0];
+    }
+
+    return null;
   }
 
   /**
