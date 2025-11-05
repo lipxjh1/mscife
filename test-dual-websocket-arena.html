@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual WebSocket Arena Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        .status-card.disconnected {
+            border-left-color: #f44336;
+        }
+        .status-card.connecting {
+            border-left-color: #ff9800;
+        }
+        .status-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status-details {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px 0 rgba(76, 175, 80, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(76, 175, 80, 0.4);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        button.danger {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            box-shadow: 0 4px 15px 0 rgba(244, 67, 54, 0.3);
+        }
+        button.danger:hover {
+            box-shadow: 0 6px 20px 0 rgba(244, 67, 54, 0.4);
+        }
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .log-backend {
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 3px solid #2196F3;
+        }
+        .log-arena {
+            background: rgba(156, 39, 176, 0.2);
+            border-left: 3px solid #9C27B0;
+        }
+        .log-error {
+            background: rgba(244, 67, 54, 0.2);
+            border-left: 3px solid #f44336;
+        }
+        .log-success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 14px;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .event-counter {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .counter {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .counter span {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Dual WebSocket Arena Test</h1>
+
+        <div class="status-grid">
+            <div class="status-card" id="backendStatus">
+                <div class="status-title">📡 Backend Local WebSocket</div>
+                <div class="status-details" id="backendDetails">Not connected</div>
+            </div>
+            <div class="status-card" id="arenaStatus">
+                <div class="status-title">🎯 Arena Direct WebSocket</div>
+                <div class="status-details" id="arenaDetails">Not connected</div>
+            </div>
+        </div>
+
+        <div class="event-counter">
+            <div class="counter">Backend Events: <span id="backendCount">0</span></div>
+            <div class="counter">Arena Events: <span id="arenaCount">0</span></div>
+            <div class="counter">Package Drops: <span id="packageCount">0</span></div>
+            <div class="counter">Errors: <span id="errorCount">0</span></div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="streamUrl" placeholder="Stream URL (optional)" value="https://twitch.tv/example">
+            <input type="text" id="userToken" placeholder="User Token (optional)" value="">
+        </div>
+
+        <div class="controls">
+            <button id="initBtn" onclick="initializeGame()">🚀 Initialize Game</button>
+            <button id="initWSBtn" onclick="initializeWithWebSocket()" disabled>📡 Initialize + WebSocket</button>
+            <button id="quickBtn" onclick="quickInit()" disabled>⚡ Quick Init</button>
+            <button id="disconnectBtn" onclick="disconnectAll()" class="danger" disabled>🔌 Disconnect All</button>
+            <button id="clearBtn" onclick="clearLogs()">🗑️ Clear Logs</button>
+            <button id="statusBtn" onclick="showStatus()">📊 Status</button>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry log-success">✅ Dual WebSocket Test Ready. Click "Initialize Game" to start.</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import ArenaGameService for testing
+        // Note: In a real React app, this would be imported properly
+
+        // Mock ArenaGameService for testing HTML standalone
+        class MockArenaGameService {
+            constructor() {
+                this.socket = null;
+                this.arenaSocket = null;
+                this.gameState = null;
+                this.isConnected = false;
+                this.arenaConnected = false;
+                this.eventHandlers = new Map();
+            }
+
+            async initializeGameWithWebSocket(streamUrl, userToken) {
+                this.log('info', '🚀 Initializing game with WebSocket...', 'success');
+
+                // Mock game state
+                this.gameState = {
+                    sessionId: 'sess_' + Math.random().toString(36).substr(2, 9),
+                    arenaGameId: 'W4PWZN',
+                    websocketUrl: 'wss://airdrop-arcade.onrender.com/ws/W4PWZN',
+                    status: 'active'
+                };
+
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Setup mock connections
+                this.setupMockConnections();
+
+                return this.gameState;
+            }
+
+            setupMockConnections() {
+                this.log('info', '📡 Setting up backend local WebSocket connection...', 'backend');
+
+                // Mock backend connection
+                setTimeout(() => {
+                    this.isConnected = true;
+                    this.log('success', '✅ Backend WebSocket connected successfully', 'success');
+                    this.updateStatus();
+                    this.startMockBackendEvents();
+                }, 500);
+
+                this.log('info', '🎯 Setting up DIRECT Arena WebSocket connection...', 'arena');
+                this.log('info', 'Arena URL: ' + this.gameState.websocketUrl, 'arena');
+
+                // Mock Arena connection
+                setTimeout(() => {
+                    this.arenaConnected = true;
+                    this.log('success', '✅ Connected DIRECTLY to Arena WebSocket!', 'success');
+                    this.log('info', '📡 Listening for Arena events...', 'arena');
+                    this.updateStatus();
+                    this.startMockArenaEvents();
+                }, 1000);
+            }
+
+            startMockBackendEvents() {
+                // Mock heartbeat events
+                setInterval(() => {
+                    if (this.isConnected) {
+                        this.log('backend', '📥 Backend heartbeat: {"status": "ok", "timestamp": ' + Date.now() + '}', 'backend');
+                        incrementCounter('backendCount');
+                    }
+                }, 5000);
+
+                // Mock countdown event
+                setTimeout(() => {
+                    if (this.isConnected) {
+                        this.log('backend', '📥 Backend Event: ARENA_COUNTDOWN_START {"countdown": 60}', 'backend');
+                        incrementCounter('backendCount');
+                    }
+                }, 3000);
+            }
+
+            startMockArenaEvents() {
+                // Mock package drop events
+                setInterval(() => {
+                    if (this.arenaConnected) {
+                        const packages = ['Chip Boost 1000', 'Mystery Box', 'Power Up', 'Bonus Chips'];
+                        const randomPackage = packages[Math.floor(Math.random() * packages.length)];
+                        const amount = Math.floor(Math.random() * 2000) + 100;
+
+                        this.log('arena', `📦 PACKAGE DROPPED from Arena! {"package": "${randomPackage}", "amount": ${amount}}`, 'arena');
+                        incrementCounter('arenaCount');
+                        incrementCounter('packageCount');
+                    }
+                }, 8000);
+
+                // Mock boost events
+                setTimeout(() => {
+                    if (this.arenaConnected) {
+                        this.log('arena', '⚡ BOOST APPLIED from Arena! {"player": "user123", "boost": 500}', 'arena');
+                        incrementCounter('arenaCount');
+                    }
+                }, 5000);
+            }
+
+            disconnect() {
+                this.log('info', '🔌 Disconnecting all WebSocket connections...', 'error');
+
+                if (this.socket) {
+                    this.log('info', 'Disconnecting backend local socket...', 'backend');
+                    this.socket = null;
+                }
+
+                if (this.arenaSocket) {
+                    this.log('info', 'Disconnecting Arena direct socket...', 'arena');
+                    this.arenaSocket = null;
+                }
+
+                this.isConnected = false;
+                this.arenaConnected = false;
+                this.gameState = null;
+
+                this.log('success', '✅ All WebSocket connections closed', 'success');
+                this.updateStatus();
+            }
+
+            getConnectionInfo() {
+                return {
+                    connected: this.isConnected,
+                    backendConnected: this.isConnected,
+                    arenaConnected: this.arenaConnected,
+                    sessionId: this.gameState?.sessionId,
+                    arenaGameId: this.gameState?.arenaGameId,
+                    websocketUrl: this.gameState?.websocketUrl,
+                    dualConnectionActive: this.isConnected && this.arenaConnected
+                };
+            }
+
+            log(source, message, type = 'info') {
+                window.addLog(message, source, type);
+            }
+
+            updateStatus() {
+                window.updateConnectionStatus();
+            }
+        }
+
+        // Global variables
+        let arenaService = new MockArenaGameService();
+        let backendEventCount = 0;
+        let arenaEventCount = 0;
+        let packageDropCount = 0;
+        let errorCount = 0;
+
+        // UI Functions
+        window.addLog = function(message, source = 'info', type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+
+            const timestamp = new Date().toLocaleTimeString();
+            const sourceIcon = source === 'backend' ? '📡' : source === 'arena' ? '🎯' : 'ℹ️';
+
+            logEntry.innerHTML = `<strong>${timestamp} ${sourceIcon}</strong> ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        };
+
+        window.updateConnectionStatus = function() {
+            const backendStatus = document.getElementById('backendStatus');
+            const arenaStatus = document.getElementById('arenaStatus');
+            const backendDetails = document.getElementById('backendDetails');
+            const arenaDetails = document.getElementById('arenaDetails');
+
+            // Update backend status
+            if (arenaService.isConnected) {
+                backendStatus.className = 'status-card';
+                backendDetails.innerHTML = `✅ Connected<br>Session: ${arenaService.gameState?.sessionId || 'N/A'}`;
+            } else {
+                backendStatus.className = 'status-card disconnected';
+                backendDetails.innerHTML = '❌ Not connected';
+            }
+
+            // Update arena status
+            if (arenaService.arenaConnected) {
+                arenaStatus.className = 'status-card';
+                arenaDetails.innerHTML = `✅ Connected Direct<br>Game ID: ${arenaService.gameState?.arenaGameId || 'N/A'}`;
+            } else {
+                arenaStatus.className = 'status-card disconnected';
+                arenaDetails.innerHTML = '❌ Not connected';
+            }
+
+            // Update button states
+            document.getElementById('disconnectBtn').disabled = !arenaService.isConnected && !arenaService.arenaConnected;
+            document.getElementById('initWSBtn').disabled = arenaService.isConnected;
+            document.getElementById('quickBtn').disabled = arenaService.isConnected;
+        };
+
+        window.incrementCounter = function(counterId) {
+            const counter = document.getElementById(counterId);
+            counter.textContent = parseInt(counter.textContent) + 1;
+        };
+
+        // Control functions
+        window.initializeGame = async function() {
+            try {
+                document.getElementById('initBtn').disabled = true;
+                addLog('🚀 Starting game initialization...', 'info', 'success');
+
+                const streamUrl = document.getElementById('streamUrl').value;
+                const userToken = document.getElementById('userToken').value;
+
+                const result = await arenaService.initializeGameWithWebSocket(streamUrl, userToken);
+
+                if (result) {
+                    addLog(`✅ Game initialized successfully! Session: ${result.sessionId}`, 'info', 'success');
+                    updateConnectionStatus();
+                } else {
+                    addLog('❌ Game initialization failed', 'info', 'error');
+                    incrementCounter('errorCount');
+                }
+            } catch (error) {
+                addLog(`❌ Initialization error: ${error.message}`, 'info', 'error');
+                incrementCounter('errorCount');
+            } finally {
+                document.getElementById('initBtn').disabled = false;
+            }
+        };
+
+        window.initializeWithWebSocket = async function() {
+            addLog('📡 Initialize + WebSocket clicked (same as Initialize Game in test)', 'info', 'success');
+            await initializeGame();
+        };
+
+        window.quickInit = async function() {
+            addLog('⚡ Quick Initialize clicked (same as Initialize Game in test)', 'info', 'success');
+            await initializeGame();
+        };
+
+        window.disconnectAll = function() {
+            arenaService.disconnect();
+            updateConnectionStatus();
+        };
+
+        window.clearLogs = function() {
+            document.getElementById('logContainer').innerHTML = '<div class="log-entry log-success">✅ Logs cleared</div>';
+            backendEventCount = 0;
+            arenaEventCount = 0;
+            packageDropCount = 0;
+            errorCount = 0;
+            document.getElementById('backendCount').textContent = '0';
+            document.getElementById('arenaCount').textContent = '0';
+            document.getElementById('packageCount').textContent = '0';
+            document.getElementById('errorCount').textContent = '0';
+        };
+
+        window.showStatus = function() {
+            const info = arenaService.getConnectionInfo();
+            addLog(`📊 Status: Backend=${info.backendConnected}, Arena=${info.arenaConnected}, Dual=${info.dualConnectionActive}`, 'info', 'success');
+            addLog(`📊 Session: ${info.sessionId}, Game: ${info.arenaGameId}`, 'info', 'success');
+        };
+
+        // Initialize UI
+        updateConnectionStatus();
+        addLog('🎯 Dual WebSocket Arena Test Loaded', 'info', 'success');
+        addLog('📡 Features: Backend Local WS + Arena Direct WS', 'info', 'success');
+        addLog('📦 Expected: Package drops from Arena, heartbeat from backend', 'info', 'success');
+    </script>
+</body>
+</html>
