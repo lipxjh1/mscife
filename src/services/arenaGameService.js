@@ -408,40 +408,47 @@ export class ArenaGameService {
       // CONNECTION 2: Arena Direct WebSocket (NEW CODE)
       // ============================================
 
-      console.log('[ArenaGameService] Setting up DIRECT Arena WebSocket connection...');
-      console.log('[ArenaGameService] Arena URL:', websocketUrl);
+      try {
+        // ✅ LẤY ĐÚNG Arena URL
+        const arenaWebsocketUrl = gameState.arenaWebsocketUrl || gameState.externalArenaUrl;
 
-      // Check if Arena WebSocket URL exists
-      if (websocketUrl) {
-        try {
-          // Connect TRỰC TIẾP đến Arena WebSocket
-          this.arenaSocket = io(websocketUrl, {
-            auth: {
-              // Arena có thể cần auth, thử với Vorld token
-              token: this.vorldToken || getVorldToken(),
-              gameId: arenaGameId,
-              userId: this.userToken
-            },
-            transports: ['websocket'],
-            reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionAttempts: 5,
-            timeout: 10000
-          });
+        console.log('[ArenaGameService] Setting up DIRECT Arena WebSocket connection...');
+        console.log('[ArenaGameService] Arena URL:', arenaWebsocketUrl);
 
-          console.log('[ArenaGameService] 🔗 Attempting direct connection to Arena...');
-
-          // Setup Arena direct connection event listeners
-          this.setupArenaEventListeners();
-
-        } catch (error) {
-          console.error('[ArenaGameService] ❌ Failed to setup Arena connection:', {
-            error: error.message,
-            stack: error.stack
-          });
+        // Validate URL
+        if (!arenaWebsocketUrl) {
+          console.warn('[ArenaGameService] ⚠️ No Arena WebSocket URL provided');
+          return;
         }
-      } else {
-        console.warn('[ArenaGameService] ⚠️ No Arena WebSocket URL provided, skipping direct connection');
+
+        if (!arenaWebsocketUrl.includes('airdrop-arcade.onrender.com')) {
+          console.warn('[ArenaGameService] ⚠️ Invalid Arena URL:', arenaWebsocketUrl);
+          return;
+        }
+
+        // Connect to Arena
+        this.arenaSocket = io(arenaWebsocketUrl, {
+          auth: {
+            token: this.vorldToken || getVorldToken(),
+            gameId: gameState.arenaGameId
+          },
+          transports: ['websocket'],
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionAttempts: 5,
+          timeout: 10000
+        });
+
+        console.log('[ArenaGameService] 🔗 Attempting direct connection to Arena...');
+
+        // Setup Arena direct connection event listeners
+        this.setupArenaEventListeners();
+
+      } catch (error) {
+        console.error('[ArenaGameService] ❌ Failed to setup Arena connection:', {
+          error: error.message,
+          stack: error.stack
+        });
       }
 
       // ============================================
