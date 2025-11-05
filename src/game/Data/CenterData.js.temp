@@ -1570,7 +1570,7 @@ export class CenterData {
     async RequestMergedCharacters(onSuccess, onError) {
         if (this.loadingBasicInfo) {
             console.log('RequestMergedCharacters: Already loading basic info');
-            return Promise.resolve();
+            return;
         }
 
         try {
@@ -1579,7 +1579,7 @@ export class CenterData {
 
             if (!basicLoaded) {
                 onError?.('Failed to load basic character info');
-                return Promise.resolve();
+                return;
             }
 
             // Load detailed data cho selected characters
@@ -1602,13 +1602,9 @@ export class CenterData {
             // Success
             onSuccess?.();
 
-            return Promise.resolve();
-
         } catch (error) {
             console.error('RequestMergedCharacters failed:', error);
             onError?.(error.message || 'Failed to load characters');
-
-            return Promise.reject(error);
         }
     }
 

@@ -11,6 +11,24 @@ export default function ArenaGameInit({ onSessionCreated }) {
   const [gameState, setGameState] = useState(null);
   const [wsStatus, setWsStatus] = useState('disconnected');
 
+  // Warn user before closing tab/window when Arena session is active
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      // Only show warning if WebSocket is connected
+      if (arenaGameService.isConnected && arenaGameService.currentSessionId) {
+        e.preventDefault();
+        e.returnValue = 'You have an active Arena session. Leaving will disconnect you from the game.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   // Get user token on mount
   useEffect(() => {
     const userToken = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
@@ -25,8 +43,15 @@ export default function ArenaGameInit({ onSessionCreated }) {
     setupEventListeners();
 
     return () => {
-      // Cleanup on unmount
-      arenaGameService.disconnect();
+      // Cleanup on unmount - Keep WebSocket alive, only cleanup event handlers
+      console.log('[ArenaGameInit] Component unmounting - WebSocket connection maintained');
+
+      // Only clear event listeners, do NOT disconnect WebSocket
+      if (arenaGameService.eventHandlers) {
+        arenaGameService.eventHandlers.clear();
+      }
+
+      console.log('[ArenaGameInit] Event handlers cleaned up, WebSocket still active');
     };
   }, []);
 
