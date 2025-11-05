@@ -410,7 +410,7 @@ export class ArenaGameService {
 
       try {
         // ✅ LẤY ĐÚNG Arena URL
-        const arenaWebsocketUrl = gameState.arenaWebsocketUrl || gameState.externalArenaUrl;
+        const arenaWebsocketUrl = this.gameState?.arenaWebsocketUrl || this.gameState?.externalArenaUrl;
 
         console.log('[ArenaGameService] Setting up DIRECT Arena WebSocket connection...');
         console.log('[ArenaGameService] Arena URL:', arenaWebsocketUrl);
@@ -430,7 +430,7 @@ export class ArenaGameService {
         this.arenaSocket = io(arenaWebsocketUrl, {
           auth: {
             token: this.vorldToken || getVorldToken(),
-            gameId: gameState.arenaGameId
+            gameId: this.gameState?.arenaGameId
           },
           transports: ['websocket'],
           reconnection: true,
