@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Notification Display Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        /* Copy notification styles from ArenaNotification.css */
+        .arena-notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            pointer-events: none;
+            max-width: 400px;
+        }
+
+        .arena-notification {
+            pointer-events: auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .arena-notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b, #4ecdc4);
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .arena-notification.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+
+        .arena-notification.warning {
+            background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        }
+
+        .arena-notification.error {
+            background: linear-gradient(135deg, #eb5757 0%, #ff9a9e 100%);
+        }
+
+        .arena-notification.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .arena-notification-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            animation: bounce 0.5s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .arena-notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .arena-notification-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .arena-notification-message {
+            font-size: 14px;
+            opacity: 0.95;
+            line-height: 1.4;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .arena-notification-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .arena-notification-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .arena-notification.exiting {
+            animation: slideOutRight 0.3s ease-in forwards;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 Arena Notification Display Test</h1>
+
+        <div class="test-section">
+            <h2>Test Arena Notification Events</h2>
+            <p>Click buttons to simulate different arena notification types</p>
+
+            <button onclick="testNotification('info', 'Welcome to the Arena!', { playerCount: 50 })">
+                ℹ️ Info Notification
+            </button>
+
+            <button onclick="testNotification('success', 'You received a reward!', { reward: 1000, currency: 'Chips' })">
+                ✅ Success Notification
+            </button>
+
+            <button onclick="testNotification('warning', 'Low balance warning', { balance: 100 })">
+                ⚠️ Warning Notification
+            </button>
+
+            <button onclick="testNotification('error', 'Connection lost', { reconnectIn: 5 })">
+                ❌ Error Notification
+            </button>
+
+            <button onclick="testNotification('reward', 'Item dropped!', { item: 'Legendary Sword', quantity: 1 })">
+                🏆 Reward Notification
+            </button>
+
+            <button onclick="testNotification('boost', 'Boost activated!', { type: '2X Speed', duration: 60 })">
+                ⚡ Boost Notification
+            </button>
+
+            <button onclick="testNotification('drop', 'Someone dropped an item!', { player: 'JohnDoe', item: 'Health Potion' })">
+                🎁 Drop Notification
+            </button>
+
+            <button onclick="testNotification('achievement', 'Achievement Unlocked!', { achievement: 'First Win', points: 100 })">
+                🎖️ Achievement Notification
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2>Socket Connection Test</h2>
+            <div class="status" id="connectionStatus">Status: Not connected</div>
+            <button onclick="connectToArena()">Connect to Arena WebSocket</button>
+            <button onclick="testRealNotification()">Send Test Real Notification</button>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="arena-notification-container" id="notificationContainer"></div>
+
+    <script>
+        let notifications = [];
+
+        // Test function to dispatch notifications
+        function testNotification(type, message, data = {}) {
+            const event = new CustomEvent('arena:notification', {
+                detail: {
+                    type: type,
+                    message: message,
+                    data: data,
+                    timestamp: Date.now()
+                }
+            });
+
+            window.dispatchEvent(event);
+        }
+
+        // Listen for arena notification events
+        window.addEventListener('arena:notification', function(event) {
+            console.log('[Test] Received arena notification:', event.detail);
+
+            const { type, message, data } = event.detail;
+
+            // Create notification object
+            const notification = {
+                id: `arena_notif_${Date.now()}_${Math.random()}`,
+                type: type || 'info',
+                title: getDefaultTitle(type),
+                message: message,
+                data: data,
+                icon: getIconForType(type)
+            };
+
+            // Add to notifications list
+            notifications.push(notification);
+
+            // Render notification
+            renderNotification(notification);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                removeNotification(notification.id);
+            }, 5000);
+        });
+
+        function getDefaultTitle(type) {
+            const titles = {
+                'success': 'Success!',
+                'warning': 'Warning!',
+                'error': 'Error!',
+                'info': 'Arena Info',
+                'reward': 'Reward Received!',
+                'boost': 'Boost Activated!',
+                'drop': 'Item Dropped!',
+                'achievement': 'Achievement Unlocked!'
+            };
+            return titles[type] || 'Arena Notification';
+        }
+
+        function getIconForType(type) {
+            const icons = {
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌',
+                'info': 'ℹ️',
+                'reward': '🏆',
+                'boost': '⚡',
+                'drop': '🎁',
+                'achievement': '🎖️',
+                'battle_start': '⚔️',
+                'battle_end': '🏁',
+                'player_joined': '👤',
+                'player_left': '👋'
+            };
+            return icons[type] || '📢';
+        }
+
+        function renderNotification(notification) {
+            const container = document.getElementById('notificationContainer');
+
+            const notificationEl = document.createElement('div');
+            notificationEl.className = `arena-notification ${notification.type}`;
+            notificationEl.id = notification.id;
+
+            notificationEl.innerHTML = `
+                <div class="arena-notification-icon">
+                    ${notification.icon}
+                </div>
+                <div class="arena-notification-content">
+                    <div class="arena-notification-title">
+                        ${notification.title}
+                    </div>
+                    <div class="arena-notification-message">
+                        ${notification.message}
+                    </div>
+                </div>
+                <button class="arena-notification-close" onclick="removeNotification('${notification.id}')">
+                    ×
+                </button>
+            `;
+
+            container.appendChild(notificationEl);
+        }
+
+        function removeNotification(id) {
+            const notificationEl = document.getElementById(id);
+            if (notificationEl) {
+                notificationEl.classList.add('exiting');
+                setTimeout(() => {
+                    if (notificationEl.parentNode) {
+                        notificationEl.parentNode.removeChild(notificationEl);
+                    }
+                    notifications = notifications.filter(n => n.id !== id);
+                }, 300);
+            }
+        }
+
+        // WebSocket test functions
+        let socket = null;
+
+        function connectToArena() {
+            const statusEl = document.getElementById('connectionStatus');
+
+            // Simulate connection
+            statusEl.textContent = 'Status: Connecting...';
+
+            setTimeout(() => {
+                statusEl.textContent = 'Status: Connected to Arena WebSocket (Simulated)';
+                statusEl.style.background = '#2d5a2d';
+            }, 1000);
+        }
+
+        function testRealNotification() {
+            // Simulate a real notification from arena
+            testNotification('drop', 'Player123 dropped a rare item!', {
+                player: 'Player123',
+                item: 'Dragon Scale Armor',
+                rarity: 'Legendary',
+                value: 50000
+            });
+        }
+    </script>
+</body>
+</html>

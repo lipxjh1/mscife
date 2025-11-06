@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ArenaCountdown from './ArenaCountdown';
 import PackageDropNotification from './PackageDropNotification';
+import ArenaNotification from './ArenaNotification';
 import './ArenaUI.css';
 
 const ArenaUI = () => {
@@ -106,6 +107,9 @@ const ArenaUI = () => {
         notifications={notifications}
         onRemove={handleRemoveNotification}
       />
+
+      {/* Arena Notifications */}
+      <ArenaNotification />
     </div>
   );
 };

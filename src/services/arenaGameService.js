@@ -868,6 +868,25 @@ export class ArenaGameService {
       this.onPlayerBoostActivated?.(data);
     });
 
+    // Arena notification event
+    this.arenaSocket.on('arena_notification', (data) => {
+      console.log('[ArenaGameService] 📢 ARENA NOTIFICATION received:', data);
+
+      // Emit as window event for UI components
+      window.dispatchEvent(new CustomEvent('arena:notification', {
+        detail: {
+          type: data.type || 'info',
+          message: data.message,
+          title: data.title,
+          data: data.data,
+          timestamp: Date.now()
+        }
+      }));
+
+      // Also emit to internal event system
+      this._emit('arena_notification', { ...data, source: 'arena_direct' });
+    });
+
     // Countdown started
     this.arenaSocket.on('countdown_started', (data) => {
       console.log('[ArenaGameService] ⏱️ COUNTDOWN STARTED from Arena!', data);

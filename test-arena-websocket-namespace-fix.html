@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Arena WebSocket Namespace Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin: 5px;
+        }
+        .btn-primary { background-color: #007bff; }
+        .btn-danger { background-color: #dc3545; }
+        .btn:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error { color: #dc3545; }
+        .success { color: #28a745; }
+        .info { color: #007bff; }
+        .warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test Arena WebSocket Namespace Fix</h1>
+        <p><strong>Mục tiêu:</strong> Verify fix cho lỗi "Invalid namespace" khi kết nối đến Arena WebSocket</p>
+
+        <div class="input-group">
+            <label><strong>Test Token:</strong></label>
+            <input type="text" id="testToken" placeholder="Nhập token test" style="width: 100%; padding: 8px; margin: 10px 0;">
+        </div>
+
+        <button id="btnInitGame" class="btn btn-primary">🚀 Initialize Game</button>
+        <button id="btnTestConnection" class="btn btn-primary" disabled>🔗 Test WebSocket Connection</button>
+        <button id="btnEndGame" class="btn btn-danger" disabled>🛑 End Game</button>
+        <button id="btnClearLog" class="btn">🧹 Clear Log</button>
+    </div>
+
+    <div class="container">
+        <h3>📋 Connection Status</h3>
+        <div id="connectionStatus" style="font-family: monospace; font-size: 12px;">Chưa khởi tạo...</div>
+    </div>
+
+    <div class="container">
+        <h3>📝 Test Log</h3>
+        <div id="testLog" class="log">Test logs sẽ hiển thị ở đây...\n</div>
+    </div>
+
+    <script type="module">
+        const logElement = document.getElementById('testLog');
+        const statusElement = document.getElementById('connectionStatus');
+        const btnInitGame = document.getElementById('btnInitGame');
+        const btnTestConnection = document.getElementById('btnTestConnection');
+        const btnEndGame = document.getElementById('btnEndGame');
+        const btnClearLog = document.getElementById('btnClearLog');
+        const tokenInput = document.getElementById('testToken');
+
+        let arenaService = null;
+        let gameState = null;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `<span class="${type}">[${timestamp}] ${prefix} ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateStatus(status) {
+            statusElement.innerHTML = status;
+            log(`Status: ${status}`, 'info');
+        }
+
+        btnClearLog.onclick = () => {
+            logElement.innerHTML = 'Log cleared...\n';
+        };
+
+        btnInitGame.onclick = async () => {
+            try {
+                const token = tokenInput.value.trim();
+                if (!token) {
+                    log('Vui lòng nhập test token!', 'error');
+                    return;
+                }
+
+                // Store token
+                sessionStorage.setItem('accessToken', token);
+                localStorage.setItem('accessToken', token);
+
+                log('🚀 Bắt đầu initialize Arena game...', 'info');
+                btnInitGame.disabled = true;
+
+                // Import ArenaGameService
+                const { ArenaGameService } = await import('./src/services/arenaGameService.js');
+                arenaService = new ArenaGameService();
+
+                // Set token
+                arenaService.setTokens(token);
+
+                // Method 3: Initialize with WebSocket
+                log('📞 Gọi API initialize game...', 'info');
+                const result = await arenaService.initializeGameWithWebSocket('', token);
+
+                if (result) {
+                    gameState = result;
+                    log('✅ Game initialized thành công!', 'success');
+                    log(`Session ID: ${result.sessionId}`, 'info');
+                    log(`Game ID: ${result.gameId}`, 'info');
+                    log(`Arena Game ID: ${result.arenaGameId}`, 'info');
+                    log(`Arena WebSocket URL: ${result.arenaWebsocketUrl}`, 'info');
+
+                    updateStatus(`✅ Game initialized - Session: ${result.sessionId}`);
+                    btnTestConnection.disabled = false;
+                    btnEndGame.disabled = false;
+
+                    // Auto test connection
+                    setTimeout(() => {
+                        btnTestConnection.click();
+                    }, 1000);
+                } else {
+                    log('❌ Initialize game thất bại!', 'error');
+                    btnInitGame.disabled = false;
+                }
+
+            } catch (error) {
+                log(`❌ Lỗi initialize game: ${error.message}`, 'error');
+                console.error(error);
+                btnInitGame.disabled = false;
+            }
+        };
+
+        btnTestConnection.onclick = async () => {
+            if (!arenaService || !gameState) {
+                log('❌ Chưa có game state!', 'error');
+                return;
+            }
+
+            try {
+                log('🔗 Bắt đầu test WebSocket connection...', 'info');
+                btnTestConnection.disabled = true;
+
+                // Connect WebSocket
+                const connected = await arenaService.connectWebSocket();
+
+                if (connected) {
+                    log('✅ WebSocket connected thành công!', 'success');
+
+                    // Get connection info
+                    const info = arenaService.getConnectionInfo();
+                    updateStatus(`✅ Connected - Backend: ${info.backendConnected}, Arena: ${info.arenaConnected}`);
+
+                    log(`Backend socket: ${info.backendSocketId}`, 'info');
+                    log(`Arena socket: ${info.arenaSocketId}`, 'info');
+
+                    // Listen for events
+                    arenaService.on('arena_connected', (data) => {
+                        log('🎯 Arena connected event received!', 'success');
+                        log(`Arena socket ID: ${data.socketId}`, 'info');
+                    });
+
+                    arenaService.on('error', (error) => {
+                        if (error.source === 'arena_direct' && error.type === 'arena_connection_error') {
+                            log(`❌ Arena connection error: ${error.message}`, 'error');
+                            log('❌ Lỗi "Invalid namespace" vẫn còn!', 'error');
+                        } else {
+                            log(`⚠️ Other error: ${JSON.stringify(error)}`, 'warning');
+                        }
+                    });
+
+                } else {
+                    log('❌ WebSocket connection thất bại!', 'error');
+                    btnTestConnection.disabled = false;
+                }
+
+            } catch (error) {
+                log(`❌ Lỗi WebSocket connection: ${error.message}`, 'error');
+                console.error(error);
+                btnTestConnection.disabled = false;
+            }
+        };
+
+        btnEndGame.onclick = async () => {
+            if (!arenaService || !gameState) {
+                log('❌ Chưa có game để end!', 'error');
+                return;
+            }
+
+            try {
+                log('🛑 End game session...', 'info');
+                const result = await arenaService.endGame(gameState.sessionId);
+
+                if (result.success) {
+                    log('✅ Game ended thành công!', 'success');
+                } else {
+                    log(`❌ End game thất bại: ${result.error}`, 'error');
+                }
+
+                // Disconnect
+                arenaService.disconnect();
+                updateStatus('🛑 Game ended and disconnected');
+
+                btnInitGame.disabled = false;
+                btnTestConnection.disabled = true;
+                btnEndGame.disabled = true;
+
+            } catch (error) {
+                log(`❌ Lỗi end game: ${error.message}`, 'error');
+            }
+        };
+
+        // Log các events của window để debug
+        window.addEventListener('error', (event) => {
+            log(`Window error: ${event.error.message}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`Unhandled promise rejection: ${event.reason}`, 'error');
+        });
+
+        log('🎯 Test Arena WebSocket Namespace Fix loaded', 'info');
+        log('Nhập token và click Initialize Game để bắt đầu test', 'info');
+    </script>
+</body>
+</html>
