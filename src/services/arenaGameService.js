@@ -208,18 +208,28 @@ export class ArenaGameService {
         return { success: false, error: initResult.error };
       }
 
-      console.log('[ArenaGameService] Step 1 success: Game initialized', { sessionId: this.gameState.sessionId, status: this.gameState.status });
+      // ✅ FIXED: Set gameState from initResult
+      this.gameState = initResult.gameState;
+
+      console.log('[ArenaGameService] Step 1 success: Game initialized', {
+        sessionId: this.gameState.sessionId,
+        status: this.gameState.status,
+        gameId: this.gameState.gameId
+      });
 
       // STEP 2: Activate session
       console.log('[ArenaGameService] Step 2: Activating session...');
-      const activateResult = await this.activateSession(action);
+      const activateResult = await this.activateSession(this.gameState.sessionId, action);
 
       if (!activateResult.success) {
         console.error('[ArenaGameService] Step 2 failed:', activateResult.error);
         return { success: false, error: activateResult.error };
       }
 
-      console.log('[ArenaGameService] Step 2 success: Session activated', { status: this.gameState.status });
+      console.log('[ArenaGameService] Step 2 success: Session activated', {
+        status: this.gameState.status,
+        activationData: activateResult.data
+      });
 
       // STEP 3: Connect WebSocket
       console.log('[ArenaGameService] Step 3: Connecting WebSocket...');
@@ -241,6 +251,7 @@ export class ArenaGameService {
       return {
         success: true,
         gameState: this.gameState,
+        activationData: activateResult.data,
         wsConnected: wsConnected
       };
 
@@ -259,15 +270,19 @@ export class ArenaGameService {
    * @param {string} action - Action to perform (default: 'start')
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
-  async activateSession(action = 'start') {
+  async activateSession(sessionId = null, action = 'start') {
     try {
-      if (!this.gameState?.sessionId) {
-        throw new Error('No session to activate');
+      // ✅ FIXED: Use sessionId parameter or fallback to gameState
+      const targetSessionId = sessionId || this.gameState?.sessionId;
+
+      if (!targetSessionId) {
+        throw new Error('No session ID provided for activation');
       }
 
       console.log('[ArenaGameService] Activating session...', {
-        sessionId: this.gameState.sessionId,
-        action
+        sessionId: targetSessionId,
+        action,
+        source: sessionId ? 'parameter' : 'gameState'
       });
 
       // Get authentication tokens
@@ -290,32 +305,36 @@ export class ArenaGameService {
         }
       });
 
-      const response = await apiClient.post(`/api/arena/games/${this.gameState.sessionId}/activate`, {
+      const response = await apiClient.post(`/api/arena/games/${targetSessionId}/activate`, {
         action
       });
 
-      if (response.data.success) {
-        const activationData = response.data.data;
-        this.gameState.status = activationData.status; // Should be 'active'
-
-        console.log('[ArenaGameService] Session activated successfully:', {
-          sessionId: this.gameState.sessionId,
-          status: this.gameState.status,
-          hasNamespace: activationData.namespace?.connected
-        });
-
-        this._emit('session_activated', activationData);
-
-        return {
-          success: true,
-          data: activationData
-        };
-      } else {
-        return {
-          success: false,
-          error: response.data.message || 'Failed to activate session'
-        };
+      // ✅ FIXED: Check response structure properly
+      if (response.data?.success === false) {
+        throw new Error(response.data.message || 'Activation failed');
       }
+
+      // ✅ FIXED: Read data from correct location
+      const activationData = response.data?.data || response.data;
+
+      // Update gameState if exists
+      if (this.gameState) {
+        this.gameState.status = activationData.status;
+      }
+
+      console.log('[ArenaGameService] Session activated successfully:', {
+        sessionId: targetSessionId,
+        status: activationData.status,
+        hasNamespace: !!activationData.namespace,
+        hasWebsocketUrl: !!activationData.websocketUrl
+      });
+
+      this._emit('session_activated', activationData);
+
+      return {
+        success: true,
+        data: activationData
+      };
     } catch (error) {
       console.error('[ArenaGameService] Activate session failed:', error);
       this._emit('error', {
@@ -324,7 +343,7 @@ export class ArenaGameService {
       });
       return {
         success: false,
-        error: error.message
+        error: error.response?.data?.message || error.message
       };
     }
   }
