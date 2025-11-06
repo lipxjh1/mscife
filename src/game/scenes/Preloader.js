@@ -9,7 +9,7 @@ import cdLocalization from "../Data/CenterDataLocalization.js";
 import { isTelegramMiniApp } from "../utils.js";
 import { initPhaserImageBridge } from "./Share/PhaserImageBridge.js";
 
-const url_r2 = "https://pub-32ec25dab9604208ae545fbbd8a3ccc5.r2.dev/";
+const url_r2 = import.meta.env.VITE_ASSETS_BASE_URL || "https://pub-32ec25dab9604208ae545fbbd8a3ccc5.r2.dev/";
 
 //const url_r2 = "";
 
