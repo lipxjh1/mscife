@@ -7,9 +7,10 @@ export default function ArenaGameInit({ onSessionCreated }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [streamUrl, setStreamUrl] = useState('');
-  const [initMethod, setInitMethod] = useState('method1'); // Default to Method 1
+  const [initMethod, setInitMethod] = useState('completeFlow'); // Default to Complete Flow
   const [gameState, setGameState] = useState(null);
   const [wsStatus, setWsStatus] = useState('disconnected');
+  const [activationStatus, setActivationStatus] = useState('none'); // none | pending | activated
 
   // Warn user before closing tab/window when Arena session is active
   useEffect(() => {
@@ -92,6 +93,13 @@ export default function ArenaGameInit({ onSessionCreated }) {
     arenaGameService.on('error', (data) => {
       console.error('[ArenaGameInit] Arena error:', data);
       setError(`Arena error: ${data.message || 'Unknown error'}`);
+    });
+
+    // Session activation events
+    arenaGameService.on('session_activated', (data) => {
+      console.log('[ArenaGameInit] Session activated:', data);
+      setActivationStatus('activated');
+      setSuccess(prev => prev + ' ✅ Session activated! WebSocket connected...');
     });
   };
 
@@ -196,6 +204,7 @@ export default function ArenaGameInit({ onSessionCreated }) {
       setError('');
       setSuccess('');
       setGameState(null);
+      setActivationStatus('pending');
 
       const userToken = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
 
@@ -204,15 +213,8 @@ export default function ArenaGameInit({ onSessionCreated }) {
       if (gameStateResult) {
         console.log('[ArenaGameInit] Method 3 - Success with WebSocket:', gameStateResult);
 
-        setSuccess(`🌐 Method 3: WebSocket connected! Session: ${gameStateResult.sessionId}`);
+        setSuccess(`🌐 Method 3: Game initialized! Session: ${gameStateResult.sessionId} (needs activation)`);
         setGameState(gameStateResult);
-
-        // Check WebSocket status
-        const connectionInfo = arenaGameService.getConnectionInfo();
-        if (connectionInfo.connected) {
-          setWsStatus('connected');
-          setSuccess(prev => prev + ' ✅ WebSocket connected!');
-        }
 
         // Notify parent component
         if (onSessionCreated) {
@@ -230,6 +232,98 @@ export default function ArenaGameInit({ onSessionCreated }) {
     }
   };
 
+  // ==========================================
+  // COMPLETE FLOW: Init → Activate → Connect (NEW METHOD)
+  // ==========================================
+  const handleCompleteFlow = async () => {
+    console.log('[ArenaGameInit] 🚀 COMPLETE FLOW: Init → Activate → Connect');
+
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+      setGameState(null);
+      setActivationStatus('none');
+
+      const userToken = sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
+
+      const result = await arenaGameService.initializeCompleteFlow(streamUrl, userToken, 'start');
+
+      if (result.success) {
+        console.log('[ArenaGameInit] Complete flow - Success:', result);
+
+        setSuccess(`🚀 Complete flow successful! Session: ${result.gameState.sessionId}`);
+        setGameState(result.gameState);
+        setActivationStatus('activated');
+
+        // Check WebSocket status
+        const connectionInfo = arenaGameService.getConnectionInfo();
+        if (result.wsConnected) {
+          setWsStatus('connected');
+          setSuccess(prev => prev + ' ✅ WebSocket connected and ready!');
+        } else {
+          setWsStatus('error');
+          setSuccess(prev => prev + ' ⚠️ WebSocket connection failed, but session is active');
+        }
+
+        // Notify parent component
+        if (onSessionCreated) {
+          onSessionCreated(result.gameState);
+        }
+      } else {
+        setError(`❌ Complete flow failed: ${result.error}`);
+      }
+
+    } catch (err) {
+      console.error('[ArenaGameInit] Complete flow error:', err);
+      setError(`❌ Complete flow Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  // MANUAL ACTIVATE BUTTON (for methods 1-3)
+  // ==========================================
+  const handleActivateSession = async () => {
+    if (!gameState?.sessionId) {
+      setError('❌ No session to activate');
+      return;
+    }
+
+    console.log('[ArenaGameInit] 🎯 Manual activation...');
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const result = await arenaGameService.activateSession('start');
+
+      if (result.success) {
+        setSuccess('✅ Session activated successfully! Connecting WebSocket...');
+        setActivationStatus('activated');
+
+        // Auto-connect WebSocket after activation
+        const wsConnected = await arenaGameService.connectWebSocket();
+        if (wsConnected) {
+          setWsStatus('connected');
+          setSuccess(prev => prev + ' ✅ WebSocket connected!');
+        } else {
+          setWsStatus('error');
+          setSuccess(prev => prev + ' ⚠️ WebSocket connection failed');
+        }
+      } else {
+        setError(`❌ Activation failed: ${result.error}`);
+      }
+
+    } catch (err) {
+      console.error('[ArenaGameInit] Manual activation error:', err);
+      setError(`❌ Activation Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle initialization based on selected method
   const handleInitGame = async () => {
     switch (initMethod) {
@@ -242,8 +336,11 @@ export default function ArenaGameInit({ onSessionCreated }) {
       case 'method3':
         await handleMethod3();
         break;
+      case 'completeFlow':
+        await handleCompleteFlow();
+        break;
       default:
-        await handleMethod1();
+        await handleCompleteFlow(); // Default to complete flow
     }
   };
 
@@ -284,7 +381,7 @@ export default function ArenaGameInit({ onSessionCreated }) {
       backgroundColor: '#f9f9f9'
     }}>
       <h2 style={{ margin: '0 0 20px 0', color: '#333' }}>
-        🎮 Arena Game Service - 3 Methods Demo
+        🎮 Arena Game Service - New Flow: Init → Activate → Connect
       </h2>
 
       {/* Method Selection */}
@@ -293,6 +390,21 @@ export default function ArenaGameInit({ onSessionCreated }) {
           🎯 Choose Initialization Method:
         </label>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setInitMethod('completeFlow')}
+            disabled={loading}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: initMethod === 'completeFlow' ? '#28a745' : '#f8f9fa',
+              color: initMethod === 'completeFlow' ? 'white' : '#333',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            🚀 Complete Flow (Recommended)
+          </button>
           <button
             onClick={() => setInitMethod('method1')}
             disabled={loading}
@@ -313,7 +425,7 @@ export default function ArenaGameInit({ onSessionCreated }) {
             disabled={loading}
             style={{
               padding: '8px 16px',
-              backgroundColor: initMethod === 'method2' ? '#28a745' : '#f8f9fa',
+              backgroundColor: initMethod === 'method2' ? '#6c757d' : '#f8f9fa',
               color: initMethod === 'method2' ? 'white' : '#333',
               border: '1px solid #ddd',
               borderRadius: '4px',
@@ -336,7 +448,7 @@ export default function ArenaGameInit({ onSessionCreated }) {
               fontSize: '12px'
             }}
           >
-            Method 3: WebSocket Auto
+            Method 3: Init Only
           </button>
         </div>
       </div>
@@ -350,12 +462,20 @@ export default function ArenaGameInit({ onSessionCreated }) {
         fontSize: '12px',
         color: '#1565c0'
       }}>
+        {initMethod === 'completeFlow' && (
+          <div>
+            <strong>🚀 Complete Flow: initializeCompleteFlow(streamUrl, userToken, action)</strong><br/>
+            • Flow: Init → Activate → Connect WebSocket (all in one)<br/>
+            • Returns: {`{success: boolean, gameState: Object, wsConnected: boolean}`}<br/>
+            • Features: Full automated flow with proper backend session activation
+          </div>
+        )}
         {initMethod === 'method1' && (
           <div>
             <strong>🎯 Method 1: initializeArenaGame(options)</strong><br/>
             • Parameters: streamUrl, onSuccess callback, onError callback<br/>
             • Returns: {`{success: boolean, gameState?: Object, error?: string}`}<br/>
-            • Features: Full control with callbacks
+            • Features: Init only, requires manual activation after
           </div>
         )}
         {initMethod === 'method2' && (
@@ -363,7 +483,7 @@ export default function ArenaGameInit({ onSessionCreated }) {
             <strong>⚡ Method 2: quickInitializeGame(streamUrl, userToken)</strong><br/>
             • Parameters: streamUrl, userToken<br/>
             • Returns: boolean (success status)<br/>
-            • Features: Simple and fast
+            • Features: Init only, requires manual activation after
           </div>
         )}
         {initMethod === 'method3' && (
@@ -371,7 +491,7 @@ export default function ArenaGameInit({ onSessionCreated }) {
             <strong>🌐 Method 3: initializeGameWithWebSocket(streamUrl, userToken)</strong><br/>
             • Parameters: streamUrl, userToken<br/>
             • Returns: GameState | null<br/>
-            • Features: Auto WebSocket connection
+            • Features: Init only, requires manual activation after
           </div>
         )}
       </div>
@@ -437,8 +557,9 @@ export default function ArenaGameInit({ onSessionCreated }) {
           style={{
             padding: '12px 24px',
             backgroundColor: loading ? '#6c757d' :
+                           initMethod === 'completeFlow' ? '#28a745' :
                            initMethod === 'method1' ? '#007bff' :
-                           initMethod === 'method2' ? '#28a745' : '#6f42c1',
+                           initMethod === 'method2' ? '#6c757d' : '#6f42c1',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -448,10 +569,31 @@ export default function ArenaGameInit({ onSessionCreated }) {
           }}
         >
           {loading ? '⏳ Initializing...' :
-           initMethod === 'method1' ? '🎯 Start with Callbacks' :
-           initMethod === 'method2' ? '⚡ Quick Start' :
-           '🌐 Start with WebSocket'}
+           initMethod === 'completeFlow' ? '🚀 Start Complete Flow' :
+           initMethod === 'method1' ? '🎯 Initialize Only' :
+           initMethod === 'method2' ? '⚡ Quick Init' :
+           '🌐 Initialize Only'}
         </button>
+
+        {/* Show Activate button for methods 1-3 when game is initialized but not activated */}
+        {gameState && activationStatus !== 'activated' && initMethod !== 'completeFlow' && (
+          <button
+            onClick={handleActivateSession}
+            disabled={loading}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#fd7e14',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            {loading ? '⏳ Activating...' : '🎯 Activate Session & Connect'}
+          </button>
+        )}
 
         {gameState && (
           <button
@@ -485,12 +627,39 @@ export default function ArenaGameInit({ onSessionCreated }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div><strong>Session ID:</strong> <code>{gameState.sessionId}</code></div>
             <div><strong>Game ID:</strong> <code>{gameState.gameId}</code></div>
-            <div><strong>Status:</strong> <span style={{ color: '#28a745' }}>{gameState.status}</span></div>
+            <div><strong>Status:</strong>
+              <span style={{
+                color: gameState.status === 'active' ? '#28a745' :
+                       gameState.status === 'pending' ? '#fd7e14' : '#6c757d',
+                marginLeft: '5px'
+              }}>
+                {gameState.status === 'active' ? '🟢 Active' :
+                 gameState.status === 'pending' ? '🟡 Pending' : '⚪ Unknown'}
+              </span>
+            </div>
+            <div>
+              <strong>Activation:</strong>
+              <span style={{
+                color: activationStatus === 'activated' ? '#28a745' :
+                       activationStatus === 'pending' ? '#fd7e14' : '#6c757d',
+                marginLeft: '5px'
+              }}>
+                {activationStatus === 'activated' ? '✅ Activated' :
+                 activationStatus === 'pending' ? '⏳ Pending' : '❌ Not Activated'}
+              </span>
+            </div>
             <div>
               <strong>WebSocket:</strong>
               <span style={{ color: getWsStatusColor(), marginLeft: '5px' }}>
                 {wsStatus === 'connected' ? '🟢 Connected' :
                  wsStatus === 'disconnected' ? '🔴 Disconnected' : '⚠️ Error'}
+              </span>
+            </div>
+            <div>
+              <strong>Flow:</strong>
+              <span style={{ color: '#17a2b8', marginLeft: '5px' }}>
+                {initMethod === 'completeFlow' ? '🚀 Complete' :
+                 gameState.status === 'pending' ? '1️⃣ Init Done' : '2️⃣ Needs Activation'}
               </span>
             </div>
           </div>
