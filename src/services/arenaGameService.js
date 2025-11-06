@@ -449,9 +449,24 @@ export class ArenaGameService {
           console.warn('[ArenaGameService] WebSocket configuration warnings:', validation.warnings);
         }
 
+        // ✅ CRITICAL FIX: Connect to NAMESPACE path instead of base URL
+        // Backend expects clients to connect to /ws/sess_[sessionId] namespace
+        const namespacePath = `/ws/${finalSessionId}`;
+        const namespaceUrl = finalUrl + namespacePath;
+
+        console.log('[ArenaGameService] 🔧 CRITICAL FIX: Connecting to namespace...', {
+          baseUrl: finalUrl,
+          namespacePath: namespacePath,
+          namespaceUrl: namespaceUrl,
+          sessionId: finalSessionId,
+          hasToken: !!token,
+          hasAppId: !!appId,
+          note: 'Backend emits to namespace, not base URL!'
+        });
+
         // ✅ FIXED: Create proper socket configuration with appId in auth
         const { config } = createSocketConfig({
-          url: finalUrl,
+          url: namespaceUrl,  // ← Connect to NAMESPACE URL
           token: token,
           appId: appId,
           sessionId: finalSessionId,
@@ -463,7 +478,7 @@ export class ArenaGameService {
         });
 
         debugWebSocket('SOCKET_CONFIG', {
-          url: finalUrl,
+          url: namespaceUrl,
           hasAuth: !!config.auth,
           authKeys: config.auth ? Object.keys(config.auth) : [],
           hasQuery: !!config.query,
@@ -471,17 +486,18 @@ export class ArenaGameService {
           transports: config.transports
         });
 
-        console.log('[ArenaGameService] Connecting backend local WebSocket...', {
+        console.log('[ArenaGameService] Connecting backend local WebSocket to namespace...', {
           sessionId: finalSessionId,
-          finalUrl: finalUrl,
+          namespaceUrl: namespaceUrl,
+          namespacePath: namespacePath,
           hasToken: !!token,
           hasAppId: !!appId,
           appId: appId,
           authProvided: !!config.auth
         });
 
-        // Create backend socket connection with proper configuration
-        this.socket = io(finalUrl, config);
+        // Create backend socket connection to NAMESPACE
+        this.socket = io(namespaceUrl, config);
 
         // Setup event listeners for backend socket
         this.setupEventListeners();
@@ -583,22 +599,31 @@ export class ArenaGameService {
 
         this.socket.on('connect', () => {
           clearTimeout(timeout);
-          console.log('[ArenaGameService] ✅ Backend WebSocket connected successfully');
+          console.log('[ArenaGameService] ✅ Backend WebSocket connected to NAMESPACE successfully');
           debugWebSocket('CONNECTION_SUCCESS', {
             socketId: this.socket.id,
             connected: true,
-            sessionId: sessionId
+            sessionId: sessionId,
+            namespace: this.socket.nsp  // ← Show namespace we connected to
+          });
+
+          console.log('[ArenaGameService] 🔥 NAMESPACE CONNECTION SUCCESS:', {
+            namespace: this.socket.nsp,  // Should be /ws/sess_...
+            socketId: this.socket.id,
+            sessionId: sessionId,
+            note: 'Now receiving events from backend namespace!'
           });
 
           this.isConnected = true;
           this.reconnectAttempts = 0;
 
-          // Auto join session
+          // Auto join session (not needed when connecting to namespace, but keep for compatibility)
           this.joinSession();
 
           // Log overall connection status
           console.log('[ArenaGameService] ✅ Dual WebSocket setup complete:', {
             backendSocket: !!this.socket,
+            backendNamespace: this.socket.nsp,
             arenaSocket: !!this.arenaSocket,
             sessionId: sessionId,
             arenaGameId: arenaGameId
