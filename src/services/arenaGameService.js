@@ -691,6 +691,19 @@ export class ArenaGameService {
       this._emit('arena:joined', data);
     });
 
+    // Listen for arena notifications from backend
+    this.socket.on('arena_notification', (data) => {
+      console.log('🎁 Arena notification received from backend:', data);
+
+      // Dispatch as window event for UI components
+      window.dispatchEvent(new CustomEvent('arena:notification', {
+        detail: data
+      }));
+
+      // Also emit through internal event system
+      this._emit('arena_notification', data);
+    });
+
     // Arena countdown events (from backend)
     this.socket.on('ARENA_COUNTDOWN_START', (data) => {
       console.log('[ArenaGameService] 📥 Backend Event: ARENA_COUNTDOWN_START', data);
