@@ -27,9 +27,9 @@ export default function ArenaGame() {
         setWsStatus('disconnected');
       });
 
-      arenaGameService.on('session_activated', (data) => {
-        console.log('[ArenaGame] Session activated:', data);
-        // Session is now ready for actions
+      arenaGameService.on('game_active', (data) => {
+        console.log('[ArenaGame] Game is active:', data);
+        // Game is now ready for WebSocket connection
       });
 
       arenaGameService.on('player_boosted', (data) => {
@@ -76,7 +76,7 @@ export default function ArenaGame() {
         console.log('[ArenaGame] Cleaning up WebSocket listeners');
         arenaGameService.off('connected');
         arenaGameService.off('disconnected');
-        arenaGameService.off('session_activated');
+        arenaGameService.off('game_active');
         arenaGameService.off('player_boosted');
         arenaGameService.off('item_dropped');
         arenaGameService.off('session_ended');

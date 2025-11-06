@@ -57,7 +57,7 @@ export class ArenaGameService {
   // METHOD 1: Basic Initialization (with callbacks)
   // ==========================================
   /**
-   * Initialize Arena Game with success/error callbacks
+   * Initialize Arena Game with success/error callbacks (game activates automatically)
    * @param {Object} options - Initialization options
    * @param {string} options.streamUrl - Stream URL (optional)
    * @param {Function} options.onSuccess - Success callback
@@ -70,17 +70,17 @@ export class ArenaGameService {
     console.log('[ArenaGameService] Method 1: Basic initialization with callbacks', { streamUrl });
 
     try {
-      // Initialize game
+      // Initialize game (now activates automatically)
       const initResult = await this.initGame(streamUrl);
 
       if (initResult.success) {
-        console.log('[ArenaGameService] Game initialized successfully', initResult.gameState);
+        console.log('[ArenaGameService] Game initialized and active', initResult.gameState);
 
         // Set game state
         this.gameState = initResult.gameState;
 
-        // ✅ FIXED: DO NOT setup WebSocket here - wait for activation
-        console.log('[ArenaGameService] Game initialized, awaiting activation...');
+        // ✅ UPDATED: Game is now active immediately, no activation needed
+        console.log('[ArenaGameService] Game is ready for WebSocket connection...');
 
         // Call success callback
         onSuccess?.(this.gameState);
@@ -88,7 +88,7 @@ export class ArenaGameService {
         return {
           success: true,
           gameState: this.gameState,
-          requiresActivation: true // ← Flag to indicate activation needed
+          requiresActivation: false // ← No activation needed anymore
         };
       } else {
         console.error('[ArenaGameService] Game initialization failed', initResult.error);
@@ -162,14 +162,14 @@ export class ArenaGameService {
     this.userToken = userToken;
 
     try {
-      // Initialize game
+      // Initialize game (now activates automatically)
       const initResult = await this.initGame(streamUrl);
 
       if (initResult.success && initResult.gameState) {
         this.gameState = initResult.gameState;
 
-        // ✅ FIXED: DO NOT auto-connect WebSocket here
-        console.log('[ArenaGameService] Game initialized, WebSocket connection requires activation');
+        // ✅ UPDATED: Game is now active, WebSocket can be connected immediately
+        console.log('[ArenaGameService] Game initialized and active, ready for WebSocket connection');
 
         return this.gameState;
       } else {
@@ -183,23 +183,25 @@ export class ArenaGameService {
   }
 
   // ==========================================
-  // NEW METHOD: Complete Flow (Init → Activate → Connect)
+  // NEW METHOD: Complete Flow (Init → Connect WebSocket)
   // ==========================================
   /**
-   * Complete initialization flow: Init → Activate → Connect WebSocket
+   * Complete initialization flow: Init → Connect WebSocket (no activation needed)
    * @param {string} streamUrl - Stream URL (optional)
    * @param {string} userToken - User authentication token
-   * @param {string} action - Activation action (default: 'start')
    * @returns {Promise<{success: boolean, gameState?: Object, error?: string}>}
    */
-  async initializeCompleteFlow(streamUrl = '', userToken = '', action = 'start') {
-    console.log('[ArenaGameService] Complete flow: Init → Activate → Connect', { streamUrl, hasToken: !!userToken, action });
+  async initializeCompleteFlow(streamUrl = '', userToken = '') {
+    console.log('[ArenaGameService] Complete flow: Init → Connect WebSocket', {
+      streamUrl,
+      hasToken: !!userToken
+    });
 
     // Set token
     this.userToken = userToken;
 
     try {
-      // STEP 1: Initialize game
+      // STEP 1: Initialize game (backend now activates automatically)
       console.log('[ArenaGameService] Step 1: Initializing game...');
       const initResult = await this.initGame(streamUrl);
 
@@ -208,38 +210,24 @@ export class ArenaGameService {
         return { success: false, error: initResult.error };
       }
 
-      // ✅ FIXED: Set gameState from initResult
+      // Set gameState from initResult
       this.gameState = initResult.gameState;
 
-      console.log('[ArenaGameService] Step 1 success: Game initialized', {
+      console.log('[ArenaGameService] Step 1 success: Game initialized and active', {
         sessionId: this.gameState.sessionId,
-        status: this.gameState.status,
+        status: this.gameState.status, // Should be 'active' now
         gameId: this.gameState.gameId
       });
 
-      // STEP 2: Activate session
-      console.log('[ArenaGameService] Step 2: Activating session...');
-      const activateResult = await this.activateSession(this.gameState.sessionId, action);
-
-      if (!activateResult.success) {
-        console.error('[ArenaGameService] Step 2 failed:', activateResult.error);
-        return { success: false, error: activateResult.error };
-      }
-
-      console.log('[ArenaGameService] Step 2 success: Session activated', {
-        status: this.gameState.status,
-        activationData: activateResult.data
-      });
-
-      // STEP 3: Connect WebSocket
-      console.log('[ArenaGameService] Step 3: Connecting WebSocket...');
+      // STEP 2: Setup WebSocket connections ngay (không cần activate)
+      console.log('[ArenaGameService] Step 2: Setting up WebSocket connections...');
       const wsConnected = await this.connectWebSocket();
 
       if (!wsConnected) {
-        console.warn('[ArenaGameService] Step 3 warning: WebSocket connection failed, but session is active');
+        console.warn('[ArenaGameService] Step 2 warning: WebSocket connection failed, but session is active');
         // Don't fail the entire flow if WebSocket fails, just warn
       } else {
-        console.log('[ArenaGameService] Step 3 success: WebSocket connected');
+        console.log('[ArenaGameService] Step 2 success: WebSocket connected');
       }
 
       console.log('[ArenaGameService] ✅ Complete flow finished successfully', {
@@ -251,7 +239,6 @@ export class ArenaGameService {
       return {
         success: true,
         gameState: this.gameState,
-        activationData: activateResult.data,
         wsConnected: wsConnected
       };
 
@@ -265,89 +252,11 @@ export class ArenaGameService {
   // CORE METHODS
   // ==========================================
 
-  /**
-   * Activate a session - Call this after initGame and before WebSocket connect
-   * @param {string} action - Action to perform (default: 'start')
-   * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
-   */
-  async activateSession(sessionId = null, action = 'start') {
-    try {
-      // ✅ FIXED: Use sessionId parameter or fallback to gameState
-      const targetSessionId = sessionId || this.gameState?.sessionId;
-
-      if (!targetSessionId) {
-        throw new Error('No session ID provided for activation');
-      }
-
-      console.log('[ArenaGameService] Activating session...', {
-        sessionId: targetSessionId,
-        action,
-        source: sessionId ? 'parameter' : 'gameState'
-      });
-
-      // Get authentication tokens
-      const vorldToken = getVorldToken();
-      const backendToken = this.userToken || sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken");
-
-      if (!vorldToken || !backendToken) {
-        throw new Error('Authentication required: Both Vorld and Backend tokens needed');
-      }
-
-      // Prepare API client
-      const apiClient = axios.create({
-        baseURL: ARENA_CONFIG.API_URL,
-        timeout: 30000,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-App-ID': ARENA_CONFIG.VORLD_APP_ID,
-          'Authorization': `Bearer ${backendToken}`,
-          'X-Vorld-Token': vorldToken
-        }
-      });
-
-      const response = await apiClient.post(`/api/arena/games/${targetSessionId}/activate`, {
-        action
-      });
-
-      // ✅ FIXED: Check response structure properly
-      if (response.data?.success === false) {
-        throw new Error(response.data.message || 'Activation failed');
-      }
-
-      // ✅ FIXED: Read data from correct location
-      const activationData = response.data?.data || response.data;
-
-      // Update gameState if exists
-      if (this.gameState) {
-        this.gameState.status = activationData.status;
-      }
-
-      console.log('[ArenaGameService] Session activated successfully:', {
-        sessionId: targetSessionId,
-        status: activationData.status,
-        hasNamespace: !!activationData.namespace,
-        hasWebsocketUrl: !!activationData.websocketUrl
-      });
-
-      this._emit('session_activated', activationData);
-
-      return {
-        success: true,
-        data: activationData
-      };
-    } catch (error) {
-      console.error('[ArenaGameService] Activate session failed:', error);
-      this._emit('error', {
-        type: 'activation_error',
-        message: error.message
-      });
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message
-      };
-    }
-  }
-
+  // ============================================
+  // DEPRECATED: activateSession method removed
+  // Backend now activates sessions automatically during init
+  // Flow simplified: Init → Connect WebSocket (no activation step needed)
+  // ============================================
   /**
    * Core game initialization method
    * @param {string} streamUrl - Stream URL
@@ -393,16 +302,39 @@ export class ArenaGameService {
 
       if (response.data.success) {
         const gameState = response.data.data;
-        console.log('[ArenaGameService] Game initialized successfully:', {
+
+        // Game giờ đã active ngay từ init
+        const updatedGameState = {
           sessionId: gameState.sessionId,
           gameId: gameState.gameId,
-          status: gameState.status,
-          hasWebsocketUrl: !!gameState.websocketUrl
+          arenaGameId: gameState.arenaGameId,
+          status: gameState.status, // Should be 'active' now
+          streamUrl: gameState.streamUrl,
+          websocketUrl: gameState.websocketUrl,
+          arenaWebsocketUrl: gameState.arenaWebsocketUrl,
+          evaGameDetails: gameState.evaGameDetails,
+          userInfo: gameState.userInfo
+        };
+
+        // Lưu state
+        this.sessionId = updatedGameState.sessionId;
+        this.gameId = updatedGameState.gameId;
+        this.arenaGameId = updatedGameState.arenaGameId;
+        this.status = updatedGameState.status;
+
+        console.log('[ArenaGameService] Game initialized successfully:', {
+          sessionId: this.sessionId,
+          gameId: this.gameId,
+          status: this.status, // Should log 'active'
+          hasWebsocketUrl: !!updatedGameState.websocketUrl
         });
+
+        // Emit event ngay vì game đã active
+        this._emit('game_active', updatedGameState);
 
         return {
           success: true,
-          gameState: gameState
+          gameState: updatedGameState
         };
       } else {
         return {
@@ -1310,8 +1242,7 @@ console.log('[ArenaGameService] Available methods:');
 console.log('  - initializeArenaGame(options) - Method 1: With callbacks (init only)');
 console.log('  - quickInitializeGame(streamUrl, userToken) - Method 2: Quick boolean (init only)');
 console.log('  - initializeGameWithWebSocket(streamUrl, userToken) - Method 3: With WebSocket (init only)');
-console.log('  - initializeCompleteFlow(streamUrl, userToken, action) - NEW: Init → Activate → Connect');
-console.log('  - activateSession(action) - Activate session (call after init)');
+console.log('  - initializeCompleteFlow(streamUrl, userToken) - RECOMMENDED: Init → Connect WebSocket');
 console.log('  - endGame(sessionId) - End session');
 console.log('  - boostPlayer(sessionId, playerId, amount) - Boost player');
 console.log('  - dropItem(sessionId, itemId, targetUserId, quantity) - Drop item');
@@ -1319,7 +1250,7 @@ console.log('  - getItemsCatalog(page, limit, category) - Get catalog');
 console.log('  - setTokens(userToken, vorldToken) - Set auth tokens');
 console.log('  - disconnect() - Disconnect BOTH WebSockets');
 console.log('  - getConnectionInfo() - Get dual connection status');
-console.log('[ArenaGameService] Flow: Init (pending) → Activate (active) → WebSocket Connect ✅');
+console.log('[ArenaGameService] Flow: Init (active) → WebSocket Connect ✅ (no activation needed)');
 console.log('[ArenaGameService] Dual WebSocket Connections:');
 console.log('  📡 Backend Local WebSocket - heartbeat, session management');
 console.log('  🎯 Arena Direct WebSocket - package drops, real-time events');
