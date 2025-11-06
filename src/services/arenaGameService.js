@@ -492,11 +492,11 @@ export class ArenaGameService {
       // ============================================
 
       try {
-        // ✅ LẤY ĐÚNG Arena URL
-        const arenaWebsocketUrl = this.gameState?.arenaWebsocketUrl || this.gameState?.externalArenaUrl;
+        // ✅ ÁP DỤNG LOGIC TỪ BACKEND - Parse URL đúng cách
+        let arenaWebsocketUrl = this.gameState?.arenaWebsocketUrl || this.gameState?.externalArenaUrl;
 
         console.log('[ArenaGameService] Setting up DIRECT Arena WebSocket connection...');
-        console.log('[ArenaGameService] Arena URL:', arenaWebsocketUrl);
+        console.log('[ArenaGameService] Original Arena URL from backend:', arenaWebsocketUrl);
 
         // Validate URL
         if (!arenaWebsocketUrl) {
@@ -504,13 +504,33 @@ export class ArenaGameService {
           return;
         }
 
-        if (!arenaWebsocketUrl.includes('airdrop-arcade.onrender.com')) {
-          console.warn('[ArenaGameService] ⚠️ Invalid Arena URL:', arenaWebsocketUrl);
+        // ✅ FIX: Parse URL như backend đã làm
+        let baseUrl, namespacePath;
+
+        if (arenaWebsocketUrl.includes('/ws/')) {
+          const urlParts = arenaWebsocketUrl.split('/ws/');
+          baseUrl = urlParts[0];
+          namespacePath = '/ws/' + urlParts[1];
+        } else {
+          // Fallback nếu URL không có /ws/
+          baseUrl = arenaWebsocketUrl;
+          namespacePath = '/';
+        }
+
+        console.log('[ArenaGameService] ✅ Parsed Arena URL:', {
+          baseUrl: baseUrl,
+          namespacePath: namespacePath,
+          originalUrl: arenaWebsocketUrl
+        });
+
+        // Validate baseUrl phải là Arena server
+        if (!baseUrl.includes('airdrop-arcade.onrender.com')) {
+          console.warn('[ArenaGameService] ⚠️ Invalid Arena base URL:', baseUrl);
           return;
         }
 
-        // Connect to Arena
-        this.arenaSocket = io(arenaWebsocketUrl, {
+        // Connect với base URL (KHÔNG dùng namespacePath trong io())
+        this.arenaSocket = io(baseUrl, {
           auth: {
             token: this.vorldToken || getVorldToken(),
             gameId: this.gameState?.arenaGameId
@@ -522,7 +542,22 @@ export class ArenaGameService {
           timeout: 10000
         });
 
-        console.log('[ArenaGameService] 🔗 Attempting direct connection to Arena...');
+        console.log('[ArenaGameService] 🔗 Attempting direct connection to Arena base URL:', baseUrl);
+
+        // ✅ FIX: Thêm logic join sau khi connect
+        this.arenaSocket.on('connect', () => {
+          console.log('[ArenaGameService] ✅ Connected to Arena base URL, joining room:', namespacePath);
+
+          // Join với nhiều cách để đảm bảo
+          if (namespacePath && namespacePath !== '/') {
+            const roomId = namespacePath.replace('/ws/', '');
+            console.log('[ArenaGameService] 📤 Sending join events for room:', roomId);
+
+            this.arenaSocket.emit('join', roomId);
+            this.arenaSocket.emit('join_game', { gameId: this.gameState?.arenaGameId });
+            this.arenaSocket.emit('join_arena', { gameId: this.gameState?.arenaGameId });
+          }
+        });
 
         // Setup Arena direct connection event listeners
         this.setupArenaEventListeners();
@@ -754,10 +789,8 @@ export class ArenaGameService {
 
       this.arenaConnected = true;
 
-      // Join Arena game room (có thể cần)
-      this.arenaSocket.emit('join_game', {
-        gameId: this.gameState?.arenaGameId
-      });
+      // ✅ Logic join đã được xử lý ở trên (trong connectWebSocket)
+      // Không cần duplicate ở đây vì đã có trong connectWebSocket
 
       console.log('[ArenaGameService] 📡 Listening for Arena events...');
       this._emit('arena_connected', {
@@ -771,7 +804,7 @@ export class ArenaGameService {
       console.error('[ArenaGameService] ❌ Arena connection error:', {
         error: error.message,
         gameId: this.gameState?.arenaGameId,
-        url: this.gameState?.websocketUrl
+        originalUrl: this.gameState?.arenaWebsocketUrl || this.gameState?.externalArenaUrl
       });
 
       this.arenaConnected = false;
