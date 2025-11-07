@@ -26,7 +26,10 @@
         "dev-nolog": "vite --config vite/config.dev.mjs",
         "build-nolog": "vite build --config vite/config.prod.mjs",
         "convert-webp": "node scripts/convert-to-webp.js",
-        "convert-webp-all": "node scripts/convert-to-webp.js ./public/assets 80 100"
+        "convert-webp-all": "node scripts/convert-to-webp.js ./public/assets 80 100",
+        "sync:r2": "node scripts/auto-sync-r2.js",
+        "sync:once": "node scripts/sync-once.js",
+        "upload:r2": "node scripts/sync-once.js"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.723.0",
@@ -59,7 +62,9 @@
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react": "^4.3.1",
         "autoprefixer": "^10.4.21",
+        "chokidar": "^4.0.3",
         "cssnano": "^7.0.7",
+        "dotenv": "^17.2.3",
         "eslint": "^8.57.0",
         "eslint-plugin-react": "^7.34.2",
         "eslint-plugin-react-hooks": "^4.6.2",
