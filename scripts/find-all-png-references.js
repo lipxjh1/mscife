@@ -24,7 +24,7 @@ function findPngReferences(dir, results = []) {
         const lines = content.split('\n');
 
         lines.forEach((line, index) => {
-          if (line.includes('.png') && !line.trim().startsWith('//')) {
+          if (line.includes('.webp') && !line.trim().startsWith('//')) {
             results.push({
               file: fullPath,
               line: index + 1,
@@ -66,7 +66,7 @@ function searchAllFiles(dir, extensions = ['.js', '.jsx', '.ts', '.tsx']) {
           let foundInFile = false;
 
           lines.forEach((line, index) => {
-            if (line.includes('.png') && !line.trim().startsWith('//')) {
+            if (line.includes('.webp') && !line.trim().startsWith('//')) {
               results.found++;
               foundInFile = true;
               results.files.push({
@@ -93,14 +93,14 @@ function searchAllFiles(dir, extensions = ['.js', '.jsx', '.ts', '.tsx']) {
 }
 
 console.log('=== Comprehensive PNG References Scan ===\n');
-console.log('🔍 Scanning all source files for .png references...\n');
+console.log('🔍 Scanning all source files for .webp references...\n');
 
 const srcDir = './src';
 const allResults = searchAllFiles(srcDir);
 
 console.log(`\n=== SCAN RESULTS ===`);
 console.log(`Files scanned: ${allResults.scanned}`);
-console.log(`Files with .png references: ${allResults.found}`);
+console.log(`Files with .webp references: ${allResults.found}`);
 console.log(`Source files containing .png: ${allResults.filesFound.length}`);
 
 if (allResults.found > 0) {

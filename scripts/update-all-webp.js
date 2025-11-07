@@ -48,8 +48,8 @@ function updateFile(filePath, description) {
   const originalContent = fs.readFileSync(filePath, 'utf8');
   const webpFiles = findWebPFiles();
 
-  // Pattern 1: Direct .png references
-  const pngRegex = /(['"])([^'"]+\.png)(['"])/g;
+  // Pattern 1: Direct .webp references
+  const pngRegex = /(['"])([^'"]+\.webp)(['"])/g;
 
   // Pattern 2: URL patterns that might need webp extension
   const urlPattern = /url:\s*(['"])([^'"]+player_\w+_(?:ui|gameplay))(['"])/g;
@@ -58,7 +58,7 @@ function updateFile(filePath, description) {
   let pngReplacements = 0;
   let urlReplacements = 0;
 
-  // Replace direct .png references
+  // Replace direct .webp references
   updatedContent = updatedContent.replace(pngRegex, (match, quote, pngPath) => {
     const webpPath = pngPath.replace(/\.png$/, '.webp');
     if (webpFiles.has(webpPath)) {

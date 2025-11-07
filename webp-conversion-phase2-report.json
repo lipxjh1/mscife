@@ -1,0 +1,858 @@
+{
+  "timestamp": "2025-11-07T05:32:28.907Z",
+  "phase": 2,
+  "config": {
+    "qualityBySize": [
+      {
+        "min": 512000,
+        "max": null,
+        "quality": 75,
+        "label": "Large (>500KB)"
+      },
+      {
+        "min": 204800,
+        "max": 512000,
+        "quality": 80,
+        "label": "Medium (200-500KB)"
+      },
+      {
+        "min": 51200,
+        "max": 204800,
+        "quality": 85,
+        "label": "Small (50-200KB)"
+      },
+      {
+        "min": 0,
+        "max": 51200,
+        "quality": 90,
+        "label": "Tiny (<50KB)"
+      }
+    ],
+    "excludeFolders": [
+      "node_modules",
+      "backup",
+      "backups",
+      "dist",
+      "build",
+      ".git"
+    ],
+    "minSizeToConvert": 1000,
+    "skipIfWebpExists": true,
+    "skipTestFolder": false
+  },
+  "summary": {
+    "totalFiles": 104,
+    "converted": 28,
+    "skipped": 76,
+    "failed": 0,
+    "originalSizeBytes": 895140,
+    "newSizeBytes": 156060,
+    "savedBytes": 739080,
+    "savedPercent": "82.6"
+  },
+  "phase1Plus2": {
+    "phase1Saved": 8.33,
+    "phase2Saved": 0.7,
+    "totalSaved": 9.03,
+    "totalPercent": 68.1
+  },
+  "details": {
+    "converted": [
+      {
+        "success": true,
+        "input": "screenshot.png",
+        "output": "screenshot.webp",
+        "originalSize": 642901,
+        "newSize": 36766,
+        "savedBytes": 606135,
+        "savedPercent": "94.3",
+        "quality": 75,
+        "category": "Large (>500KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-land-xxxhdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-land-xxxhdpi/splash.webp",
+        "originalSize": 17683,
+        "newSize": 6258,
+        "savedBytes": 11425,
+        "savedPercent": "64.6",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-port-xxxhdpi/splash.webp",
+        "originalSize": 17489,
+        "newSize": 6258,
+        "savedBytes": 11231,
+        "savedPercent": "64.2",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "Extension.png",
+        "output": "Extension.webp",
+        "originalSize": 42127,
+        "newSize": 32554,
+        "savedBytes": 9573,
+        "savedPercent": "22.7",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-land-xxhdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-land-xxhdpi/splash.webp",
+        "originalSize": 13984,
+        "newSize": 4616,
+        "savedBytes": 9368,
+        "savedPercent": "67.0",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+        "output": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp",
+        "originalSize": 15529,
+        "newSize": 6502,
+        "savedBytes": 9027,
+        "savedPercent": "58.1",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-port-xxhdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-port-xxhdpi/splash.webp",
+        "originalSize": 13346,
+        "newSize": 4616,
+        "savedBytes": 8730,
+        "savedPercent": "65.4",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+        "output": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp",
+        "originalSize": 15916,
+        "newSize": 7718,
+        "savedBytes": 8198,
+        "savedPercent": "51.5",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-port-xhdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-port-xhdpi/splash.webp",
+        "originalSize": 9875,
+        "newSize": 3388,
+        "savedBytes": 6487,
+        "savedPercent": "65.7",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-land-xhdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-land-xhdpi/splash.webp",
+        "originalSize": 9251,
+        "newSize": 3396,
+        "savedBytes": 5855,
+        "savedPercent": "63.3",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-port-hdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-port-hdpi/splash.webp",
+        "originalSize": 7934,
+        "newSize": 2468,
+        "savedBytes": 5466,
+        "savedPercent": "68.9",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+        "output": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp",
+        "originalSize": 9441,
+        "newSize": 4086,
+        "savedBytes": 5355,
+        "savedPercent": "56.7",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-land-hdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-land-hdpi/splash.webp",
+        "originalSize": 7705,
+        "newSize": 2468,
+        "savedBytes": 5237,
+        "savedPercent": "68.0",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+        "output": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp",
+        "originalSize": 9793,
+        "newSize": 4680,
+        "savedBytes": 5113,
+        "savedPercent": "52.2",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+        "output": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp",
+        "originalSize": 10455,
+        "newSize": 5772,
+        "savedBytes": 4683,
+        "savedPercent": "44.8",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+        "output": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp",
+        "originalSize": 6644,
+        "newSize": 2642,
+        "savedBytes": 4002,
+        "savedPercent": "60.2",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-port-mdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-port-mdpi/splash.webp",
+        "originalSize": 4096,
+        "newSize": 1216,
+        "savedBytes": 2880,
+        "savedPercent": "70.3",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable/splash.png",
+        "output": "android/app/src/main/res/drawable/splash.webp",
+        "originalSize": 4040,
+        "newSize": 1216,
+        "savedBytes": 2824,
+        "savedPercent": "69.9",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/drawable-land-mdpi/splash.png",
+        "output": "android/app/src/main/res/drawable-land-mdpi/splash.webp",
+        "originalSize": 4040,
+        "newSize": 1216,
+        "savedBytes": 2824,
+        "savedPercent": "69.9",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": false
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+        "output": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp",
+        "originalSize": 6593,
+        "newSize": 3814,
+        "savedBytes": 2779,
+        "savedPercent": "42.2",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+        "output": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.webp",
+        "originalSize": 3981,
+        "newSize": 1774,
+        "savedBytes": 2207,
+        "savedPercent": "55.4",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+        "output": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp",
+        "originalSize": 5036,
+        "newSize": 3024,
+        "savedBytes": 2012,
+        "savedPercent": "40.0",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+        "output": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp",
+        "originalSize": 4341,
+        "newSize": 2596,
+        "savedBytes": 1745,
+        "savedPercent": "40.2",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+        "output": "android/app/src/main/res/mipmap-hdpi/ic_launcher.webp",
+        "originalSize": 2786,
+        "newSize": 1146,
+        "savedBytes": 1640,
+        "savedPercent": "58.9",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+        "output": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.webp",
+        "originalSize": 3450,
+        "newSize": 2180,
+        "savedBytes": 1270,
+        "savedPercent": "36.8",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+        "output": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp",
+        "originalSize": 2725,
+        "newSize": 1650,
+        "savedBytes": 1075,
+        "savedPercent": "39.4",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+        "output": "android/app/src/main/res/mipmap-mdpi/ic_launcher.webp",
+        "originalSize": 1869,
+        "newSize": 858,
+        "savedBytes": 1011,
+        "savedPercent": "54.1",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      },
+      {
+        "success": true,
+        "input": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+        "output": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.webp",
+        "originalSize": 2110,
+        "newSize": 1182,
+        "savedBytes": 928,
+        "savedPercent": "44.0",
+        "quality": 90,
+        "category": "Tiny (<50KB)",
+        "hasAlpha": true
+      }
+    ],
+    "skipped": [
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/test/player_14_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/test/player_14_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/juliasb/player_20_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/alexandrasa/player_24_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/fionasb/player_21_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/alexandrasa/player_24_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/elizabethsa/player_23_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/henrysc/player_14_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/victoriasa/player_1_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/alexandra/player_7_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/caitlyn/player_13_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/victoria/player_1_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/caitlyn/player_13_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/victoria/player_1_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_boss_1/player_19.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/juliasb/player_20_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_ghost_0/player_15.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/david/player_2_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/fionasb/player_21_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/alexandra/player_7_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/elizabethsa/player_23_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/alice/player_11_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/victoriasa/player_22_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/henrysc/player_14_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/henry/player_5_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/elizabeth/player_8_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/akane/player_10_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/akane/player_10_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/home_2/home_inventory_shop/x_force_box.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/fiona/player_6_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/julia/player_4_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/davidsc/david_01_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/david/player_2_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/henry/player_5_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/alice/player_11_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcus/player_28_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/fiona/player_6_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/annasb/player_16_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/julia/player_4_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/anna/player_0_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcussc/player_03_marcus_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcussc/player_03_marcus_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/elizabeth/player_8_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/anna/player_0_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/annasb/player_16_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/davidsc/david_01_gameplay.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/annasb/player_16_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcussc/player_03_marcus_ui_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcus/player_28_ui.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcussc/player_03_marcus_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_elite_0/explode.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/davidsc/david_01_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/annasb/player_16_ui_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_drone_0/play_drone_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_drone_3/play_drone_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_drone_1/play_drone_3.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_drone_4/play_drone_3.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_drone_2/play_drone_4.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_drone_5/play_drone_4.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_2/play_drone_0.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_1/enemy_1.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_3/play_drone_1.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/icons/vorld.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcus/player_28_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/julia/player_4_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/david/player_2_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/enemy/enemy_0/enemy_0.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/anna/player_0_gameplay_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcussc/player_03_marcus_ui_3.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/icons/icon.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/marcussc/player_03_marcus_gameplay_3.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/davidsc/david_01_gameplay_3.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "WebP already exists",
+        "input": "public/assets/gameplay/player/anna/player_0_ui_2.png"
+      },
+      {
+        "success": false,
+        "skipped": true,
+        "reason": "File too small (< 1KB)",
+        "input": "public/favicon.png"
+      }
+    ],
+    "failed": []
+  }
+}

@@ -1,0 +1,12 @@
+./dist/assets/gameplay/enemy/enemy_boss_0/enemy_elite_1.atlas
+./dist/assets/gameplay/enemy/enemy_elite_0/explode.atlas
+./dist/assets/gameplay/player/anna/player_0_gameplay.atlas
+./dist/assets/gameplay/player/anna/player_0_ui.atlas
+./dist/assets/gameplay/player/annasb/player_16_gameplay.atlas
+./dist/assets/gameplay/player/annasb/player_16_ui.atlas
+./dist/assets/gameplay/player/david/player_2_gameplay.atlas
+./dist/assets/gameplay/player/davidsc/david_01_gameplay.atlas
+./dist/assets/gameplay/player/julia/player_4_gameplay.atlas
+./dist/assets/gameplay/player/marcus/player_28_gameplay.atlas
+./dist/assets/gameplay/player/marcussc/player_03_marcus_gameplay.atlas
+./dist/assets/gameplay/player/marcussc/player_03_marcus_ui.atlas

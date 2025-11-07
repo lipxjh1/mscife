@@ -2,7 +2,7 @@
 
 /**
  * Update Preloader.js to use WebP files instead of PNG
- * Automatically finds .png references and replaces with .webp if WebP file exists
+ * Automatically finds .webp references and replaces with .webp if WebP file exists
  */
 
 import fs from 'fs';
@@ -55,8 +55,8 @@ function updatePreloader() {
   let updatedContent = originalContent;
   let replacements = 0;
 
-  // Find all .png references and replace with .webp if WebP exists
-  const pngRegex = /(['"])([^'"]+\.png)(['"])/g;
+  // Find all .webp references and replace with .webp if WebP exists
+  const pngRegex = /(['"])([^'"]+\.webp)(['"])/g;
 
   updatedContent = originalContent.replace(pngRegex, (match, quote, pngPath) => {
     // Convert to assets path
@@ -102,7 +102,7 @@ function updateCenterData() {
   let updatedContent = originalContent;
   let replacements = 0;
 
-  const pngRegex = /(['"])([^'"]+\.png)(['"])/g;
+  const pngRegex = /(['"])([^'"]+\.webp)(['"])/g;
 
   updatedContent = originalContent.replace(pngRegex, (match, quote, pngPath) => {
     const webpPath = pngPath.replace(/\.png$/, '.webp');

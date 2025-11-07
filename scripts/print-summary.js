@@ -52,7 +52,7 @@ function printSummary() {
       console.log('   2. 🗑️  Optional: Delete unused PNG files');
       console.log('   3. ✅ Deploy to production');
     } else {
-      console.log('   1. ❌ Update code to use .webp instead of .png');
+      console.log('   1. ❌ Update code to use .webp instead of .webp');
       console.log('   2. 🧪 Test game thoroughly');
       console.log('   3. 💾 Commit changes');
       console.log('   4. 🗑️  Delete unused PNG files');

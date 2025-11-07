@@ -38,9 +38,9 @@ function analyzeImageUsage() {
               return;
             }
 
-            // Find .png references
-            if (line.includes('.png')) {
-              const matches = line.match(/['"`]([^'"`]*\.png)["`']/g);
+            // Find .webp references
+            if (line.includes('.webp')) {
+              const matches = line.match(/['"`]([^'"`]*\.webp)["`']/g);
               if (matches) {
                 matches.forEach(match => {
                   const cleanMatch = match.replace(/['"`]/g, '');

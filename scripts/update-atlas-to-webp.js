@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-// Script to update .atlas files to reference .webp instead of .png
+// Script to update .atlas files to reference .webp instead of .webp
 // Only updates files where a corresponding .webp file exists
 
 async function findAtlasFiles(dir) {
@@ -34,7 +34,7 @@ async function updateAtlasFile(atlasPath) {
     // First line usually contains the texture filename
     const firstLine = lines[0].trim();
     
-    if (!firstLine.toLowerCase().endsWith('.png')) {
+    if (!firstLine.toLowerCase().endsWith('.webp')) {
       console.log(`⏭️  Skipped (not PNG): ${atlasPath} - first line: "${firstLine}"`);
       return null;
     }

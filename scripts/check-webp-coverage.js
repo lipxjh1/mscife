@@ -16,7 +16,7 @@ async function checkWebPCoverage() {
 
       if (file.isDirectory()) {
         findPngFiles(fullPath);
-      } else if (file.name.toLowerCase().endsWith('.png')) {
+      } else if (file.name.toLowerCase().endsWith('.webp')) {
         pngFiles.push(fullPath);
 
         // Check if corresponding WebP exists

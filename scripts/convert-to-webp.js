@@ -41,7 +41,7 @@ async function findPngFiles(dir, minSize = 100 * 1024) { // 100KB minimum
 
       if (entry.isDirectory()) {
         await walk(fullPath);
-      } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.png')) {
+      } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.webp')) {
         const stats = await fs.stat(fullPath);
         if (stats.size >= minSize) {
           files.push(fullPath);

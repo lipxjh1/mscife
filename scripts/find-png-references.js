@@ -19,7 +19,7 @@ function findPngReferences(dir, results = []) {
       const lines = content.split('\n');
 
       lines.forEach((line, index) => {
-        if (line.includes('.png') && !line.trim().startsWith('//')) {
+        if (line.includes('.webp') && !line.trim().startsWith('//')) {
           results.push({
             file: fullPath,
             line: index + 1,
@@ -33,11 +33,11 @@ function findPngReferences(dir, results = []) {
   return results;
 }
 
-console.log('=== Scanning for .png references in code ===');
+console.log('=== Scanning for .webp references in code ===');
 
 const srcResults = findPngReferences('./src');
 
-console.log(`Found ${srcResults.length} .png references in src/\n`);
+console.log(`Found ${srcResults.length} .webp references in src/\n`);
 
 if (srcResults.length > 0) {
   console.log('PNG REFERENCES FOUND:\n');
@@ -66,5 +66,5 @@ if (srcResults.length > 0) {
 
   console.log('Detailed report saved to: png-references-report.json');
 } else {
-  console.log('✅ No .png references found in code!');
+  console.log('✅ No .webp references found in code!');
 }

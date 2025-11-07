@@ -52,7 +52,7 @@ function analyzeBundle() {
           stats.images.count++;
           stats.images.size += fileStats.size;
           stats.images.files.push(fileInfo);
-        } else if (file.name.endsWith('.png')) {
+        } else if (file.name.endsWith('.webp')) {
           stats.png.count++;
           stats.png.size += fileStats.size;
           stats.images.count++;
