@@ -5,9 +5,13 @@ import { EMPTY } from "rxjs";
 import { API_BASE_URL, setTokens, apiClient } from "./APIBase.js";
 import { API_ENDPOINTS } from "./services/ApiEndpoints.js";
 import { ModalState, WalletTypes } from "./config/index.js";
+import { AuthService } from "./auth/index.js";
 
 export class CenterData {
     constructor() {
+        // Initialize services
+        this.authService = new AuthService();
+
         this.CurrentScene = null;
 
         this.SetAccessToken("");
@@ -812,20 +816,24 @@ export class CenterData {
         return this.baseItemInfo[id] || null;
     }
 
+    // ===========================
+    // AUTH METHODS - Delegated to AuthService
+    // ===========================
+
     GetAccessToken() {
-        return sessionStorage.getItem("accessToken");
+        return this.authService.GetAccessToken();
     }
 
     SetAccessToken(tokenStr) {
-        sessionStorage.setItem("accessToken", tokenStr);
+        return this.authService.SetAccessToken(tokenStr);
     }
 
     GetRefreshToken() {
-        return sessionStorage.getItem("refreshToken");
+        return this.authService.GetRefreshToken();
     }
 
     SetRefreshToken(tokenStr) {
-        sessionStorage.setItem("refreshToken", tokenStr);
+        return this.authService.SetRefreshToken(tokenStr);
     }
 
     GetReceiverAddress() {
