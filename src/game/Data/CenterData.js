@@ -7,12 +7,14 @@ import { API_ENDPOINTS } from "./services/ApiEndpoints.js";
 import { ModalState, WalletTypes } from "./config/index.js";
 import { AuthService } from "./auth/index.js";
 import { UserService } from "./user/index.js";
+import { InventoryService } from "./inventory/index.js";
 
 export class CenterData {
     constructor() {
         // Initialize services
         this.authService = new AuthService();
         this.userService = new UserService();
+        this.inventoryService = new InventoryService();
 
         this.CurrentScene = null;
 
@@ -248,29 +250,9 @@ export class CenterData {
         this.loadingBasicInfo = false;                // Boolean - đang tải basic info
         this.loadingDetailedInfo = false;             // Boolean - đang tải detailed info
 
-        this.inventoryDictionary = {
-            item_id_key: {
-                _id: "server_id",
-                code: "BOX_NFT_CHARACTER",
-                name: "item name",
-                receiveMethod: "receive_Method",
-                description: "description",
-                quantity: 0,
-            },
-        };
-
-        this.itemShopDictionary = {
-            item_id_key: {
-                _id: "server_id",
-                code: "BOX_NFT_CHARACTER",
-                name: "item name",
-                receiveMethod: "receive_Method",
-                description: "description",
-                price: 0,
-                priceScore: 0,
-                remaining: 0,
-            },
-        };
+        // Delegate inventory and shop data to InventoryService
+        this.inventoryDictionary = this.inventoryService.inventoryDictionary;
+        this.itemShopDictionary = this.inventoryService.itemShopDictionary;
 
         this.myRank = {
             rank: 408,
@@ -537,15 +519,15 @@ export class CenterData {
     }
 
     AddInventoryChange(callback) {
-        this.onEvent("inventorychange", callback);
+        this.inventoryService.AddInventoryChange(callback);
     }
 
     RemoveInventoryChange(callback) {
-        this.offEvent("inventorychange", callback);
+        this.inventoryService.RemoveInventoryChange(callback);
     }
 
     EmitInventoryChange() {
-        this.emitEvent("inventorychange", this.inventoryDictionary);
+        this.inventoryService.EmitInventoryChange();
     }
 
     isSelectedPlayer(_id) {
@@ -2931,246 +2913,35 @@ export class CenterData {
 
     //request get inventory
     RequestInventory(onSuccess, onError) {
-        const url = this.endpoints.USER.GET_INVENTORY;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestInventory Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    this.ConvertToItemInventory(result.data);
-
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestInventory Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Get inventory failed"
-                    );
-                }
-            });
+        this.inventoryService.RequestInventory(onSuccess, onError);
     }
 
     ConvertToItemInventory(itemDataArr) {
-        this.inventoryDictionary = {};
-
-        for (let i = 0; i < itemDataArr.length; i++) {
-            let itemData = itemDataArr[i];
-
-            if (itemData.item != null) {
-                let itemObj = {
-                    _id: itemData._id,
-                    code: itemData.item.code,
-                    name: itemData.item.name,
-                    receiveMethod: itemData.item.receiveMethod,
-                    description: itemData.item.description,
-                    quantity: itemData.quantity,
-                    properties: itemData.item.properties,
-                };
-
-                this.inventoryDictionary[itemObj.code] = itemObj;
-            }
-        }
-
-        // console.log("inventoryDictionary: ", this.inventoryDictionary);
-
-        this.EmitInventoryChange();
+        this.inventoryService.ConvertToItemInventory(itemDataArr);
     }
 
     //request get shop
     RequestShop(onSuccess, onError) {
-        const url = this.endpoints.SHOP.GET_ITEMS;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestShop Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    this.ConvertToItemShop(result.data);
-
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestShop Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Get shop items failed"
-                    );
-                }
-            });
+        this.inventoryService.RequestShop(onSuccess, onError);
     }
 
     ConvertToItemShop(itemDataArr) {
-        this.itemShopDictionary = {};
-
-        for (let i = 0; i < itemDataArr.length; i++) {
-            let itemData = itemDataArr[i];
-
-            if (itemData.detail != null) {
-                let itemObj = {
-                    _id: itemData._id,
-                    code: itemData.detail.code,
-                    name: itemData.detail.name,
-                    receiveMethod: itemData.detail.receiveMethod,
-                    description: itemData.detail.description,
-                    price: itemData.price,
-                    priceScore: itemData.priceScore,
-                    remaining: itemData.remaining,
-                };
-
-                this.itemShopDictionary[itemObj.code] = itemObj;
-            }
-        }
-
-        // console.log("itemShopDictionary: ", this.itemShopDictionary);
+        this.inventoryService.ConvertToItemShop(itemDataArr);
     }
 
     //Request buy item
     RequestBuyItem(itemCode, quantity, onSuccess, onError) {
-        const url = this.endpoints.SHOP.BUY_ITEM;
-
-        const bodyData = {
-            itemCode: itemCode,
-            quantity: quantity,
-        };
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .post(url, bodyData)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestBuyItem Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error("RequestBuyItem Lỗi khi gửi yêu cầu POST:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Buy item failed"
-                    );
-                }
-            });
+        this.inventoryService.RequestBuyItem(itemCode, quantity, onSuccess, onError);
     }
 
     //Request open box
     RequestOpenBox(itemCode, onSuccess, onError) {
-        const url = this.endpoints.SHOP.OPEN_BOX;
-        const bodyData = { box_code: itemCode };
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .post(url, bodyData)
-            .then((response) => {
-                const data = response.data;
-
-                // console.log("RequestOpenBox: " + itemCode);
-                // console.log("RequestOpenBox:", data);
-
-                if (data.success) {
-                    onSuccess?.(data);
-                } else {
-                    onError?.(data.message || "Request failed");
-                }
-            })
-            .catch((error) => {
-                if (
-                    error.message.includes("Assignment to constant variable") ==
-                    false
-                ) {
-                    onError?.(
-                        error.message || error.response.data || "Network error"
-                    );
-                }
-            });
+        this.inventoryService.RequestOpenBox(itemCode, onSuccess, onError);
     }
 
     //Request open box
     RequestOpenMultiBox(itemCode, quantity, onSuccess, onError) {
-        const url = `/api/box/open-multiple`;
-        const bodyData = { box_code: itemCode, quantity: quantity };
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .post(url, bodyData)
-            .then((response) => {
-                const data = response.data;
-
-                // console.log("RequestOpenMultiBox: " + itemCode);
-                // console.log("RequestOpenMultiBox:", data);
-
-                if (data.success) {
-                    onSuccess?.(data);
-                } else {
-                    onError?.(data.message || "Request failed");
-                }
-            })
-            .catch((error) => {
-                if (
-                    error.message.includes("Assignment to constant variable") ==
-                    false
-                ) {
-                    onError?.(
-                        error.message || error.response.data || "Network error"
-                    );
-                }
-            });
+        this.inventoryService.RequestOpenMultiBox(itemCode, quantity, onSuccess, onError);
     }
 
     //request get musk rate
