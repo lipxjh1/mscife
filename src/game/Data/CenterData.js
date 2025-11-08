@@ -4,6 +4,7 @@ import { GetNftCharacters } from "../wallet/Wallet.js";
 import { EMPTY } from "rxjs";
 import { API_BASE_URL, setTokens, apiClient } from "./APIBase.js";
 import { API_ENDPOINTS } from "./services/ApiEndpoints.js";
+import { ModalState, WalletTypes } from "./config/index.js";
 
 export class CenterData {
     constructor() {
@@ -170,32 +171,11 @@ export class CenterData {
 
         this.walletAddress = null;
 
-        this.ModalState = {
-            Open: {
-                KEY: "open",
-            },
-            Close: {
-                KEY: "closed",
-            },
-        };
-
+        // Import constants from config module
+        this.ModalState = ModalState;
         this.modalState = this.ModalState.Close.KEY;
 
-        this.WalletType = {
-            EMPTY: {
-                KEY: "EMPTY",
-            },
-            TON: {
-                KEY: "TON",
-            },
-            SUI: {
-                KEY: "SUI",
-            },
-            AVALANCHE: {
-                KEY: "AVALANCHE",
-            },
-        };
-
+        this.WalletType = WalletTypes;
         this.walletType = this.WalletType.EMPTY.KEY;
 
         this.receiver = null;
