@@ -25,6 +25,10 @@
         "build": "node log.js build & vite build --config vite/config.prod.mjs",
         "dev-nolog": "vite --config vite/config.dev.mjs",
         "build-nolog": "vite build --config vite/config.prod.mjs",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:run": "vitest run",
+        "test:coverage": "vitest run --coverage",
         "convert-webp": "node scripts/convert-to-webp.js",
         "convert-webp-all": "node scripts/convert-to-webp.js ./public/assets 80 100",
         "sync:r2": "node scripts/auto-sync-r2.js",
@@ -58,9 +62,12 @@
     },
     "devDependencies": {
         "@rollup/rollup-linux-x64-gnu": "^4.52.5",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.0",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react": "^4.3.1",
+        "@vitest/ui": "^4.0.8",
         "autoprefixer": "^10.4.21",
         "chokidar": "^4.0.3",
         "cssnano": "^7.0.7",
@@ -69,8 +76,10 @@
         "eslint-plugin-react": "^7.34.2",
         "eslint-plugin-react-hooks": "^4.6.2",
         "eslint-plugin-react-refresh": "^0.4.7",
+        "jsdom": "^27.1.0",
         "sharp": "^0.34.4",
         "terser": "^5.28.1",
-        "vite": "^6.3.5"
+        "vite": "^6.3.5",
+        "vitest": "^4.0.8"
     }
 }
