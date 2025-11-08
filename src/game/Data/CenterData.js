@@ -8,6 +8,7 @@ import { ModalState, WalletTypes } from "./config/index.js";
 import { AuthService } from "./auth/index.js";
 import { UserService } from "./user/index.js";
 import { InventoryService } from "./inventory/index.js";
+import { WalletService } from "./wallet/index.js";
 
 export class CenterData {
     constructor() {
@@ -15,6 +16,7 @@ export class CenterData {
         this.authService = new AuthService();
         this.userService = new UserService();
         this.inventoryService = new InventoryService();
+        this.walletService = new WalletService();
 
         this.CurrentScene = null;
 
@@ -103,7 +105,9 @@ export class CenterData {
             },
         };
 
-        this.walletAddress = null;
+        // Delegate wallet data to WalletService
+        this.walletAddress = this.walletService.walletAddress;
+        this.receiver = this.walletService.receiver;
 
         // Import constants from config module
         this.ModalState = ModalState;
@@ -111,8 +115,6 @@ export class CenterData {
 
         this.WalletType = WalletTypes;
         this.walletType = this.WalletType.EMPTY.KEY;
-
-        this.receiver = null;
 
         this.replayStage = 0;
 
@@ -747,21 +749,19 @@ export class CenterData {
     }
 
     GetReceiverAddress() {
-        return this.receiver;
+        return this.walletService.GetReceiverAddress();
     }
 
     SetReceiverAddress(address) {
-        this.receiver = address;
+        this.walletService.SetReceiverAddress(address);
     }
 
     GetWalletAddress() {
-        return this.walletAddress;
+        return this.walletService.GetWalletAddress();
     }
 
     SetWalletAddress(address) {
-        this.walletAddress = address;
-
-        console.log("SetWalletAddress:", address);
+        this.walletService.SetWalletAddress(address);
     }
 
     GetModalState() {
@@ -1182,96 +1182,12 @@ export class CenterData {
 
     //Request update wallet
     RequestUpdateWallet(walletId, onSuccess, onError) {
-        const url = this.endpoints.USER.UPDATE_WALLET;
-
-        const bodyData = {
-            walletId: walletId,
-        };
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .post(url, bodyData)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestUpdateWallet Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestUpdateWallet Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Update wallet failed"
-                    );
-                }
-            });
+        this.walletService.RequestUpdateWallet(walletId, onSuccess, onError);
     }
 
     //Request market sell
     RequestWalletWithdraw(tonWalletAddress, muskAmount, onSuccess, onError) {
-        const url = this.endpoints.WALLET.WITHDRAW_REQUEST;
-
-        const bodyData = {
-            tonWalletAddress: tonWalletAddress,
-            muskAmount: muskAmount,
-        };
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .post(url, bodyData)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestWalletWithdraw Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestWalletWithdraw Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Wallet withdraw failed"
-                    );
-                }
-            });
+        this.walletService.RequestWalletWithdraw(tonWalletAddress, muskAmount, onSuccess, onError);
     }
 
     //request user info
@@ -2702,159 +2618,19 @@ export class CenterData {
 
     //Request transaction history
     RequestTransactionHistory(page, onSuccess, onError) {
-        const url = `/api/me/transactions?page=${page}&limit=10`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestTransactionHistory Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestTransactionHistory Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Get transaction history failed"
-                    );
-                }
-            });
+        this.walletService.RequestTransactionHistory(page, onSuccess, onError);
     }
 
     RequestTransactionHistoryMusk(page, onSuccess, onError) {
-        const url = `/api/transactions/musk?page=${page}&limit=10`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestTransactionHistoryMusk Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestTransactionHistory Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Get transaction history musk failed"
-                    );
-                }
-            });
+        this.walletService.RequestTransactionHistoryMusk(page, onSuccess, onError);
     }
 
     RequestTransactionHistoryChip(page, onSuccess, onError) {
-        const url = `/api/transactions/chip?page=${page}&limit=10`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestTransactionHistoryChip Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestTransactionHistory Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Get transaction history chip failed"
-                    );
-                }
-            });
+        this.walletService.RequestTransactionHistoryChip(page, onSuccess, onError);
     }
 
     RequestTransactionHistoryMSCI(page, onSuccess, onError) {
-        const url = `/api/transactions/msci?page=${page}&limit=10`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestTransactionHistoryMSCI Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result);
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestTransactionHistory Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Get transaction history msci failed"
-                    );
-                }
-            });
+        this.walletService.RequestTransactionHistoryMSCI(page, onSuccess, onError);
     }
 
     //Request spin
@@ -2946,44 +2722,7 @@ export class CenterData {
 
     //request get musk rate
     RequestMuskRate(onSuccess, onError) {
-        const url = `/api/config/rate`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestMuskRate Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.receiver) {
-                    this.SetReceiverAddress(result.receiver);
-
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result.message || "Failed to get musk rate");
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestMuskRate Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to get musk rate"
-                    );
-                }
-            });
+        this.walletService.RequestMuskRate(onSuccess, onError);
     }
 
     //request daily
@@ -4842,303 +4581,36 @@ export class CenterData {
     }
 
     RequestMSCIOrders(onSuccess, onError) {
-        const url = `/api/market/orders/token/me`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestMSCIOrders Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result.message || "Failed to get MSCI orders");
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestMSCIOrders Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to get MSCI orders"
-                    );
-                }
-            });
+        this.walletService.RequestMSCIOrders(onSuccess, onError);
     }
 
     RequestCenterMarketMSCIOrderCancel(_id, onSuccess, onError) {
-        const url = `/api/market/order/token/${_id}`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .delete(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestCenterMarketMSCIOrderCancel Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result.message);
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestCenterMarketMSCIOrderCancel Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Cancel MSCI order failed"
-                    );
-                }
-            });
+        this.walletService.RequestCenterMarketMSCIOrderCancel(_id, onSuccess, onError);
     }
 
     //Request msci dashboard
     RequestMSCIDashboard(onSuccess, onError) {
-        const url = `/api/me/msci/dashboard`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestMSCIDashboard Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    if (onError && typeof onError === "function") {
-                        onError(
-                            result.message || "Failed to get MSCI dashboard"
-                        );
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestMSCIDashboard Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to get MSCI dashboard"
-                    );
-                }
-            });
+        this.walletService.RequestMSCIDashboard(onSuccess, onError);
     }
 
     //Request market sell
     RequestMSCIConvert(chipAmount, onSuccess, onError) {
-        const url = `/api/me/msci/convert`;
-
-        const bodyData = {
-            chipAmount: chipAmount,
-        };
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .post(url, bodyData)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestMSCIConvert Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    if (onError && typeof onError === "function") {
-                        onError(result.message || "Failed to convert MSCI");
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestMSCIConvert Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to convert MSCI"
-                    );
-                }
-            });
+        this.walletService.RequestMSCIConvert(chipAmount, onSuccess, onError);
     }
 
     //Request transaction history
     RequestMSCIHistory(page, onSuccess, onError) {
-        const url = `/api/me/msci/conversion-history?page=${page}`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestMSCIHistory Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    // Gọi hàm callback thất bại nếu có
-                    if (onError && typeof onError === "function") {
-                        onError(result.message || "Failed to get MSCI history");
-                    }
-                }
-            })
-            .catch((error) => {
-                //console.error("RequestMSCIHistory Lỗi khi gửi yêu cầu Get:", error);
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to get MSCI history"
-                    );
-                }
-            });
+        this.walletService.RequestMSCIHistory(page, onSuccess, onError);
     }
 
     //Request one trade able item info
     RequestTokenomicDetail(onSuccess, onError) {
-        const url = `/api/stats/tokenomics`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestTokenomicDetail Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    if (onError && typeof onError === "function") {
-                        onError(
-                            result.message || "Failed to get tokenomic detail"
-                        );
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestTokenomicDetail Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to get tokenomic detail"
-                    );
-                }
-            });
+        this.walletService.RequestTokenomicDetail(onSuccess, onError);
     }
 
     //Request one trade able item info
     RequestTokenomicSlugDetail(slug, page, onSuccess, onError) {
-        const url = `/api/stats/tokenomics/${slug}/history?page=${page}`;
-
-        // Sử dụng apiclient từ APIBase.js với then() và catch()
-        apiClient
-            .get(url)
-            .then((response) => {
-                const result = response.data;
-                // console.log(
-                //     "RequestTokenomicSlugDetail Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
-
-                if (result.success) {
-                    // Gọi hàm callback thành công nếu có
-                    if (onSuccess && typeof onSuccess === "function") {
-                        onSuccess(result);
-                    }
-                } else {
-                    if (onError && typeof onError === "function") {
-                        onError(
-                            result.message ||
-                                "Failed to get tokenomic slug detail"
-                        );
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error(
-                //     "RequestTokenomicSlugDetail Lỗi khi gửi yêu cầu POST:",
-                //     error
-                // );
-
-                // Gọi hàm callback thất bại nếu có
-                if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Failed to get tokenomic slug detail"
-                    );
-                }
-            });
+        this.walletService.RequestTokenomicSlugDetail(slug, page, onSuccess, onError);
     }
 
     RequestNeuralinkUpgrade(neuralinkQuantity, onSuccess, onError) {
