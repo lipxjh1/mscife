@@ -44,6 +44,27 @@ const ArenaUI = () => {
       console.log('[Arena UI] Item drop received:', event.detail);
       const data = event.detail;
 
+      // Check if dropped item is Dog Shield
+      if (data.metadata?.type === 'shield' ||
+          data.itemName === 'DOGE_SHIELD' ||
+          data.itemId === 'package_dogshield_10') {
+        console.log('[Arena UI] Shield drop detected, spawning in game');
+
+        const gameplayScene = window.game?.scene?.keys?.Gameplay;
+        if (gameplayScene && typeof gameplayScene.spawnShieldItem === 'function') {
+          // Spawn shield at random position
+          gameplayScene.spawnShieldItem({
+            x: Math.random() * 700 + 100,
+            y: Math.random() * 500 + 300,
+            metadata: data.metadata,
+            itemName: data.itemName || 'Dog Shield',
+            itemId: data.itemId || 'package_dogshield_10'
+          });
+        } else {
+          console.warn('[Arena UI] Gameplay scene not found or spawnShieldItem method missing');
+        }
+      }
+
       const notification = {
         id: `notif_${Date.now()}_${Math.random()}`,
         username: data.sender || 'Anonymous',

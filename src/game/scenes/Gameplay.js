@@ -1929,6 +1929,143 @@ export class Gameplay extends Scene {
             img.destroy();
         });
     }
+
+    /**
+     * Spawn shield item from Arena drop
+     * Called from ArenaUI when backend emits shield drop event
+     * @param {Object} data - Shield drop data with position and metadata
+     */
+    spawnShieldItem(data) {
+        console.log('[Gameplay] Spawning shield item:', data);
+
+        // Create shield sprite at specified position
+        const shieldItem = this.add.image(data.x, data.y, 'item_doge_shield');
+        shieldItem.setOrigin(0.5, 0.5);
+        shieldItem.setScale(1.0);
+        shieldItem.setInteractive();
+
+        // Store item data
+        shieldItem.setData('itemData', data);
+        shieldItem.setData('itemId', 'DOGE_SHIELD');
+
+        // Add to map container (follows existing pattern)
+        this.map.AddToContainerObstacles(shieldItem);
+
+        // Add glow effect
+        shieldItem.setTint(0x88DDFF);
+
+        // Pulsing animation
+        this.tweens.add({
+            targets: shieldItem,
+            scale: 1.2,
+            duration: 800,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+
+        // Click/tap to collect
+        shieldItem.on('pointerdown', () => {
+            console.log('[Gameplay] Shield clicked, collecting...');
+            this.collectShieldItem(shieldItem);
+        });
+
+        // Auto destroy after 30 seconds
+        this.time.delayedCall(30000, () => {
+            if (shieldItem.active) {
+                console.log('[Gameplay] Shield expired, destroying');
+                this.tweens.killTweensOf(shieldItem);
+                shieldItem.destroy();
+            }
+        });
+
+        console.log('[Gameplay] Shield item spawned successfully');
+    }
+
+    /**
+     * Collect shield item and add to inventory
+     * Called when player clicks/touches shield sprite
+     * @param {Phaser.GameObjects.Image} shieldItem - The shield sprite to collect
+     */
+    collectShieldItem(shieldItem) {
+        if (!shieldItem || !shieldItem.active) {
+            console.warn('[Gameplay] Shield item invalid or already collected');
+            return;
+        }
+
+        console.log('[Gameplay] Collecting shield item');
+
+        // Get or create inventory entry for DOGE_SHIELD
+        let inventoryItem = centerData.inventoryDictionary['DOGE_SHIELD'];
+        if (!inventoryItem) {
+            console.log('[Gameplay] Creating new DOGE_SHIELD inventory entry');
+            inventoryItem = {
+                itemId: 'DOGE_SHIELD',
+                quantity: 0
+            };
+            centerData.inventoryDictionary['DOGE_SHIELD'] = inventoryItem;
+        }
+
+        // Increase quantity
+        inventoryItem.quantity += 1;
+        console.log('[Gameplay] Shield quantity now:', inventoryItem.quantity);
+
+        // Update UI button quantity (if exists)
+        if (this.container_selector) {
+            const shieldButton = this.container_selector.getByName('shield_button');
+            if (shieldButton && shieldButton.text_quantity) {
+                shieldButton.text_quantity.setText(inventoryItem.quantity);
+                console.log('[Gameplay] Updated shield button quantity');
+            }
+        }
+
+        // Play pickup sound (reuse existing audio pool)
+        const audioPool = this.GetPoolAudioVFX();
+        if (audioPool && typeof audioPool.PlayAudioPickup === 'function') {
+            audioPool.PlayAudioPickup();
+        }
+
+        // Collection animation
+        this.tweens.add({
+            targets: shieldItem,
+            alpha: 0,
+            scale: 0.5,
+            y: shieldItem.y - 50,
+            duration: 300,
+            ease: 'Back.easeIn',
+            onComplete: () => {
+                shieldItem.destroy();
+                console.log('[Gameplay] Shield item collected and destroyed');
+            }
+        });
+
+        // Show collection feedback (optional)
+        const collectText = this.add.text(
+            shieldItem.x,
+            shieldItem.y - 30,
+            '+1 Shield',
+            {
+                fontSize: '20px',
+                fontFamily: 'Arial',
+                color: '#88DDFF',
+                stroke: '#000000',
+                strokeThickness: 4
+            }
+        );
+        collectText.setOrigin(0.5);
+        this.map.AddToContainerObstacles(collectText);
+
+        this.tweens.add({
+            targets: collectText,
+            alpha: 0,
+            y: collectText.y - 80,
+            duration: 1500,
+            ease: 'Cubic.easeOut',
+            onComplete: () => {
+                collectText.destroy();
+            }
+        });
+    }
 }
 
 export default Gameplay;
