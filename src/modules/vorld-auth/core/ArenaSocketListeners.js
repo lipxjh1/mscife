@@ -4,7 +4,8 @@
  * Updated: 2025-11-09
  */
 
-import { showArenaNotification } from '../components/Arena/ArenaNotification';
+// import { showArenaNotification } from '../components/Arena/ArenaNotification';
+// FIX: showArenaNotification doesn't exist - use CustomEvent instead
 
 export class ArenaSocketListeners {
   constructor(socket, callbacks = {}) {
@@ -86,18 +87,23 @@ export class ArenaSocketListeners {
       });
     }
 
-    // Show notification using existing system
+    // Show notification using CustomEvent (FIX: replaced showArenaNotification)
     if (message) {
-      showArenaNotification({
-        type: 'success',
-        title: 'Item Received!',
-        message: message,
-        data: {
-          itemCode,
-          quantity,
-          source
+      console.log('[ArenaSocketListeners] 📢 Dispatching notification event:', message);
+
+      // Dispatch event for ArenaNotification React component
+      window.dispatchEvent(new CustomEvent('arena:notification', {
+        detail: {
+          type: 'success',
+          title: 'DOGE Shield Received!',
+          message: message,
+          data: {
+            itemCode,
+            quantity,
+            source
+          }
         }
-      });
+      }));
     }
 
     // Play sound effect
@@ -240,12 +246,14 @@ export class ArenaSocketListeners {
       this.callbacks.onError(error);
     }
 
-    // Show error notification
-    showArenaNotification({
-      type: 'error',
-      title: 'Arena Error',
-      message: error.message || 'An error occurred in Arena'
-    });
+    // Show error notification using CustomEvent
+    window.dispatchEvent(new CustomEvent('arena:notification', {
+      detail: {
+        type: 'error',
+        title: 'Arena Error',
+        message: error.message || 'An error occurred in Arena'
+      }
+    }));
   }
 
   /**
@@ -265,7 +273,15 @@ export class ArenaSocketListeners {
 
 // Helper function to show notifications
 function showNotification(options) {
-  showArenaNotification(options);
+  // Dispatch event for ArenaNotification React component
+  window.dispatchEvent(new CustomEvent('arena:notification', {
+    detail: {
+      type: options.type || 'info',
+      title: options.title || 'Arena Notification',
+      message: options.message,
+      data: options.data
+    }
+  }));
 }
 
 export default ArenaSocketListeners;

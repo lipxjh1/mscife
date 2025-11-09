@@ -792,6 +792,40 @@ export class ArenaGameService {
       this.isConnected = false;
     });
 
+    // FIX: Add inventory:update listener (CRITICAL FOR DOGE SHIELD NOTIFICATIONS)
+    this.socket.on('inventory:update', (data) => {
+      console.log('[ArenaGameService] 📥 Backend Event: inventory:update', data);
+
+      // Handle DOGE Shield received
+      const { itemCode, itemName, quantity, message } = data;
+
+      // Show notification for UI
+      if (message && itemCode === 'DOGE_SHIELD') {
+        console.log('[ArenaGameService] 🛡️ DOGE Shield notification:', message);
+
+        // Dispatch notification event for React components
+        window.dispatchEvent(new CustomEvent('arena:notification', {
+          detail: {
+            type: 'success',
+            title: '🛡️ DOGE Shield Received!',
+            message: message,
+            data: {
+              itemCode,
+              itemName,
+              quantity,
+              icon: '🛡️'
+            }
+          }
+        }));
+
+        // Emit internal event for other handlers
+        this._emit('inventory_update', {
+          ...data,
+          source: 'backend'
+        });
+      }
+    });
+
     // Error handling
     this.socket.on('error', (error) => {
       console.error('[ArenaGameService] ❌ Backend socket error:', error);
