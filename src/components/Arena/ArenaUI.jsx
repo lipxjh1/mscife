@@ -3,6 +3,7 @@ import ArenaCountdown from './ArenaCountdown';
 import PackageDropNotification from './PackageDropNotification';
 import ArenaNotification from './ArenaNotification';
 import './ArenaUI.css';
+import centerData from '../../game/Data/CenterData.js';
 
 const ArenaUI = () => {
   const [arenaCountdown, setArenaCountdown] = useState(null);
@@ -48,11 +49,53 @@ const ArenaUI = () => {
       if (data.metadata?.type === 'shield' ||
           data.itemName === 'DOGE_SHIELD' ||
           data.itemId === 'package_dogshield_10') {
-        console.log('[Arena UI] Shield drop detected, spawning in game');
+        console.log('[Arena UI] Shield drop detected, adding to inventory');
+
+        // Add shield to inventory (same as Gameplay.js collectShieldItem)
+        if (centerData && centerData.inventoryDictionary) {
+          let inventoryItem = centerData.inventoryDictionary['DOGE_SHIELD'];
+          if (!inventoryItem) {
+            console.log('[Arena UI] Creating new DOGE_SHIELD inventory entry');
+            inventoryItem = {
+              itemId: 'DOGE_SHIELD',
+              quantity: 0
+            };
+            centerData.inventoryDictionary['DOGE_SHIELD'] = inventoryItem;
+          }
+
+          // Increase quantity
+          inventoryItem.quantity += 1;
+          console.log('[Arena UI] Shield quantity now:', inventoryItem.quantity);
+
+          // Update UI button quantity
+          const gameplayScene = window.game?.scene?.keys?.Gameplay;
+          if (gameplayScene?.container_selector) {
+            // Find shield button in container_selector children
+            const shieldButton = gameplayScene.container_selector.list.find(child =>
+              children => children.children?.find(btn => btn.texture?.key === 'gameplay_selector_item_btn' &&
+              children.children?.find(img => img.texture?.key === 'item_doge_shield'))
+            );
+
+            // Alternative: get by checking image texture
+            const allButtons = gameplayScene.container_selector.list;
+            for (let container of allButtons) {
+              if (container.container_button_inner) {
+                const image = container.container_button_inner.list.find(obj =>
+                  obj.texture && obj.texture.key === 'item_doge_shield'
+                );
+                if (image && container.text_quantity) {
+                  container.text_quantity.setText(inventoryItem.quantity);
+                  console.log('[Arena UI] Updated shield button quantity to:', inventoryItem.quantity);
+                  break;
+                }
+              }
+            }
+          }
+        }
 
         const gameplayScene = window.game?.scene?.keys?.Gameplay;
         if (gameplayScene && typeof gameplayScene.spawnShieldItem === 'function') {
-          // Spawn shield at random position
+          // Spawn shield at random position for visual feedback
           gameplayScene.spawnShieldItem({
             x: Math.random() * 700 + 100,
             y: Math.random() * 500 + 300,
