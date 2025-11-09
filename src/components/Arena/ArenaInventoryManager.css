@@ -1,0 +1,86 @@
+/**
+ * Arena Inventory Manager Styles
+ */
+
+/* Inventory overlay */
+.arena-inventory-overlay {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Shield counter */
+.shield-counter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 25px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  animation: shieldCounterPulse 2s infinite;
+}
+
+.shield-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+.shield-count {
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+/* Body effect when shield received */
+body.doge-shield-received {
+  animation: screenFlash 0.5s ease-out;
+}
+
+/* Animations */
+@keyframes shieldCounterPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+  }
+}
+
+@keyframes screenFlash {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2) hue-rotate(10deg);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .arena-inventory-overlay {
+    top: 10px;
+    left: 10px;
+  }
+
+  .shield-counter {
+    padding: 8px 12px;
+  }
+
+  .shield-icon {
+    font-size: 20px;
+  }
+
+  .shield-count {
+    font-size: 16px;
+  }
+}

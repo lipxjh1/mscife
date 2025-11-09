@@ -1,0 +1,252 @@
+/**
+ * DOGE Shield Notification Styles
+ * Special enhanced notification for DOGE Shield drops
+ */
+
+.doge-shield-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B6B 100%);
+  border: 3px solid #FFF;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
+              0 0 60px rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 400px;
+  max-width: 500px;
+  z-index: 10000;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  opacity: 0;
+  overflow: hidden;
+}
+
+.doge-shield-notification.visible {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  animation: dogeShieldPopIn 0.5s ease-out;
+}
+
+.doge-shield-notification.hidden {
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0;
+  animation: dogeShieldPopOut 0.3s ease-in;
+}
+
+/* Shield icon with effects */
+.shield-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.shield-icon {
+  font-size: 60px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  animation: shieldBounce 1s infinite;
+}
+
+.shield-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+/* Notification content */
+.notification-content {
+  flex: 1;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.notification-title {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  font-weight: bold;
+  animation: titleGlow 2s infinite;
+}
+
+.notification-message {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  opacity: 0.95;
+  line-height: 1.4;
+}
+
+.shield-count {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  backdrop-filter: blur(10px);
+}
+
+/* Close button */
+.notification-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.notification-close:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+/* Sparkle effects */
+.sparkle {
+  position: absolute;
+  font-size: 20px;
+  animation: sparkleFloat 2s infinite;
+  pointer-events: none;
+}
+
+/* Doge mascot */
+.doge-mascot {
+  position: absolute;
+  bottom: -20px;
+  right: -10px;
+  font-size: 80px;
+  opacity: 0.8;
+  animation: dogeWag 1s infinite;
+  transform: rotate(-10deg);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Animations */
+@keyframes dogeShieldPopIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes dogeShieldPopOut {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes shieldBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkleFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5),
+                 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5),
+                 0 0 30px rgba(255, 255, 255, 0.8);
+  }
+}
+
+@keyframes dogeWag {
+  0%, 100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .doge-shield-notification {
+    left: 10px;
+    right: 10px;
+    top: 100px;
+    transform: translateY(-20px) scale(0.8);
+    min-width: auto;
+    max-width: none;
+  }
+
+  .doge-shield-notification.visible {
+    transform: translateY(0) scale(1);
+  }
+
+  .shield-icon {
+    font-size: 40px;
+  }
+
+  .notification-title {
+    font-size: 20px;
+  }
+
+  .notification-message {
+    font-size: 16px;
+  }
+
+  .doge-mascot {
+    font-size: 50px;
+    bottom: -10px;
+    right: -5px;
+  }
+}
