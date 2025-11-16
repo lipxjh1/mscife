@@ -136,6 +136,12 @@ class RoomService {
    * @returns {Promise<Object>} Room information
    */
   async createRoom(bossId, playerData = null) {
+    console.log('[RoomService] ============================================');
+    console.log('[RoomService] CREATE ROOM REQUEST');
+    console.log('[RoomService] ============================================');
+    console.log('[RoomService] Boss ID:', bossId);
+    console.log('[RoomService] Player Data:', playerData);
+
     try {
       // Validate boss ID
       const bossInfo = this.getBossInfo(bossId);
@@ -146,26 +152,120 @@ class RoomService {
       // Get player data
       const pData = playerData || this.getPlayerData();
 
-      // Create room
-      const room = await colyseusClient.createRoom(bossId, pData);
+      console.log('[RoomService] Boss Info:', bossInfo);
+      console.log('[RoomService] Final Player Data:', pData);
+      console.log('[RoomService] Calling colyseusClient.createRoom()...');
 
-      // Return room information
-      return {
-        success: true,
-        room: {
-          roomId: room.id,
-          roomCode: room.state.roomCode,
+      // Create room via colyseus client
+      const result = await colyseusClient.createRoom(bossId, pData);
+
+      console.log('[RoomService] Colyseus client returned:', result);
+
+      if (result.success) {
+        console.log('[RoomService] ✅ Room created successfully');
+        console.log('[RoomService] Room object:', result.room);
+        console.log('[RoomService] Room code:', result.roomCode);
+        console.log('[RoomService] Room ID:', result.room?.id);
+        console.log('[RoomService] Session ID:', result.room?.sessionId);
+        console.log('[RoomService] Validating room data...');
+
+        // Validate room object
+        if (!result.room) {
+          console.error('[RoomService] ❌ Room object is undefined!');
+          return {
+            success: false,
+            error: "Room creation succeeded but room object is undefined"
+          };
+        }
+
+        if (!result.room.state) {
+          console.error('[RoomService] ❌ Room state is undefined!');
+          return {
+            success: false,
+            error: "Room created but room state is undefined"
+          };
+        }
+
+        if (!result.roomCode && !result.room.state.roomCode) {
+          console.error('[RoomService] ❌ Room code is undefined!');
+          console.error('[RoomService] result.roomCode:', result.roomCode);
+          console.error('[RoomService] result.room.state.roomCode:', result.room.state.roomCode);
+          return {
+            success: false,
+            error: "Room created but room code is undefined"
+          };
+        }
+
+        const finalRoomCode = result.roomCode || result.room.state.roomCode;
+        console.log('[RoomService] ✅ Room data validated successfully');
+        console.log('[RoomService] Final room code:', finalRoomCode);
+
+        // ✅ Return với roomCode từ room.id
+        return {
+          success: true,
+          room: result.room,
+          roomCode: result.roomCode,  // Already fixed in colyseusClient
           bossInfo,
           playerInfo: pData,
           status: "created"
+        };
+
+      } else {
+        console.error('[RoomService] ❌ Room creation failed');
+        console.error('[RoomService] Error:', result.error);
+        console.error('[RoomService] Error type:', result.errorType);
+        console.error('[RoomService] Error code:', result.errorCode);
+
+        // ✅ Safe error message extraction
+        const errorMessage = result.error || "Failed to create room";
+
+        // Enhanced error messages with safe string checks
+        let userMessage = "Failed to create room";
+
+        if (result.isNetworkError) {
+          userMessage = "Cannot connect to server. Please check your connection.";
+        } else if (result.isTimeout) {
+          userMessage = "Server connection timeout. Please try again.";
+        } else if (errorMessage && errorMessage.includes('Failed to fetch')) {
+          userMessage = "Cannot connect to server. Please check your internet connection.";
+        } else if (errorMessage && errorMessage.includes('timeout')) {
+          userMessage = "Server connection timeout. Please try again.";
+        } else if (errorMessage && errorMessage.includes('ERR_FAILED')) {
+          userMessage = "Server is not responding. Please try again later.";
+        } else {
+          userMessage = errorMessage;
         }
-      };
+
+        return {
+          success: false,
+          error: userMessage,
+          originalError: result.error,
+          errorType: result.errorType,
+          errorCode: result.errorCode,
+          isNetworkError: result.isNetworkError,
+          isTimeout: result.isTimeout,
+          suggestions: result.suggestions
+        };
+      }
 
     } catch (error) {
-      console.error(`[RoomService] Failed to create room:`, error);
+      console.error('[RoomService] ============================================');
+      console.error('[RoomService] ❌ EXCEPTION IN CREATE ROOM');
+      console.error('[RoomService] ============================================');
+      console.error('[RoomService] Error object:', error);
+
+      // ✅ Safe error message extraction
+      const errorMessage = error.message || error.toString() || 'Unknown error';
+      const errorType = error.constructor?.name || 'Unknown';
+
+      console.error('[RoomService] Error message:', errorMessage);
+      console.error('[RoomService] Error type:', errorType);
+      console.error('[RoomService] Stack trace:', error.stack || 'No stack trace');
+
       return {
         success: false,
-        error: error.message || "Failed to create room"
+        error: errorMessage,
+        errorType: errorType
       };
     }
   }
@@ -180,31 +280,112 @@ class RoomService {
     try {
       // Validate room code
       if (!this.validateRoomCode(roomCode)) {
-        throw new Error("Invalid room code format. Must be 3 digits.");
+        return {
+          success: false,
+          error: "Invalid room code format. Must be 3 digits."
+        };
       }
 
       // Get player data
       const pData = playerData || this.getPlayerData();
 
-      // Join room
-      const room = await colyseusClient.joinRoom(roomCode, pData);
+      console.log(`[RoomService] Joining room with code: ${roomCode}`, pData);
 
-      // Return success
-      return {
-        success: true,
-        room: {
-          roomId: room.id,
-          roomCode: room.state.roomCode,
+      // Join room via colyseus client
+      const result = await colyseusClient.joinRoom(roomCode, pData);
+
+      if (result.success) {
+        console.log(`[RoomService] Room joined successfully:`, result.roomCode);
+
+        // Return success
+        return {
+          success: true,
+          room: result.room,
+          roomCode: result.roomCode,
           playerInfo: pData,
           status: "joined"
-        }
-      };
+        };
+      } else {
+        console.error(`[RoomService] Room join failed:`, result.error);
+        return {
+          success: false,
+          error: result.error
+        };
+      }
 
     } catch (error) {
-      console.error(`[RoomService] Failed to join room:`, error);
+      console.error('[RoomService] ============================================');
+      console.error('[RoomService] ❌ EXCEPTION IN JOIN ROOM');
+      console.error('[RoomService] ============================================');
+      console.error('[RoomService] Error object:', error);
+
+      // ✅ Safe error message extraction
+      const errorMessage = error.message || error.toString() || 'Failed to join room';
+      const errorType = error.constructor?.name || 'Unknown';
+
+      console.error('[RoomService] Error message:', errorMessage);
+      console.error('[RoomService] Error type:', errorType);
+
       return {
         success: false,
-        error: error.message || "Failed to join room"
+        error: errorMessage,
+        errorType: errorType
+      };
+    }
+  }
+
+  /**
+   * Join room by ID with error handling
+   * @param {string} roomId - Room ID
+   * @param {Object} playerData - Player data (optional)
+   * @returns {Promise<Object>} Join result
+   */
+  async joinRoomById(roomId, playerData = null) {
+    try {
+      // Get player data
+      const pData = playerData || this.getPlayerData();
+
+      console.log(`[RoomService] Joining room by ID: ${roomId}`, pData);
+
+      // Join room via colyseus client
+      const result = await colyseusClient.joinRoomById(roomId, pData);
+
+      if (result.success) {
+        console.log(`[RoomService] Room joined successfully by ID:`, result.roomCode);
+
+        // Return success
+        return {
+          success: true,
+          room: result.room,
+          roomCode: result.roomCode,
+          playerInfo: pData,
+          status: "joined"
+        };
+      } else {
+        console.error(`[RoomService] Room join by ID failed:`, result.error);
+        return {
+          success: false,
+          error: result.error
+        };
+      }
+
+    } catch (error) {
+      console.error('[RoomService] ============================================');
+      console.error('[RoomService] ❌ EXCEPTION IN JOIN ROOM BY ID');
+      console.error('[RoomService] ============================================');
+      console.error('[RoomService] Error object:', error);
+
+      // ✅ Safe error message extraction
+      const errorMessage = error.message || error.toString() || 'Failed to join room by ID';
+      const errorType = error.constructor?.name || 'Unknown';
+
+      console.error('[RoomService] Error message:', errorMessage);
+      console.error('[RoomService] Error type:', errorType);
+
+      return {
+        success: false,
+        error: errorMessage,
+        errorType: errorType
       };
     }
   }

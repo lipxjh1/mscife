@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colyseus Client Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-step {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-step h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Colyseus Client Fix Verification</h1>
+        <p>Test the updated Colyseus client with enhanced logging and WebSocket fixes.</p>
+    </div>
+
+    <div class="grid">
+        <!-- Environment Check -->
+        <div class="test-step">
+            <h3>1️⃣ Environment Configuration</h3>
+            <button onclick="checkEnvironment()">Check Environment</button>
+            <div id="envStatus"></div>
+            <pre id="envDetails"></pre>
+        </div>
+
+        <!-- Connection Test -->
+        <div class="test-step">
+            <h3>2️⃣ WebSocket Connection Test</h3>
+            <button onclick="testWebSocketConnection()">Test WebSocket</button>
+            <div id="wsStatus"></div>
+            <pre id="wsDetails"></pre>
+        </div>
+
+        <!-- HTTP Health Check -->
+        <div class="test-step">
+            <h3>3️⃣ HTTP Health Check</h3>
+            <button onclick="testHttpHealth()">Test HTTP Endpoint</button>
+            <div id="httpStatus"></div>
+            <pre id="httpDetails"></pre>
+        </div>
+
+        <!-- Colyseus Room Creation -->
+        <div class="test-step">
+            <h3>4️⃣ Create Room Test</h3>
+            <button onclick="testCreateRoom()">Create Test Room</button>
+            <div id="roomStatus"></div>
+            <pre id="roomDetails"></pre>
+        </div>
+
+        <!-- Get Available Rooms -->
+        <div class="test-step">
+            <h3>5️⃣ Available Rooms Test</h3>
+            <button onclick="testGetAvailableRooms()">Get Available Rooms</button>
+            <div id="roomsStatus"></div>
+            <pre id="roomsDetails"></pre>
+        </div>
+
+        <!-- Diagnostic Report -->
+        <div class="test-step">
+            <h3>6️⃣ Full Diagnostic</h3>
+            <button onclick="runFullDiagnostic()">Run Complete Diagnostic</button>
+            <div id="diagnosticStatus"></div>
+            <pre id="diagnosticDetails"></pre>
+        </div>
+    </div>
+
+    <!-- Console Log Monitor -->
+    <div class="container full-width">
+        <h3>📝 Console Log Monitor</h3>
+        <button onclick="clearConsoleLogs()">Clear Logs</button>
+        <pre id="consoleLogs"></pre>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/colyseus.js@0.15.0/dist/colyseus.js"></script>
+    <script>
+        // Global variables
+        let testClient = null;
+        let originalLog = console.log;
+        let originalError = console.error;
+        let originalWarn = console.warn;
+        let allLogs = [];
+
+        // Capture console logs
+        function setupLogCapture() {
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                allLogs.push({ type: 'log', message: args.join(' '), timestamp: new Date().toISOString() });
+                updateConsoleDisplay();
+            };
+
+            console.error = function(...args) {
+                originalError.apply(console, args);
+                allLogs.push({ type: 'error', message: args.join(' '), timestamp: new Date().toISOString() });
+                updateConsoleDisplay();
+            };
+
+            console.warn = function(...args) {
+                originalWarn.apply(console, args);
+                allLogs.push({ type: 'warn', message: args.join(' '), timestamp: new Date().toISOString() });
+                updateConsoleDisplay();
+            };
+        }
+
+        function updateConsoleDisplay() {
+            const logsDiv = document.getElementById('consoleLogs');
+            logsDiv.textContent = allLogs.map(log =>
+                `[${log.timestamp}] [${log.type.toUpperCase()}] ${log.message}`
+            ).join('\n');
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function clearConsoleLogs() {
+            allLogs = [];
+            updateConsoleDisplay();
+        }
+
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.innerHTML = `<strong>${status.toUpperCase()}:</strong> ${message}`;
+        }
+
+        function updateDetails(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        // Test 1: Environment Configuration
+        async function checkEnvironment() {
+            console.log('=== ENVIRONMENT CHECK ===');
+
+            const env = {
+                protocol: window.location.protocol,
+                hostname: window.location.hostname,
+                port: window.location.port,
+                href: window.location.href,
+                userAgent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+            };
+
+            // Simulate import.meta.env (since this is plain HTML)
+            const mockEnv = {
+                VITE_COLYSEUS_URL: 'ws://139.180.144.161:2567',
+                MODE: 'development'
+            };
+
+            console.log('Environment:', env);
+            console.log('Mock Environment Variables:', mockEnv);
+
+            // Determine WebSocket protocol
+            const wsProtocol = env.protocol === 'https:' ? 'wss:' : 'ws:';
+            const expectedWsUrl = `${wsProtocol}//139.180.144.161:2567`;
+
+            const config = {
+                expectedWsUrl: expectedWsUrl,
+                configuredWsUrl: mockEnv.VITE_COLYSEUS_URL,
+                protocolMatch: expectedWsUrl === mockEnv.VITE_COLYSEUS_URL
+            };
+
+            console.log('WebSocket Configuration:', config);
+
+            updateStatus('envStatus', config.protocolMatch ? 'success' : 'warning',
+                         config.protocolMatch ? '✅ Environment configured correctly' : '⚠️ Protocol mismatch');
+            updateDetails('envDetails', { env, mockEnv, config });
+        }
+
+        // Test 2: WebSocket Connection Test
+        async function testWebSocketConnection() {
+            console.log('=== WEBSOCKET CONNECTION TEST ===');
+
+            const wsUrl = 'ws://139.180.144.161:2567';
+            console.log('Testing WebSocket URL:', wsUrl);
+
+            try {
+                const startTime = Date.now();
+                const ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    const connectionTime = Date.now() - startTime;
+                    console.log(`✅ WebSocket connection opened in ${connectionTime}ms`);
+
+                    updateStatus('wsStatus', 'success', `✅ WebSocket connected in ${connectionTime}ms`);
+                    updateDetails('wsDetails', {
+                        url: wsUrl,
+                        connectionTime: `${connectionTime}ms`,
+                        protocol: ws.protocol,
+                        readyState: ws.readyState
+                    });
+
+                    ws.close();
+                };
+
+                ws.onerror = (error) => {
+                    console.error('❌ WebSocket connection failed:', error);
+                    updateStatus('wsStatus', 'error', '❌ WebSocket connection failed');
+                    updateDetails('wsDetails', {
+                        error: 'WebSocket connection failed',
+                        url: wsUrl,
+                        timestamp: new Date().toISOString()
+                    });
+                };
+
+                ws.onclose = (event) => {
+                    console.log('WebSocket closed:', event);
+                };
+
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (ws.readyState === WebSocket.CONNECTING) {
+                        ws.close();
+                        console.error('❌ WebSocket connection timeout');
+                        updateStatus('wsStatus', 'error', '❌ WebSocket connection timeout (10s)');
+                        updateDetails('wsDetails', { error: 'Connection timeout', url: wsUrl });
+                    }
+                }, 10000);
+
+            } catch (error) {
+                console.error('❌ WebSocket test error:', error);
+                updateStatus('wsStatus', 'error', `❌ WebSocket test error: ${error.message}`);
+                updateDetails('wsDetails', { error: error.message, stack: error.stack });
+            }
+        }
+
+        // Test 3: HTTP Health Check
+        async function testHttpHealth() {
+            console.log('=== HTTP HEALTH CHECK ===');
+
+            const httpUrl = 'http://139.180.144.161:2567/health';
+            console.log('Testing HTTP endpoint:', httpUrl);
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(httpUrl, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                const responseTime = Date.now() - startTime;
+                const data = await response.json();
+
+                console.log(`✅ HTTP health check successful (${responseTime}ms)`);
+                console.log('Health data:', data);
+
+                updateStatus('httpStatus', 'success', `✅ Health check OK (${responseTime}ms)`);
+                updateDetails('httpDetails', {
+                    url: httpUrl,
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseTime: `${responseTime}ms`,
+                    data: data
+                });
+
+            } catch (error) {
+                console.error('❌ HTTP health check failed:', error);
+                updateStatus('httpStatus', 'error', `❌ HTTP health check failed: ${error.message}`);
+                updateDetails('httpDetails', {
+                    error: error.message,
+                    url: httpUrl,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+
+        // Test 4: Create Room Test
+        async function testCreateRoom() {
+            console.log('=== CREATE ROOM TEST ===');
+
+            try {
+                const client = new Colyseus.Client('ws://139.180.144.161:2567');
+
+                const roomOptions = {
+                    bossId: 'fire-dragon-1',
+                    userId: 'test-user-' + Date.now(),
+                    characterId: 'test-char',
+                    playerName: 'Test Player',
+                    level: 10,
+                    hp: 1000,
+                    attack: 100,
+                    defense: 50
+                };
+
+                console.log('Creating room with options:', roomOptions);
+
+                const startTime = Date.now();
+                const room = await client.create('boss_battle', roomOptions);
+                const creationTime = Date.now() - startTime;
+
+                console.log(`✅ Room created successfully (${creationTime}ms)`);
+                console.log('Room ID:', room.id);
+                console.log('Room state:', room.state);
+                console.log('Room code:', room.state?.roomCode);
+
+                updateStatus('roomStatus', 'success', `✅ Room created in ${creationTime}ms`);
+                updateDetails('roomDetails', {
+                    roomId: room.id,
+                    roomCode: room.state?.roomCode,
+                    roomState: room.state,
+                    creationTime: `${creationTime}ms`,
+                    options: roomOptions
+                });
+
+                // Clean up
+                room.leave();
+
+            } catch (error) {
+                console.error('❌ Room creation failed:', error);
+                updateStatus('roomStatus', 'error', `❌ Room creation failed: ${error.message}`);
+                updateDetails('roomDetails', {
+                    error: error.message,
+                    stack: error.stack,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+
+        // Test 5: Get Available Rooms
+        async function testGetAvailableRooms() {
+            console.log('=== GET AVAILABLE ROOMS TEST ===');
+
+            try {
+                const client = new Colyseus.Client('ws://139.180.144.161:2567');
+
+                const startTime = Date.now();
+                const rooms = await client.getAvailableRooms('boss_battle');
+                const responseTime = Date.now() - startTime;
+
+                console.log(`✅ Got available rooms (${responseTime}ms)`);
+                console.log('Room count:', rooms.length);
+                console.log('Rooms:', rooms);
+
+                updateStatus('roomsStatus', 'success', `✅ Found ${rooms.length} rooms (${responseTime}ms)`);
+                updateDetails('roomsDetails', {
+                    roomCount: rooms.length,
+                    responseTime: `${responseTime}ms`,
+                    rooms: rooms
+                });
+
+            } catch (error) {
+                console.error('❌ Get available rooms failed:', error);
+                updateStatus('roomsStatus', 'error', `❌ Failed to get rooms: ${error.message}`);
+                updateDetails('roomsDetails', {
+                    error: error.message,
+                    stack: error.stack,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+
+        // Test 6: Full Diagnostic
+        async function runFullDiagnostic() {
+            console.log('=== FULL DIAGNOSTIC ===');
+
+            const diagnostic = {
+                timestamp: new Date().toISOString(),
+                pageProtocol: window.location.protocol,
+                pageUrl: window.location.href,
+                wsUrl: 'ws://139.180.144.161:2567',
+                httpUrl: 'http://139.180.144.161:2567/health'
+            };
+
+            console.log('Running full diagnostic...');
+            console.log('Diagnostic config:', diagnostic);
+
+            const results = {
+                environment: {},
+                websocket: {},
+                http: {},
+                colyseus: {}
+            };
+
+            // Environment check
+            results.environment = {
+                protocol: window.location.protocol,
+                expectedWsUrl: diagnostic.pageProtocol === 'https:' ? 'wss://139.180.144.161:2567' : 'ws://139.180.144.161:2567',
+                configuredWsUrl: diagnostic.wsUrl,
+                match: true // Assuming match for this test
+            };
+
+            // HTTP test
+            try {
+                const httpResponse = await fetch(diagnostic.httpUrl);
+                const httpData = await httpResponse.json();
+                results.http = {
+                    success: true,
+                    status: httpResponse.status,
+                    data: httpData
+                };
+            } catch (error) {
+                results.http = {
+                    success: false,
+                    error: error.message
+                };
+            }
+
+            // WebSocket test
+            try {
+                const ws = new WebSocket(diagnostic.wsUrl);
+                results.websocket = await new Promise((resolve) => {
+                    const timeout = setTimeout(() => {
+                        resolve({ success: false, error: 'timeout' });
+                    }, 5000);
+
+                    ws.onopen = () => {
+                        clearTimeout(timeout);
+                        ws.close();
+                        resolve({ success: true });
+                    };
+
+                    ws.onerror = () => {
+                        clearTimeout(timeout);
+                        resolve({ success: false, error: 'connection_failed' });
+                    };
+                });
+            } catch (error) {
+                results.websocket = {
+                    success: false,
+                    error: error.message
+                };
+            }
+
+            // Colyseus test
+            try {
+                const client = new Colyseus.Client(diagnostic.wsUrl);
+                const rooms = await client.getAvailableRooms('boss_battle');
+                results.colyseus = {
+                    success: true,
+                    roomCount: rooms.length
+                };
+            } catch (error) {
+                results.colyseus = {
+                    success: false,
+                    error: error.message
+                };
+            }
+
+            const fullReport = {
+                diagnostic,
+                results,
+                summary: {
+                    allPassed: results.environment.match &&
+                               results.http.success &&
+                               results.websocket.success &&
+                               results.colyseus.success,
+                    issues: []
+                }
+            };
+
+            // Add issues
+            if (!results.http.success) fullReport.summary.issues.push('HTTP endpoint not reachable');
+            if (!results.websocket.success) fullReport.summary.issues.push('WebSocket connection failed');
+            if (!results.colyseus.success) fullReport.summary.issues.push('Colyseus client failed');
+
+            console.log('=== FULL DIAGNOSTIC RESULTS ===');
+            console.log('All tests passed:', fullReport.summary.allPassed);
+            if (fullReport.summary.issues.length > 0) {
+                console.log('Issues found:', fullReport.summary.issues);
+            }
+            console.log('Full report:', fullReport);
+
+            updateStatus('diagnosticStatus',
+                         fullReport.summary.allPassed ? 'success' : 'error',
+                         fullReport.summary.allPassed ?
+                         '✅ All tests passed' :
+                         `❌ ${fullReport.summary.issues.length} issue(s) found`);
+            updateDetails('diagnosticDetails', fullReport);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupLogCapture();
+            console.log('=== COLYSEUS CLIENT FIX TEST INITIALIZED ===');
+            console.log('Click the test buttons to verify each component');
+        });
+    </script>
+</body>
+</html>

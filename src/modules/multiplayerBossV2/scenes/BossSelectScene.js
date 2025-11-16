@@ -411,32 +411,105 @@ function createFightButton(scene, container, x, y, imageKey, buttonName) {
  * @param {string} bossId - Selected boss ID
  */
 async function createRoomWithBoss(scene, bossId) {
-    console.log(`[BossSelectScene] Creating room with boss: ${bossId}`);
-
-    CreateLoadingPopup();
+    console.log('[BossSelectScene] ============================================');
+    console.log('[BossSelectScene] CREATE ROOM WITH BOSS');
+    console.log('[BossSelectScene] ============================================');
+    console.log('[BossSelectScene] Boss ID:', bossId);
 
     try {
-        const result = await roomService.createRoom(bossId);
+        CreateLoadingPopup();
+
+        const playerData = {
+            userId: sessionStorage.getItem('userId') || 'guest-' + Date.now(),
+            characterId: sessionStorage.getItem('selectedCharacter') || 'default',
+            playerName: sessionStorage.getItem('username') || 'Player',
+            avatar: sessionStorage.getItem('avatar') || '',
+            level: parseInt(sessionStorage.getItem('playerLevel')) || 1,
+            hp: parseInt(sessionStorage.getItem('playerHP')) || 1000,
+            attack: parseInt(sessionStorage.getItem('playerAttack')) || 100,
+            defense: parseInt(sessionStorage.getItem('playerDefense')) || 50
+        };
+
+        console.log('[BossSelectScene] Player data:', playerData);
+        console.log('[BossSelectScene] Calling roomService.createRoom()...');
+
+        const result = await roomService.createRoom(bossId, playerData);
+
+        console.log('[BossSelectScene] Room service returned:', result);
 
         if (result.success) {
+            console.log('[BossSelectScene] ✅ Room created successfully!');
+            console.log('[BossSelectScene] Room object:', result.room);
+            console.log('[BossSelectScene] Room code:', result.roomCode);
+
+            // ✅ Validate room code (now from room.id)
+            if (!result.roomCode || result.roomCode === 'UNKNOWN') {
+                console.error('[BossSelectScene] ❌ Invalid room code!');
+                console.error('[BossSelectScene] Room ID:', result.room?.id);
+                console.error('[BossSelectScene] Session ID:', result.room?.sessionId);
+                HideLoadingPopup();
+                CreateAlertPopup(scene, "Room created but code is invalid. Please try again.");
+                return;
+            }
+
+            console.log('[BossSelectScene] ✅ Room code validated:', result.roomCode);
+            console.log('[BossSelectScene] Navigating to RoomScene...');
+
             HideLoadingPopup();
             closeBossSelect(scene);
 
-            // Navigate to room scene
             import("./RoomScene.js").then(module => {
-                module.createRoomScene(scene, result.room);
+                console.log('[BossSelectScene] RoomScene module loaded');
+                module.createRoomScene(scene, {
+                    room: result.room,
+                    bossId: bossId
+                });
             }).catch(error => {
-                console.error("Failed to load RoomScene:", error);
+                console.error('[BossSelectScene] Failed to load RoomScene:', error);
                 CreateAlertPopup(scene, "Failed to load room scene");
             });
+
         } else {
+            console.error('[BossSelectScene] ❌ Room creation failed');
+
+            // ✅ Safe error extraction
+            const errorMsg = result.error || 'Unknown error occurred';
+            const errorType = result.errorType || 'Unknown';
+
+            console.error('[BossSelectScene] Error:', errorMsg);
+            console.error('[BossSelectScene] Error type:', errorType);
+
             HideLoadingPopup();
-            CreateAlertPopup(scene, result.error || "Failed to create room");
+
+            // ✅ User-friendly error messages
+            let userMessage = 'Failed to create room. ';
+
+            if (result.isNetworkError) {
+                userMessage = 'Cannot connect to server. Please check your connection.';
+            } else if (result.isTimeout) {
+                userMessage = 'Server connection timeout. Please try again.';
+            } else if (errorMsg && errorMsg.includes('Failed to fetch')) {
+                userMessage = 'Cannot reach server. Please try again later.';
+            } else if (errorMsg && errorMsg.includes('timeout')) {
+                userMessage = 'Server connection timeout. Please try again.';
+            } else if (errorMsg && errorMsg.includes('ERR_FAILED')) {
+                userMessage = 'Server is not responding. Please try again later.';
+            } else {
+                userMessage = errorMsg;
+            }
+
+            CreateAlertPopup(scene, userMessage);
         }
+
     } catch (error) {
-        console.error("Create room error:", error);
+        console.error('[BossSelectScene] ============================================');
+        console.error('[BossSelectScene] ❌ EXCEPTION IN CREATE ROOM');
+        console.error('[BossSelectScene] ============================================');
+        console.error('[BossSelectScene] Error:', error);
+        console.error('[BossSelectScene] Stack:', error.stack);
+
         HideLoadingPopup();
-        CreateAlertPopup(scene, "Failed to create room");
+        CreateAlertPopup(scene, "An error occurred while creating room");
     }
 }
 

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Boss Room Creation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .test-result.pass { border-left-color: #28a745; background: #d4edda; }
+        .test-result.fail { border-left-color: #dc3545; background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Boss Room Creation Test</h1>
+        <p>Test Colyseus room creation on staging server (139.180.144.161:2567)</p>
+
+        <div class="status info">
+            <strong>Target Server:</strong> ws://139.180.144.161:2567<br>
+            <strong>Room Type:</strong> boss_battle<br>
+            <strong>Status:</strong> <span id="connectionStatus">Disconnected</span>
+        </div>
+
+        <h2>🎮 Room Creation Test</h2>
+        <button id="testCreateRoom" onclick="testRoomCreation()">Create Test Room</button>
+        <button id="testJoinRoom" onclick="testJoinRoom()" disabled>Join Room</button>
+        <button id="testDisconnect" onclick="disconnect()" disabled>Disconnect</button>
+
+        <h2>📊 Test Results</h2>
+        <div id="testResults"></div>
+
+        <h2>🔍 Room State Analysis</h2>
+        <div id="roomState"></div>
+
+        <h2>📝 Raw Logs</h2>
+        <pre id="logs"></pre>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/colyseus.js@0.15.0/dist/colyseus.js"></script>
+    <script>
+        let client = null;
+        let room = null;
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toISOString();
+            logs.textContent += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function addTestResult(testName, passed, message, details = null) {
+            testResults.push({ testName, passed, message, details });
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            resultDiv.innerHTML = `
+                <strong>${testName}:</strong> ${passed ? '✅ PASS' : '❌ FAIL'}
+                <br>${message}
+                ${details ? `<br><small><pre>${JSON.stringify(details, null, 2)}</pre></small>` : ''}
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function updateConnectionStatus(status) {
+            document.getElementById('connectionStatus').textContent = status;
+        }
+
+        async function testRoomCreation() {
+            log('Starting room creation test...');
+            updateConnectionStatus('Connecting...');
+
+            try {
+                // Test 1: Create Colyseus client
+                log('Test 1: Creating Colyseus client...');
+                client = new Colyseus.Client('ws://139.180.144.161:2567');
+                addTestResult('Colyseus Client Creation', true, 'Client created successfully');
+
+                // Test 2: Check server availability
+                log('Test 2: Checking server availability...');
+                try {
+                    const response = await fetch('http://139.180.144.161:2567/health');
+                    const health = await response.json();
+                    addTestResult('Server Health Check', response.ok,
+                        `Server responded with status ${response.status}`, health);
+                    log('Server health check passed');
+                } catch (error) {
+                    addTestResult('Server Health Check', false,
+                        `Health check failed: ${error.message}`);
+                    log(`Health check failed: ${error.message}`, 'error');
+                }
+
+                // Test 3: Create room
+                log('Test 3: Creating boss battle room...');
+                updateConnectionStatus('Creating room...');
+
+                const roomOptions = {
+                    bossId: 'fire-dragon-1',
+                    userId: 'test-user-' + Date.now(),
+                    characterId: 'test-char-456',
+                    playerName: 'Test Player',
+                    level: 10,
+                    hp: 1000,
+                    attack: 100,
+                    defense: 50
+                };
+
+                log(`Creating room with options: ${JSON.stringify(roomOptions)}`);
+
+                room = await client.create('boss_battle', roomOptions);
+
+                addTestResult('Room Creation', true,
+                    `Room created successfully with ID: ${room.id}`, {
+                        roomId: room.id,
+                        roomName: room.name,
+                        maxClients: room.maxClients,
+                        clients: room.clients,
+                        state: room.state ? 'Available' : 'NULL/UNDEFINED'
+                    });
+
+                log(`✅ Room created successfully! Room ID: ${room.id}`);
+                updateConnectionStatus('Connected');
+
+                // Test 4: Check room state
+                log('Test 4: Analyzing room state...');
+                if (room.state) {
+                    const stateData = {
+                        roomId: room.state.roomId,
+                        roomCode: room.state.roomCode,
+                        boss: room.state.boss,
+                        players: room.state.players,
+                        battlePhase: room.state.battlePhase,
+                        turnOrder: room.state.turnOrder,
+                        currentTurn: room.state.currentTurn
+                    };
+
+                    // Check if roomCode exists
+                    const hasRoomCode = room.state.roomCode !== undefined && room.state.roomCode !== null;
+                    addTestResult('Room State Availability', true,
+                        'Room state object is available');
+
+                    addTestResult('Room Code Generation', hasRoomCode,
+                        hasRoomCode ? `Room code: ${room.state.roomCode}` : 'Room code is undefined/null',
+                        { roomCode: room.state.roomCode });
+
+                    updateRoomStateDisplay(stateData);
+                    log(`Room state analyzed. Room code: ${room.state.roomCode}`);
+                } else {
+                    addTestResult('Room State Availability', false,
+                        'Room.state is undefined or null');
+                    addTestResult('Room Code Generation', false,
+                        'Cannot check room code - state is undefined');
+                    log('❌ Room state is undefined!', 'error');
+                    updateConnectionStatus('Error - State Undefined');
+                }
+
+                // Enable/disable buttons
+                document.getElementById('testCreateRoom').disabled = true;
+                document.getElementById('testJoinRoom').disabled = true;
+                document.getElementById('testDisconnect').disabled = false;
+
+                // Setup room event listeners
+                room.onStateChange.once((state) => {
+                    log('State change detected');
+                    updateRoomStateDisplay(state);
+                });
+
+                room.onLeave((code) => {
+                    log(`Left room with code: ${code}`);
+                    updateConnectionStatus('Disconnected');
+                    resetButtons();
+                });
+
+            } catch (error) {
+                log(`❌ Room creation failed: ${error.message}`, 'error');
+                addTestResult('Room Creation', false,
+                    `Failed to create room: ${error.message}`, {
+                        error: error.message,
+                        stack: error.stack
+                    });
+                updateConnectionStatus('Error');
+                resetButtons();
+            }
+        }
+
+        function updateRoomStateDisplay(state) {
+            const stateDiv = document.getElementById('roomState');
+            stateDiv.innerHTML = `
+                <div class="status ${state ? 'success' : 'error'}">
+                    <strong>Room State:</strong> ${state ? 'Available' : 'Undefined'}<br>
+                    <strong>Room ID:</strong> ${state?.roomId || 'N/A'}<br>
+                    <strong>Room Code:</strong> <span style="font-size: 1.2em; font-weight: bold; color: ${state?.roomCode ? '#28a745' : '#dc3545'}">${state?.roomCode || 'UNDEFINED'}</span><br>
+                    <strong>Boss:</strong> ${state?.boss?.name || 'Not loaded'}<br>
+                    <strong>Players:</strong> ${state?.players?.length || 0}<br>
+                    <strong>Battle Phase:</strong> ${state?.battlePhase || 'N/A'}<br>
+                    <strong>Current Turn:</strong> ${state?.currentTurn || 'N/A'}
+                </div>
+                <pre>${JSON.stringify(state, null, 2)}</pre>
+            `;
+        }
+
+        function testJoinRoom() {
+            log('Join room test not implemented in this version');
+        }
+
+        function disconnect() {
+            if (room) {
+                room.leave();
+                room = null;
+            }
+            if (client) {
+                // Colyseus client doesn't have explicit disconnect
+                client = null;
+            }
+            updateConnectionStatus('Disconnected');
+            resetButtons();
+            log('Disconnected manually');
+        }
+
+        function resetButtons() {
+            document.getElementById('testCreateRoom').disabled = false;
+            document.getElementById('testJoinRoom').disabled = true;
+            document.getElementById('testDisconnect').disabled = true;
+        }
+
+        // Auto-start test
+        window.addEventListener('load', () => {
+            log('Test page loaded. Click "Create Test Room" to begin.');
+        });
+    </script>
+</body>
+</html>

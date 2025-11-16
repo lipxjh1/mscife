@@ -574,8 +574,8 @@ function showSimpleRoomList(scene, rooms) {
  * @returns {Phaser.GameObjects.Container} Room item container
  */
 function createRoomItem(scene, roomData) {
-    let itemWidth = 950;
-    let itemHeight = 200;
+    let itemWidth = 1004;
+    let itemHeight = 293; // Match V1 room card size
 
     const item = scene.add.container(0, 0);
     item.setSize(itemWidth, itemHeight);
@@ -583,92 +583,267 @@ function createRoomItem(scene, roomData) {
     let container_inner = scene.add.container(-itemWidth / 2, -itemHeight / 2);
     item.add(container_inner);
 
-    // Background based on room status
-    const bgAsset = roomData.canJoin ? "home_battle_item_bg_campain" : "home_battle_item_bg_campain_space";
+    // Background (same as V1 room cards)
     const bg = scene.add
-        .image(0, 0, bgAsset)
+        .image(0, 0, "home_battle_item_bg_campain")
         .setOrigin(0, 0);
     container_inner.add(bg);
 
-    // Room code
-    const text_code = scene.add.text(
-        50,
-        30,
-        `Room: ${roomData.roomCode}`,
+    // Host avatar placeholder (matches V1 position)
+    const avatarBg = scene.add
+        .image(62 + 220 / 2, 392 + 220 / 2 - 250, "share_btn_back") // Move up for room list
+        .setOrigin(0.5)
+        .setDisplaySize(180, 180) // Slightly smaller than room scene
+        .setTint(0x666666);
+    container_inner.add(avatarBg);
+
+    // Load host avatar if available
+    if (roomData.hostAvatar && roomData.hostAvatar !== '') {
+        const avatarKey = `room_avatar_${roomData.roomId || Math.random()}`;
+
+        if (!scene.textures.exists(avatarKey)) {
+            scene.load.image(avatarKey, roomData.hostAvatar);
+            scene.load.start();
+
+            scene.load.once('complete', () => {
+                if (avatarBg && avatarBg.scene) {
+                    avatarBg.setTexture(avatarKey);
+                    avatarBg.clearTint();
+                }
+            });
+        } else {
+            avatarBg.setTexture(avatarKey);
+            avatarBg.clearTint();
+        }
+    }
+
+    // Host username (matches V1 style)
+    const hostUsername = scene.add.text(
+        306,
+        448 - 250, // Move up for room list
+        roomData.hostName || "Unknown Host",
         {
             fontFamily: "Russo One",
-            fontSize: "36px",
+            fontSize: "36px", // Slightly smaller for room list
+            color: "#ffffff",
+            shadow: {
+                offsetX: 2,
+                offsetY: 2,
+                color: "#FF9D00",
+                blur: 5,
+                stroke: true,
+                fill: true,
+            },
+            align: "left",
+        }
+    ).setOrigin(0, 0);
+    container_inner.add(hostUsername);
+
+    // "Host" label (matches V1 yellow color)
+    const hostLabel = scene.add.text(
+        306,
+        474 - 250, // Move up for room list
+        "Host",
+        {
+            fontFamily: "Russo One",
+            fontSize: "32px", // Slightly smaller for room list
+            color: "#FFCC00",
+            shadow: {
+                offsetX: 2,
+                offsetY: 2,
+                color: "#000000",
+                blur: 5,
+                stroke: true,
+                fill: true,
+            },
+            align: "left",
+        }
+    ).setOrigin(0, 0);
+    container_inner.add(hostLabel);
+
+    // Room info panel (matches V1 positioning)
+    const roomCode = scene.add.text(
+        62,
+        634 - 250, // Move up for room list
+        `Room code: ${roomData.roomCode || "N/A"}`,
+        {
+            fontFamily: "Russo One",
+            fontSize: "32px", // Slightly smaller for room list
+            color: "#ffffff",
+            align: "left",
+        }
+    ).setOrigin(0, 0);
+    container_inner.add(roomCode);
+
+    // Players count
+    const playersCount = scene.add.text(
+        62,
+        664 - 250,
+        `Players: ${roomData.playerCount}/${roomData.maxPlayers}`,
+        {
+            fontFamily: "Russo One",
+            fontSize: "32px",
+            color: "#ffffff",
+            align: "left",
+        }
+    ).setOrigin(0, 0);
+    container_inner.add(playersCount);
+
+    // Boss info
+    const bossInfo = scene.add.text(
+        62,
+        694 - 250,
+        `Boss: ${roomData.boss?.name || "Unknown"}`,
+        {
+            fontFamily: "Russo One",
+            fontSize: "32px",
             color: "#FFD700",
             align: "left",
-            stroke: "#000000",
-            strokeThickness: 6
         }
     ).setOrigin(0, 0);
+    container_inner.add(bossInfo);
 
-    container_inner.add(text_code);
-
-    // Phase/status
-    const text_phase = scene.add.text(
-        50,
-        80,
-        `Status: ${roomData.phase} | Players: ${roomData.playerCount}/${roomData.maxPlayers}`,
+    // Battle time
+    const battleTimeText = formatSecondsToHMS((roomData.boss?.battleTime || 300000) / 1000);
+    const battleTime = scene.add.text(
+        62,
+        724 - 250,
+        `Battle Time: ${battleTimeText}`,
         {
             fontFamily: "Russo One",
-            fontSize: "24px",
-            color: "#CCCCCC",
+            fontSize: "32px",
+            color: "#ffffff",
             align: "left",
-            stroke: "#000000",
-            strokeThickness: 4
         }
     ).setOrigin(0, 0);
+    container_inner.add(battleTime);
 
-    container_inner.add(text_phase);
-
-    // Status text
-    const text_status = scene.add.text(
-        50,
-        120,
-        roomData.status,
+    // Timer display (top right, matches V1)
+    const timerText = scene.add.text(
+        960,
+        "00:00:00",
         {
-            fontFamily: cdLocalization.getCurrentFont(),
-            fontSize: "28px",
-            color: roomData.canJoin ? "#00FF00" : "#FF6B6B",
-            align: "left"
+            fontFamily: "Russo One",
+            fontSize: "32px",
+            color: "#ffffff",
+            align: "right",
         }
-    ).setOrigin(0, 0);
+    ).setOrigin(1, 0);
+    container_inner.add(timerText);
 
-    container_inner.add(text_status);
+    // Status display (below timer, matches V1)
+    const statusMap = {
+        0: "waiting",     // WAITING
+        1: "in battle",   // PLAYING
+        2: "ended"        // ENDED
+    };
+    const statusText = scene.add.text(
+        960,
+        413 - 250,
+        `Status: ${statusMap[roomData.phase] || "unknown"}`,
+        {
+            fontFamily: "Russo One",
+            fontSize: "32px",
+            color: roomData.canJoin ? "#00FF44" : "#FF6B6B",
+            align: "right",
+        }
+    ).setOrigin(1, 0);
+    container_inner.add(statusText);
 
-    // Join button (only if can join)
+    // Join button (matches V1 positioning)
     if (roomData.canJoin) {
-        const btn_join = createButton(
+        const btn_join = createButton0(
             scene,
             container_inner,
-            itemWidth - 150,
-            100,
-            "home_battle_btn",
+            686 + 328 / 2,
+            641 + 86 / 2 - 250, // Move up for room list
             "Join"
         );
 
         btn_join.button.on("pointerdown", () => {
-            joinRoom(roomData.roomCode);
+            joinRoomFromList(scene, item, roomData);
         });
 
         container_inner.add(btn_join);
     } else {
-        const btn_full = createButton(
+        const btn_full = createButton0(
             scene,
             container_inner,
-            itemWidth - 150,
-            100,
-            "home_battle_btn_lock",
-            roomData.playerCount >= 2 ? "Full" : "In Progress"
+            686 + 328 / 2,
+            641 + 86 / 2 - 250,
+            roomData.playerCount >= roomData.maxPlayers ? "Full" : "In Progress"
         );
+
+        // Disable full/in-progress buttons
+        btn_full.button.setAlpha(0.5);
+        btn_full.button.disableInteractive();
 
         container_inner.add(btn_full);
     }
 
     return item;
+}
+
+/**
+ * Create button helper (matches V1 room scene style)
+ */
+function createButton0(scene, container, x, y, buttonName) {
+    let btnWidth = 328;
+    let btnHeight = 86;
+
+    const btn_container = scene.add.container(x, y);
+    container.add(btn_container);
+
+    const btn_inner_container = scene.add.container(
+        -btnWidth / 2,
+        -btnHeight / 2
+    );
+    btn_container.add(btn_inner_container);
+
+    btn_container.button = scene.add
+        .image(0, 0, "home_battle_btn")
+        .setOrigin(0, 0)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", function () {})
+        .on("pointerover", function () {
+            if (btn_container.button.alpha === 1) {
+                scene.tweens.add({
+                    targets: btn_container,
+                    scaleX: 1.1,
+                    scaleY: 1.1,
+                    duration: 100,
+                    ease: "Power2",
+                });
+            }
+        })
+        .on("pointerout", function () {
+            scene.tweens.add({
+                targets: btn_container,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+            });
+        });
+    btn_inner_container.add(btn_container.button);
+
+    const text = scene.add
+        .text(
+            btnWidth / 2,
+            17,
+            buttonName,
+            {
+                fontFamily: "Russo One",
+                fontSize: "36px",
+                color: "#FFF",
+                align: "center",
+            }
+        )
+        .setOrigin(0.5, 0);
+
+    btn_inner_container.add(text);
+
+    return btn_container;
 }
 
 /**
@@ -821,4 +996,84 @@ function destroy() {
  */
 export function isRoomListOpen() {
     return isOpen;
+}
+
+/**
+ * Join room from list
+ * @param {Phaser.Scene} scene - Current scene
+ * @param {Phaser.GameObjects.Container} roomItem - Room item container
+ * @param {Object} roomData - Room data
+ */
+async function joinRoomFromList(scene, roomItem, roomData) {
+    try {
+        console.log('[RoomListScene] Joining room from list:', roomData);
+
+        // Get player data from session storage
+        const playerData = {
+            userId: sessionStorage.getItem('userId') || 'guest-' + Date.now(),
+            characterId: sessionStorage.getItem('selectedCharacter') || 'default',
+            playerName: sessionStorage.getItem('username') || 'Player',
+            avatar: sessionStorage.getItem('avatar') || '',
+            level: parseInt(sessionStorage.getItem('playerLevel')) || 1,
+            hp: parseInt(sessionStorage.getItem('playerHP')) || 1000,
+            attack: parseInt(sessionStorage.getItem('playerAttack')) || 100,
+            defense: parseInt(sessionStorage.getItem('playerDefense')) || 50
+        };
+
+        CreateLoadingPopup();
+
+        // Join room
+        const result = await roomService.joinRoom(roomData.roomCode, playerData);
+
+        HideLoadingPopup();
+
+        if (result.success) {
+            console.log('[RoomListScene] Room joined successfully:', result.roomCode);
+
+            // Destroy room list
+            destroy();
+
+            // Navigate to RoomScene
+            import('./RoomScene.js').then(module => {
+                module.createRoomScene(scene, {
+                    room: result.room,
+                    bossId: roomData.boss?.id
+                });
+            }).catch(error => {
+                console.error('[RoomListScene] Failed to load RoomScene:', error);
+                CreateAlertPopup(scene, 'Failed to load room scene');
+            });
+
+        } else {
+            console.error('[RoomListScene] Failed to join room:', result.error);
+            CreateAlertPopup(scene, result.error || 'Failed to join room');
+        }
+
+    } catch (error) {
+        HideLoadingPopup();
+        console.error('[RoomListScene] Join room error:', error);
+        CreateAlertPopup(scene, 'Error joining room. Please try again.');
+    }
+}
+
+/**
+ * Format seconds to HH:MM:SS (matches V1 format)
+ * @param {number} seconds - Seconds to format
+ * @returns {string} Formatted time string
+ */
+function formatSecondsToHMS(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+}
+
+/**
+ * Pad number with leading zero
+ * @param {number} num - Number to pad
+ * @returns {string} Padded string
+ */
+function pad(num) {
+    return num.toString().padStart(2, '0');
 }
