@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import { CreateAudioBackground } from "./Manager/ManagerAudio.js";
+import ASSET_CONFIG from '../../config/assets';
 import centerData from "../Data/CenterData.js";
 import { socketService } from "../socket.js";
 import { socketServiceBoss } from "../socketBoss.js";
@@ -9,7 +10,9 @@ import cdLocalization from "../Data/CenterDataLocalization.js";
 import { isTelegramMiniApp } from "../utils.js";
 import { initPhaserImageBridge } from "./Share/PhaserImageBridge.js";
 
-const url_r2 = import.meta.env.VITE_ASSETS_BASE_URL || "https://cdn.m-sci.net/";
+// Auto switch Local/CDN - Không cần env var
+const assetsBaseUrl = ASSET_CONFIG.baseUrl + '/';
+console.log('[Preloader] Loading assets from:', ASSET_CONFIG.getInfo());
 
 //const url_r2 = "";
 

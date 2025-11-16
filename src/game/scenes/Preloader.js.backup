@@ -9,7 +9,7 @@ import cdLocalization from "../Data/CenterDataLocalization.js";
 import { isTelegramMiniApp } from "../utils.js";
 import { initPhaserImageBridge } from "./Share/PhaserImageBridge.js";
 
-const url_r2 = "https://pub-32ec25dab9604208ae545fbbd8a3ccc5.r2.dev/";
+const url_r2 = import.meta.env.VITE_ASSETS_BASE_URL || "https://cdn.m-sci.net/";
 
 //const url_r2 = "";
 
@@ -407,6 +407,9 @@ export function LoadLogin(scene) {
     scene.load.image("login_btn_1", url_r2 + "assets/login/login_btn_1.webp");
 
     scene.load.image("login_btn_3", url_r2 + "assets/login/login_btn_3.webp");
+
+    // NEW: Load Vorld logo for login button
+    scene.load.image("vorld_logo", url_r2 + "icons/vorld.webp");
 }
 
 export function LoadHome(scene) {
@@ -2158,9 +2161,15 @@ export function LoadLobby(scene) {
 
     // load buttons
 
+    // Clear cache cũ trước khi load ảnh mới
+    if (scene.textures.exists('home_lobby_bg')) {
+        scene.textures.remove('home_lobby_bg');
+    }
+    
+    // Load với timestamp để force reload
     scene.load.image(
         "home_lobby_bg",
-        url_r2 + "assets/home_2/home_lobby/home_lobby_bg.webp"
+        url_r2 + "assets/home_2/home_lobby/home_lobby_bg.webp?v=" + Date.now()
     );
 
     scene.load.image(

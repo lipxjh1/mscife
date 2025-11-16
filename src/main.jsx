@@ -13,6 +13,16 @@ import "@suiet/wallet-kit/style.css";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+// Tắt Service Worker trong development để tránh CORS errors
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => {
+      reg.unregister();
+      console.log('🔧 [DEV] Service Worker unregistered');
+    });
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
     // <React.StrictMode>
     //     <WalletProvider>

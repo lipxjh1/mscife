@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import ASSET_CONFIG from '../../config/assets';
 
 export class CenterDataLocalization {
     constructor() {
@@ -158,7 +159,7 @@ export class CenterDataLocalization {
         try {
             //Create main
             {
-                const response = await fetch("assets/MSCI_Translate.csv");
+                const response = await fetch(ASSET_CONFIG.get("/assets/MSCI_Translate.csv"));
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
 
@@ -170,7 +171,7 @@ export class CenterDataLocalization {
             //Create preload
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Preload.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Preload.csv"))
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -183,7 +184,7 @@ export class CenterDataLocalization {
             //Create lobby
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Lobby.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Lobby.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -196,7 +197,7 @@ export class CenterDataLocalization {
             //Create musk
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Musk.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Musk.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -209,7 +210,7 @@ export class CenterDataLocalization {
             //Create Account
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Account.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Account.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -222,7 +223,7 @@ export class CenterDataLocalization {
             //Create Network
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Network.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Network.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -235,7 +236,7 @@ export class CenterDataLocalization {
             //Create Rank
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Rank.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Rank.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -248,7 +249,7 @@ export class CenterDataLocalization {
             //Create Daily
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Daily.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Daily.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -261,7 +262,7 @@ export class CenterDataLocalization {
             //Create Mission
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Mission.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Mission.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -274,7 +275,7 @@ export class CenterDataLocalization {
             //Create Achivevement
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Achivevement.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Achivevement.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -287,7 +288,7 @@ export class CenterDataLocalization {
             //Create Airdrop
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Airdrop.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Airdrop.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -300,7 +301,7 @@ export class CenterDataLocalization {
             //Create Battle
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Battle.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Battle.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -313,7 +314,7 @@ export class CenterDataLocalization {
             //Create Campian
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Campian.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Campian.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -326,7 +327,7 @@ export class CenterDataLocalization {
             //Create boss
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Boss.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Boss.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -339,7 +340,7 @@ export class CenterDataLocalization {
             //Create team
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Team.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Team.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -352,7 +353,7 @@ export class CenterDataLocalization {
             //Create fragment
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Fragment.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Fragment.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -365,7 +366,7 @@ export class CenterDataLocalization {
             //Create gacha
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Gacha.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Gacha.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -378,7 +379,7 @@ export class CenterDataLocalization {
             //Create Wallet
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Wallet.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Wallet.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -391,7 +392,7 @@ export class CenterDataLocalization {
             //Create Mint
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Mint.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Mint.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -404,7 +405,7 @@ export class CenterDataLocalization {
             //Create shop
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Shop.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Shop.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -417,7 +418,7 @@ export class CenterDataLocalization {
             //Create shop description
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Home_Shop_Description.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Home_Shop_Description.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -430,7 +431,7 @@ export class CenterDataLocalization {
             //Create center market
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Center_Market.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Center_Market.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);
@@ -443,7 +444,7 @@ export class CenterDataLocalization {
             //Create neuralink
             {
                 const response = await fetch(
-                    "assets/MSCI_Translate_Neuralink.csv"
+                    ASSET_CONFIG.get("/assets/MSCI_Translate_Neuralink.csv")
                 );
                 const csvData = await response.text();
                 let localization = this.CreateLocalization(csvData);

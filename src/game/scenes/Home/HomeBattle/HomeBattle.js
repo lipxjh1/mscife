@@ -27,6 +27,7 @@ import {
 } from "../HomeTopBarPlayer.js";
 import { CreateMultiplayerBossRoomList } from "./HomeBattleMultiplayerBoss/HomeBattleMultiplayerBossRoomList.js";
 import { CreateInputNumberPopup } from "../../Share/PopupInputNumber.js";
+import { multiplayerBossV2 } from "../../../../modules/multiplayerBossV2/index.js";
 
 let container_main = null;
 
@@ -191,6 +192,9 @@ function CreateList(scene) {
         CreateItemMultiplayer(scene, scrollablePanel);
 
         CreateItemBoss(scene, scrollablePanel);
+
+        // Add Multiplayer Boss V2 section
+        multiplayerBossV2.createBattleSection(scene, scrollablePanel);
     }
 
     scrollablePanel.layout();
