@@ -1,4 +1,6 @@
 import cdLocalization from "../../../game/Data/CenterDataLocalization.js";
+import roomService from "../services/roomService.js";
+import { CreateAlertPopup } from "../../../game/scenes/Share/AlertPopup.js";
 
 /**
  * Create Battle Section UI Component for Multiplayer Boss V2
@@ -83,7 +85,12 @@ export function createBattleSection(scene, scrollablePanel) {
     );
     btn_create.button.on("pointerdown", function () {
         console.log("Multiplayer Boss V2: Create Room clicked");
-        // TODO: Implement create room functionality
+        // CHANGED: Implement create room functionality
+        import("../scenes/BossSelectScene.js").then(module => {
+            module.createBossSelectScene(scene);
+        }).catch(error => {
+            console.error("Failed to load BossSelectScene:", error);
+        });
     });
 
     // Middle button: "Join"
@@ -97,7 +104,8 @@ export function createBattleSection(scene, scrollablePanel) {
     );
     btn_join.button.on("pointerdown", function () {
         console.log("Multiplayer Boss V2: Join Room clicked");
-        // TODO: Implement join room functionality
+        // CHANGED: Implement join room functionality
+        showJoinRoomPopup(scene);
     });
 
     // Left button: "Rooms"
@@ -111,7 +119,12 @@ export function createBattleSection(scene, scrollablePanel) {
     );
     btn_rooms.button.on("pointerdown", function () {
         console.log("Multiplayer Boss V2: Room List clicked");
-        // TODO: Implement room list functionality
+        // CHANGED: Implement room list functionality
+        import("../scenes/RoomListScene.js").then(module => {
+            module.createRoomListScene(scene);
+        }).catch(error => {
+            console.error("Failed to load RoomListScene:", error);
+        });
     });
 
     // Add to scrollable panel using exact pattern
@@ -187,4 +200,215 @@ function createOptionsButton(scene, container, x, y, imageKey, buttonName) {
     btn_inner_container.add(text);
 
     return btn_container;
+}
+
+/**
+ * Show Join Room Popup
+ * @param {Phaser.Scene} scene - Current scene
+ */
+function showJoinRoomPopup(scene) {
+    // Create popup container
+    const popupContainer = scene.add.container(0, 0);
+    popupContainer.setDepth(1000);
+
+    // Semi-transparent background
+    const bgOverlay = scene.add.rectangle(
+        scene.cameras.main.width / 2,
+        scene.cameras.main.height / 2,
+        scene.cameras.main.width,
+        scene.cameras.main.height,
+        0x000000,
+        0.7
+    );
+    bgOverlay.setInteractive();
+    popupContainer.add(bgOverlay);
+
+    // Popup background
+    const popupBg = scene.add.rectangle(
+        scene.cameras.main.width / 2,
+        scene.cameras.main.height / 2,
+        600,
+        400,
+        0x1a1a2e
+    );
+    popupContainer.add(popupBg);
+
+    // Title
+    const title = scene.add.text(
+        scene.cameras.main.width / 2,
+        scene.cameras.main.height / 2 - 150,
+        "Join Room",
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "48px",
+            color: "#FFFFFF",
+            align: "center"
+        }
+    ).setOrigin(0.5);
+    popupContainer.add(title);
+
+    // Input field background
+    const inputBg = scene.add.rectangle(
+        scene.cameras.main.width / 2,
+        scene.cameras.main.height / 2 - 20,
+        400,
+        60,
+        0x16213e
+    );
+    popupContainer.add(inputBg);
+
+    // Create HTML input for room code
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.placeholder = 'Enter 3-digit room code';
+    inputElement.maxLength = 3;
+    inputElement.style.cssText = `
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -60px);
+        width: 380px;
+        height: 40px;
+        font-size: 24px;
+        text-align: center;
+        background: #16213e;
+        color: white;
+        border: 2px solid #0f3460;
+        border-radius: 8px;
+        outline: none;
+        z-index: 10000;
+    `;
+
+    document.body.appendChild(inputElement);
+    inputElement.focus();
+
+    // Join button
+    const joinBtn = scene.add.rectangle(
+        scene.cameras.main.width / 2 - 100,
+        scene.cameras.main.height / 2 + 80,
+        150,
+        50,
+        0x00b4d8
+    ).setInteractive({ useHandCursor: true });
+    popupContainer.add(joinBtn);
+
+    const joinText = scene.add.text(
+        scene.cameras.main.width / 2 - 100,
+        scene.cameras.main.height / 2 + 80,
+        "Join",
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "24px",
+            color: "#FFFFFF",
+            align: "center"
+        }
+    ).setOrigin(0.5);
+    popupContainer.add(joinText);
+
+    // Cancel button
+    const cancelBtn = scene.add.rectangle(
+        scene.cameras.main.width / 2 + 100,
+        scene.cameras.main.height / 2 + 80,
+        150,
+        50,
+        0xef476f
+    ).setInteractive({ useHandCursor: true });
+    popupContainer.add(cancelBtn);
+
+    const cancelText = scene.add.text(
+        scene.cameras.main.width / 2 + 100,
+        scene.cameras.main.height / 2 + 80,
+        "Cancel",
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "24px",
+            color: "#FFFFFF",
+            align: "center"
+        }
+    ).setOrigin(0.5);
+    popupContainer.add(cancelText);
+
+    // Button hover effects
+    [joinBtn, cancelBtn].forEach(btn => {
+        btn.on("pointerover", () => {
+            scene.tweens.add({
+                targets: btn,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100
+            });
+        });
+
+        btn.on("pointerout", () => {
+            scene.tweens.add({
+                targets: btn,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100
+            });
+        });
+    });
+
+    // Event handlers
+    joinBtn.on("pointerdown", async () => {
+        const roomCode = inputElement.value.trim();
+
+        if (!roomCode) {
+            CreateAlertPopup(scene, "Please enter a room code");
+            return;
+        }
+
+        if (!roomService.validateRoomCode(roomCode)) {
+            CreateAlertPopup(scene, "Room code must be 3 digits");
+            return;
+        }
+
+        // Disable buttons and show loading
+        joinBtn.disableInteractive();
+        cancelBtn.disableInteractive();
+
+        try {
+            const result = await roomService.joinRoom(roomCode);
+
+            if (result.success) {
+                cleanup();
+                // Navigate to room scene
+                import("../scenes/RoomScene.js").then(module => {
+                    module.createRoomScene(scene, result.room);
+                }).catch(error => {
+                    console.error("Failed to load RoomScene:", error);
+                });
+            } else {
+                CreateAlertPopup(scene, result.error || "Failed to join room");
+            }
+        } catch (error) {
+            console.error("Join room error:", error);
+            CreateAlertPopup(scene, "Failed to join room");
+        }
+
+        // Re-enable buttons
+        joinBtn.setInteractive({ useHandCursor: true });
+        cancelBtn.setInteractive({ useHandCursor: true });
+    });
+
+    cancelBtn.on("pointerdown", cleanup);
+    bgOverlay.on("pointerdown", cleanup);
+
+    // Cleanup function
+    function cleanup() {
+        if (inputElement.parentNode) {
+            inputElement.parentNode.removeChild(inputElement);
+        }
+        popupContainer.destroy();
+    }
+
+    // Enter key support
+    inputElement.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            joinBtn.emit('pointerdown');
+        }
+    });
+
+    // Cleanup on scene shutdown
+    scene.events.once('shutdown', cleanup);
 }
