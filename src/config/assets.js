@@ -18,7 +18,7 @@ export const ASSET_CONFIG = {
    * - Dev: '/assets'
    * - Production: 'https://cdn.m-sci.net'
    */
-  baseUrl: isDev ? '/assets' : 'https://cdn.m-sci.net',
+  baseUrl: isDev ? '/assets/' : 'https://cdn.m-sci.net/',
 
   /**
    * Get full asset URL
