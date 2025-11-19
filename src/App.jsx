@@ -43,6 +43,11 @@ import ArenaTab from "./components/Arena/ArenaTab.jsx";
 import ArenaUI from "./components/Arena/ArenaUI.jsx";
 import './services/socket.js'; // Initialize socket connection
 
+// ========================================
+// NEW: DISCONNECT MODAL
+// ========================================
+import DisconnectModal from "./components/Connection/DisconnectModal.jsx";
+
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
 function App() {
@@ -637,6 +642,11 @@ function App() {
 
     return (
         <div id="app">
+            {/* ========================================
+                NEW: DISCONNECT MODAL (Persistent, Center Screen)
+                ======================================== */}
+            <DisconnectModal />
+
             {currentPage === "link-google" ? (
                 <LinkGoogleAccount />
             ) : (

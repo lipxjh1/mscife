@@ -101,23 +101,32 @@ class SocketService {
                 timestamp: new Date().toISOString(),
             });
 
+            // ✅ NEW: Dispatch success event for modal to hide
+            window.dispatchEvent(new CustomEvent('socket:connect:success', {
+                detail: {
+                    socketId: this.socket.id,
+                    timestamp: Date.now()
+                }
+            }));
+
+            // ✅ NEW: Show SUCCESS toast (top-right, auto-dismiss)
+            window.dispatchEvent(new CustomEvent('arena:notification', {
+                detail: {
+                    type: 'success',
+                    title: '✅ Connected',
+                    message: 'Successfully reconnected to game server',
+                    data: {
+                        socketId: this.socket.id,
+                        timestamp: Date.now()
+                    }
+                }
+            }));
+
             // ✅ FIX: Reset disconnect flag and show connect notification once
             this.disconnectNotificationShown = false; // Reset disconnect flag
 
             if (!this.connectNotificationShown) {
                 this.connectNotificationShown = true;
-
-                window.dispatchEvent(new CustomEvent('arena:notification', {
-                    detail: {
-                        type: 'success',
-                        title: '✅ Connected',
-                        message: 'Successfully connected to game server',
-                        data: {
-                            socketId: this.socket.id,
-                            timestamp: Date.now()
-                        }
-                    }
-                }));
 
                 // Reset connect notification flag after a delay
                 setTimeout(() => {
@@ -136,6 +145,15 @@ class SocketService {
                 timestamp: new Date().toISOString(),
                 socketId: this.socket.id,
             });
+
+            // ✅ NEW: Dispatch modal event (persistent, center screen)
+            window.dispatchEvent(new CustomEvent('socket:disconnect:modal', {
+                detail: {
+                    reason,
+                    timestamp: Date.now(),
+                    socketId: this.socket.id
+                }
+            }));
 
             // ✅ FIX: Only show notification ONCE per disconnect
             if (!this.disconnectNotificationShown) {
@@ -181,6 +199,13 @@ class SocketService {
                 attemptNumber: attemptNumber,
                 timestamp: new Date().toISOString(),
             });
+
+            // Dispatch reconnect attempt event for modal
+            window.dispatchEvent(new CustomEvent('socket:reconnect:attempt', {
+                detail: {
+                    attempt: attemptNumber
+                }
+            }));
         });
 
         this.socket.on("reconnect_error", (error) => {

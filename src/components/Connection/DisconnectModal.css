@@ -1,0 +1,229 @@
+/* Full-screen overlay */
+.disconnect-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+/* Modal container */
+.disconnect-modal {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 40px 30px;
+    max-width: 450px;
+    width: 90vw;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    animation: modalFadeIn 0.4s ease-out;
+    position: relative;
+}
+
+/* Warning icon */
+.disconnect-modal-icon {
+    font-size: 60px;
+    margin-bottom: 10px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Title */
+.disconnect-modal-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+    margin: 10px 0 20px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading spinner */
+.disconnect-modal-spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-top: 5px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+/* Message text */
+.disconnect-modal-message {
+    color: #ffffff;
+    margin: 20px 0;
+}
+
+.disconnect-modal-message p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.disconnect-modal-status {
+    font-size: 15px;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+.disconnect-modal-attempts {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+/* Additional info */
+.disconnect-modal-info {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.disconnect-modal-info p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+/* Animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+    .disconnect-modal {
+        max-width: 85vw;
+        padding: 35px 25px;
+        border-radius: 16px;
+    }
+
+    .disconnect-modal-icon {
+        font-size: 50px;
+    }
+
+    .disconnect-modal-title {
+        font-size: 24px;
+    }
+
+    .disconnect-modal-message p {
+        font-size: 15px;
+    }
+
+    .disconnect-modal-spinner {
+        width: 55px;
+        height: 55px;
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .disconnect-modal {
+        max-width: 90vw;
+        padding: 30px 20px;
+        border-radius: 12px;
+    }
+
+    .disconnect-modal-icon {
+        font-size: 45px;
+    }
+
+    .disconnect-modal-title {
+        font-size: 20px;
+    }
+
+    .disconnect-modal-message p {
+        font-size: 14px;
+    }
+
+    .disconnect-modal-spinner {
+        width: 50px;
+        height: 50px;
+        border-width: 4px;
+    }
+
+    .disconnect-modal-info p {
+        font-size: 12px;
+    }
+}
+
+/* Extra small mobile (320px) */
+@media (max-width: 360px) {
+    .disconnect-modal {
+        max-width: 92vw;
+        padding: 25px 15px;
+    }
+
+    .disconnect-modal-icon {
+        font-size: 40px;
+    }
+
+    .disconnect-modal-title {
+        font-size: 18px;
+    }
+}
+
+/* Landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .disconnect-modal {
+        padding: 20px 25px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .disconnect-modal-icon {
+        font-size: 40px;
+        margin-bottom: 5px;
+    }
+
+    .disconnect-modal-title {
+        font-size: 20px;
+        margin: 5px 0 10px 0;
+    }
+
+    .disconnect-modal-spinner {
+        width: 45px;
+        height: 45px;
+        margin: 10px auto;
+    }
+
+    .disconnect-modal-message {
+        margin: 10px 0;
+    }
+
+    .disconnect-modal-info {
+        margin-top: 10px;
+        padding-top: 10px;
+    }
+}
