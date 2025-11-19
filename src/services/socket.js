@@ -10,13 +10,54 @@ const socket = io(SOCKET_URL, {
 
 console.log('[Socket] Initializing socket connection to:', SOCKET_URL);
 
+// Helper function to classify disconnect reasons
+function getDisconnectMessage(reason) {
+  const messages = {
+    'ping timeout': 'Connection timeout - Please check your internet connection',
+    'transport close': 'Connection lost - Attempting to reconnect...',
+    'io client disconnect': 'Disconnected from server',
+    'server namespace disconnect': 'Server disconnected the connection',
+    'forced close': 'Connection closed unexpectedly',
+    'transport error': 'Network error occurred'
+  };
+
+  return messages[reason] || `Connection lost: ${reason}`;
+}
+
 // Connection events
 socket.on('connect', () => {
   console.log('[Socket] Connected successfully, ID:', socket.id);
+
+  // Notify user of successful connection
+  window.dispatchEvent(new CustomEvent('arena:notification', {
+    detail: {
+      type: 'success',
+      title: '✅ Connected',
+      message: 'Successfully connected to server',
+      data: {
+        socketId: socket.id,
+        timestamp: Date.now()
+      }
+    }
+  }));
 });
 
 socket.on('disconnect', (reason) => {
   console.log('[Socket] Disconnected:', reason);
+
+  // Send disconnect notification to user
+  window.dispatchEvent(new CustomEvent('arena:notification', {
+    detail: {
+      type: 'error',
+      title: '⚠️ Connection Lost',
+      message: getDisconnectMessage(reason),
+      data: {
+        reason,
+        timestamp: Date.now(),
+        socketId: socket.id
+      }
+    }
+  }));
 });
 
 socket.on('connect_error', (error) => {
