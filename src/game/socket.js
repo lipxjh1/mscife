@@ -96,6 +96,20 @@ class SocketService {
                 socketId: this.socket.id,
                 timestamp: new Date().toISOString(),
             });
+
+            // ✅ ADD: Notify user of successful connection
+            window.dispatchEvent(new CustomEvent('arena:notification', {
+                detail: {
+                    type: 'success',
+                    title: '✅ Connected',
+                    message: 'Successfully connected to game server',
+                    data: {
+                        socketId: this.socket.id,
+                        timestamp: Date.now()
+                    }
+                }
+            }));
+
             this.socketEvent.next({
                 type: SOCKET_EVENTS.CONNECT,
             });
@@ -107,6 +121,21 @@ class SocketService {
                 timestamp: new Date().toISOString(),
                 socketId: this.socket.id,
             });
+
+            // ✅ ADD: Dispatch notification event for UI
+            window.dispatchEvent(new CustomEvent('arena:notification', {
+                detail: {
+                    type: 'error',
+                    title: '⚠️ Connection Lost',
+                    message: this.getDisconnectMessage(reason),
+                    data: {
+                        reason,
+                        timestamp: Date.now(),
+                        socketId: this.socket.id
+                    }
+                }
+            }));
+
             this.socketEvent.next({
                 type: SOCKET_EVENTS.DISCONNECT,
                 payload: reason,
@@ -219,6 +248,24 @@ class SocketService {
             });
             this.socket.removeAllListeners(event);
         }
+    }
+
+    /**
+     * Get user-friendly disconnect message
+     * @param {string} reason - Socket.IO disconnect reason
+     * @returns {string} User-friendly message
+     */
+    getDisconnectMessage(reason) {
+        const messages = {
+            'ping timeout': 'Connection timeout - Please check your internet connection',
+            'transport close': 'Connection lost - Attempting to reconnect...',
+            'transport error': 'Network error occurred - Check your connection',
+            'io client disconnect': 'Disconnected from server',
+            'io server disconnect': 'Server disconnected the connection',
+            'forced close': 'Connection closed unexpectedly'
+        };
+
+        return messages[reason] || `Connection lost: ${reason}`;
     }
 
     // Method để lấy thông tin trạng thái socket
