@@ -4,14 +4,15 @@
   right: 20px;
   z-index: 10000;
   pointer-events: none;
-  max-width: 400px;
+  width: auto;
+  max-width: min(400px, 90vw); /* ✅ FIX: Responsive width */
 }
 
 .arena-notification {
   pointer-events: auto;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -23,6 +24,11 @@
   overflow: hidden;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  width: auto;
+  box-sizing: border-box;
+  word-wrap: break-word; /* ✅ FIX: Text wrapping */
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .arena-notification::before {
@@ -85,6 +91,10 @@
   opacity: 0.95;
   line-height: 1.4;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  word-wrap: break-word; /* ✅ FIX: Message text wrapping */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .arena-notification-close {
@@ -137,21 +147,23 @@
   }
 }
 
-/* Responsive adjustments */
+/* ✅ FIX: Enhanced Responsive adjustments */
 @media (max-width: 768px) {
   .arena-notification-container {
     top: 10px;
     right: 10px;
     left: 10px;
-    max-width: none;
+    max-width: 85vw; /* Better responsive width for tablets */
+    margin: 0 auto;
   }
 
   .arena-notification {
-    padding: 14px 16px;
+    padding: 10px 12px;
+    font-size: 14px;
   }
 
   .arena-notification-icon {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .arena-notification-title {
@@ -160,5 +172,56 @@
 
   .arena-notification-message {
     font-size: 13px;
+  }
+}
+
+/* Mobile portrait */
+@media (max-width: 480px) {
+  .arena-notification-container {
+    top: 10px;
+    right: 5%;
+    left: 5%;
+    max-width: 90vw; /* Better width for mobile */
+  }
+
+  .arena-notification {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .arena-notification-icon {
+    font-size: 20px;
+  }
+
+  .arena-notification-title {
+    font-size: 14px;
+  }
+
+  .arena-notification-message {
+    font-size: 12px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 320px) {
+  .arena-notification-container {
+    max-width: 95vw;
+  }
+
+  .arena-notification {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .arena-notification-icon {
+    font-size: 18px;
+  }
+
+  .arena-notification-title {
+    font-size: 13px;
+  }
+
+  .arena-notification-message {
+    font-size: 11px;
   }
 }

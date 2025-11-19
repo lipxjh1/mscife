@@ -15,6 +15,10 @@ class SocketService {
         this.socketEvent = new BehaviorSubject(null);
         this.socket = null;
         this.isLoggingEnabled = false; // Flag để bật/tắt logging
+
+        // ✅ FIX: Flags to prevent notification spam
+        this.disconnectNotificationShown = false;
+        this.connectNotificationShown = false;
     }
 
     // Method để bật/tắt logging
@@ -97,18 +101,29 @@ class SocketService {
                 timestamp: new Date().toISOString(),
             });
 
-            // ✅ ADD: Notify user of successful connection
-            window.dispatchEvent(new CustomEvent('arena:notification', {
-                detail: {
-                    type: 'success',
-                    title: '✅ Connected',
-                    message: 'Successfully connected to game server',
-                    data: {
-                        socketId: this.socket.id,
-                        timestamp: Date.now()
+            // ✅ FIX: Reset disconnect flag and show connect notification once
+            this.disconnectNotificationShown = false; // Reset disconnect flag
+
+            if (!this.connectNotificationShown) {
+                this.connectNotificationShown = true;
+
+                window.dispatchEvent(new CustomEvent('arena:notification', {
+                    detail: {
+                        type: 'success',
+                        title: '✅ Connected',
+                        message: 'Successfully connected to game server',
+                        data: {
+                            socketId: this.socket.id,
+                            timestamp: Date.now()
+                        }
                     }
-                }
-            }));
+                }));
+
+                // Reset connect notification flag after a delay
+                setTimeout(() => {
+                    this.connectNotificationShown = false;
+                }, 3000);
+            }
 
             this.socketEvent.next({
                 type: SOCKET_EVENTS.CONNECT,
@@ -122,19 +137,23 @@ class SocketService {
                 socketId: this.socket.id,
             });
 
-            // ✅ ADD: Dispatch notification event for UI
-            window.dispatchEvent(new CustomEvent('arena:notification', {
-                detail: {
-                    type: 'error',
-                    title: '⚠️ Connection Lost',
-                    message: this.getDisconnectMessage(reason),
-                    data: {
-                        reason,
-                        timestamp: Date.now(),
-                        socketId: this.socket.id
+            // ✅ FIX: Only show notification ONCE per disconnect
+            if (!this.disconnectNotificationShown) {
+                this.disconnectNotificationShown = true;
+
+                window.dispatchEvent(new CustomEvent('arena:notification', {
+                    detail: {
+                        type: 'error',
+                        title: '⚠️ Connection Lost',
+                        message: this.getDisconnectMessage(reason),
+                        data: {
+                            reason,
+                            timestamp: Date.now(),
+                            socketId: this.socket.id
+                        }
                     }
-                }
-            }));
+                }));
+            }
 
             this.socketEvent.next({
                 type: SOCKET_EVENTS.DISCONNECT,

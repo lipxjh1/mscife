@@ -3,6 +3,10 @@ import './ArenaNotification.css';
 
 const ArenaNotification = () => {
   const [notifications, setNotifications] = useState([]);
+  const [lastNotification, setLastNotification] = useState(null);
+
+  // ✅ FIX: Debounce time to prevent duplicate notifications
+  const DEBOUNCE_TIME = 3000; // 3 seconds
 
   useEffect(() => {
     // Listen for arena notification events
@@ -10,6 +14,26 @@ const ArenaNotification = () => {
       console.log('[ArenaNotification] Received notification:', event.detail);
 
       const { type, message, title, data } = event.detail;
+      const now = Date.now();
+
+      // ✅ FIX: Prevent duplicate notifications within debounce time
+      if (lastNotification) {
+        const isSameMessage = lastNotification.message === message;
+        const isSameType = lastNotification.type === type;
+        const withinDebounce = now - lastNotification.time < DEBOUNCE_TIME;
+
+        if (isSameMessage && isSameType && withinDebounce) {
+          console.log('[ArenaNotification] Duplicate notification blocked:', { message, type });
+          return; // Skip duplicate notification
+        }
+      }
+
+      // Update last notification
+      setLastNotification({
+        message: message,
+        type: type,
+        time: now
+      });
 
       // Create notification object
       const notification = {
@@ -32,7 +56,7 @@ const ArenaNotification = () => {
     return () => {
       window.removeEventListener('arena:notification', handleArenaNotification);
     };
-  }, []);
+  }, [lastNotification]);
 
   const handleRemoveNotification = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
