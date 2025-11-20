@@ -12,6 +12,20 @@ window.Buffer = Buffer;
 
 import WebFont from "webfontloader"; // Import WebFontLoader
 
+// Mobile device detection for performance optimization
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const isLowEnd = isMobile && (navigator.hardwareConcurrency || 2) <= 4;
+const isTablet = isMobile && window.innerWidth >= 768;
+
+// Log device detection for debugging
+console.log('🔧 Device Detection:', {
+    device: isMobile ? 'mobile' : 'desktop',
+    type: isLowEnd ? 'low-end' : isTablet ? 'tablet' : isMobile ? 'mid-range' : 'desktop',
+    cores: navigator.hardwareConcurrency || 'unknown',
+    screen: `${window.innerWidth}x${window.innerHeight}`,
+    userAgent: navigator.userAgent.substring(0, 50) + '...'
+});
+
 // Find out more information about the Game Config at:
 // https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config = {
@@ -25,7 +39,7 @@ const config = {
     render: {
         antialias: false, // Tắt khử răng cưa cho đồ họa pixel
         //pixelArt: true,   // Bật chế độ tối ưu cho pixel art
-        powerPreference: "high-performance", // Yêu cầu sử dụng GPU hiệu năng cao
+        powerPreference: isLowEnd ? "low-power" : isMobile ? "default" : "high-performance", // Adaptive GPU mode for mobile optimization
         batchSize: 4096, // Tăng số lượng đối tượng vẽ trong một lần
     },
     parent: "game-container",
@@ -56,10 +70,10 @@ const config = {
         crossOrigin: "anonymous",
     },
     fps: {
-        target: 60, // Đặt FPS mục tiêu
-        forceSetTimeOut: false, // Sử dụng rAF mặc định
-        min: 30, // Giới hạn FPS tối thiểu
-        smoothStep: true, // Làm mượt sự thay đổi FPS
+        target: isLowEnd ? 30 : isTablet ? 45 : isMobile ? 45 : 60, // Adaptive FPS based on device capability
+        forceSetTimeOut: isMobile, // Use setTimeout on mobile for better battery life
+        min: isLowEnd ? 15 : isMobile ? 20 : 30, // Adaptive minimum FPS
+        smoothStep: true, // Keep smooth FPS transitions
     },
 };
 
