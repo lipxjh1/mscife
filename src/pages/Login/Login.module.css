@@ -1,0 +1,360 @@
+/* Main Login Page Container */
+.loginPage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Background */
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+    z-index: 1;
+}
+
+.background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/assets/login/login_bg.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+}
+
+/* Main Content Container */
+.content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 480px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+}
+
+/* Header Section */
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.logoContainer {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    padding: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.gameLogo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 32px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.gameLogo::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.logoText {
+    position: relative;
+    z-index: 1;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Login Section */
+.loginSection {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Footer */
+.footer {
+    margin-top: auto;
+    text-align: center;
+}
+
+.termsText {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.link {
+    color: #60A5FA;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.link:hover {
+    color: #93C5FD;
+    text-decoration: underline;
+}
+
+/* Mobile First Responsive Design */
+
+/* Small Mobile (320px - 374px) */
+@media (max-width: 374px) {
+    .content {
+        padding: 16px;
+        gap: 32px;
+    }
+
+    .logoContainer {
+        width: 80px;
+        height: 80px;
+    }
+
+    .gameLogo {
+        font-size: 24px;
+    }
+
+    .title {
+        font-size: 24px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .loginSection {
+        gap: 16px;
+    }
+}
+
+/* Medium Mobile (375px - 413px) */
+@media (min-width: 375px) and (max-width: 413px) {
+    .content {
+        padding: 20px;
+        gap: 40px;
+    }
+
+    .logoContainer {
+        width: 100px;
+        height: 100px;
+    }
+
+    .gameLogo {
+        font-size: 28px;
+    }
+
+    .title {
+        font-size: 28px;
+    }
+
+    .subtitle {
+        font-size: 15px;
+    }
+}
+
+/* Large Mobile (414px - 767px) */
+@media (min-width: 414px) and (max-width: 767px) {
+    .content {
+        max-width: 400px;
+    }
+
+    .logoContainer {
+        width: 110px;
+        height: 110px;
+    }
+
+    .gameLogo {
+        font-size: 30px;
+    }
+}
+
+/* Tablet and Desktop (768px+) */
+@media (min-width: 768px) {
+    .loginPage {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    }
+
+    .content {
+        max-width: 440px;
+        gap: 56px;
+        padding: 32px;
+    }
+
+    .logoContainer {
+        width: 140px;
+        height: 140px;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .gameLogo {
+        font-size: 36px;
+    }
+
+    .title {
+        font-size: 36px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+    }
+
+    .loginSection {
+        gap: 28px;
+    }
+
+    .termsText {
+        font-size: 13px;
+    }
+}
+
+/* Large Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .content {
+        max-width: 480px;
+    }
+
+    .gameLogo {
+        font-size: 40px;
+    }
+
+    .title {
+        font-size: 40px;
+    }
+
+    .subtitle {
+        font-size: 20px;
+    }
+}
+
+/* Landscape Orientation Adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+    .content {
+        gap: 24px;
+        padding: 16px 24px;
+    }
+
+    .logoContainer {
+        width: 60px;
+        height: 60px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .loginSection {
+        gap: 16px;
+    }
+
+    .termsText {
+        font-size: 11px;
+    }
+}
+
+/* Super Wide Screens (1440px+) */
+@media (min-width: 1440px) {
+    .loginPage::before {
+        background-size: cover;
+        background-position: center 30%;
+    }
+}
+
+/* Dark Mode Support (if applicable) */
+@media (prefers-color-scheme: dark) {
+    .link {
+        color: #818CF8;
+    }
+
+    .link:hover {
+        color: #A5B4FC;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .logoContainer {
+        transition: none;
+    }
+
+    .link {
+        transition: none;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .background::before {
+        opacity: 0.1;
+    }
+
+    .title {
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .subtitle {
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    }
+}

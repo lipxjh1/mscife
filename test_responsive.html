@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Responsive Notification Test</title>
+    <link rel="stylesheet" href="src/components/Arena/ArenaNotification.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .viewport-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        .test-message {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Mobile Responsive Notification Test</h1>
+
+        <div class="viewport-info" id="viewport-info">
+            <strong>Current Viewport:</strong><br>
+            Width: <span id="width">-</span>px<br>
+            Height: <span id="height">-</span>px<br>
+            Device: <span id="device">-</span><br>
+            Max-width calculation: <span id="maxwidth">-</span>
+        </div>
+
+        <div class="test-message">
+            <h3>📱 How to Test:</h3>
+            <ol>
+                <li>Open browser DevTools (F12)</li>
+                <li>Toggle device toolbar (Ctrl+Shift+M)</li>
+                <li>Test different device sizes</li>
+                <li>Click buttons below to test notifications</li>
+                <li>Check if notifications fit within screen width</li>
+            </ol>
+        </div>
+
+        <button onclick="showShortNotification()">Short Message</button>
+        <button onclick="showLongNotification()">Long Message</button>
+        <button onclick="showVeryLongNotification()">Very Long Message</button>
+        <button onclick="clearNotifications()">Clear All</button>
+
+        <div class="test-message">
+            <h3>✅ Expected Behavior:</h3>
+            <ul>
+                <li><strong>Desktop (>768px):</strong> max-width 400px</li>
+                <li><strong>Tablet (≤768px):</strong> max-width 85vw (~650px)</li>
+                <li><strong>Mobile (≤480px):</strong> max-width 90vw (~337px)</li>
+                <li><strong>Small Mobile (≤320px):</strong> max-width 95vw (~304px)</li>
+                <li><strong>Text wrapping:</strong> Long messages should wrap properly</li>
+                <li><strong>No overflow:</strong> Notifications should never extend beyond screen</li>
+            </ul>
+        </div>
+
+        <div class="test-message">
+            <h3>📊 Test Results:</h3>
+            <p id="test-results">Click buttons above to see results...</p>
+        </div>
+    </div>
+
+    <script>
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const device = getDeviceName(width);
+            const maxWidth = getMaxWidth(width);
+
+            document.getElementById('width').textContent = width;
+            document.getElementById('height').textContent = height;
+            document.getElementById('device').textContent = device;
+            document.getElementById('maxwidth').textContent = maxWidth;
+
+            return { width, height, device, maxWidth };
+        }
+
+        function getDeviceName(width) {
+            if (width > 768) return 'Desktop';
+            if (width > 480) return 'Tablet';
+            if (width > 320) return 'Mobile';
+            return 'Small Mobile';
+        }
+
+        function getMaxWidth(width) {
+            if (width > 768) return 'min(400px, 90vw) = 400px';
+            if (width > 480) return `85vw = ${Math.round(width * 0.85)}px`;
+            if (width > 320) return `90vw = ${Math.round(width * 0.90)}px`;
+            return `95vw = ${Math.round(width * 0.95)}px`;
+        }
+
+        function showNotification(type, title, message) {
+            const event = new CustomEvent('arena:notification', {
+                detail: { type, title, message }
+            });
+            window.dispatchEvent(event);
+        }
+
+        function showShortNotification() {
+            const viewport = updateViewportInfo();
+            showNotification('info', '✅ Short Test', 'This is a short message');
+
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <strong>Short Message Test:</strong><br>
+                Device: ${viewport.device} (${viewport.width}px)<br>
+                Expected width: ${viewport.maxWidth}<br>
+                Status: ✅ Should fit perfectly
+            `;
+        }
+
+        function showLongNotification() {
+            const viewport = updateViewportInfo();
+            showNotification('warning', '⚠️ Long Message Test',
+                'This is a longer notification message that should wrap properly on mobile devices and fit within the screen width without any horizontal overflow issues.');
+
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <strong>Long Message Test:</strong><br>
+                Device: ${viewport.device} (${viewport.width}px)<br>
+                Expected width: ${viewport.maxWidth}<br>
+                Status: ✅ Text should wrap properly
+            `;
+        }
+
+        function showVeryLongNotification() {
+            const viewport = updateViewportInfo();
+            showNotification('error', '❌ Very Long Message Test',
+                'This is an extremely long notification message that contains multiple sentences and should demonstrate the text wrapping capabilities of our responsive notification system. It should wrap properly without causing any horizontal overflow on mobile devices, and the notification should maintain its readability and visual appeal across all screen sizes from desktop to tablet to mobile phones.');
+
+            const results = document.getElementById('test-results');
+            results.innerHTML = `
+                <strong>Very Long Message Test:</strong><br>
+                Device: ${viewport.device} (${viewport.width}px)<br>
+                Expected width: ${viewport.maxWidth}<br>
+                Status: ✅ Complex text wrapping should work
+            `;
+        }
+
+        function clearNotifications() {
+            const notifications = document.querySelectorAll('.arena-notification');
+            notifications.forEach(n => n.remove());
+
+            const results = document.getElementById('test-results');
+            results.innerHTML = 'All notifications cleared. Ready for new tests.';
+        }
+
+        // Initialize viewport info
+        updateViewportInfo();
+
+        // Update viewport info on resize
+        window.addEventListener('resize', updateViewportInfo);
+
+        // Add notification listener for testing
+        window.addEventListener('arena:notification', (event) => {
+            const { type, title, message } = event.detail;
+
+            // Create notification element using the same CSS as ArenaNotification
+            const container = document.createElement('div');
+            container.className = 'arena-notification-container';
+            container.style.position = 'fixed';
+            container.style.top = '20px';
+            container.style.right = '20px';
+            container.style.zIndex = '10000';
+
+            const notification = document.createElement('div');
+            notification.className = `arena-notification ${type}`;
+            notification.innerHTML = `
+                <div class="arena-notification-icon">${getIconForType(type)}</div>
+                <div class="arena-notification-content">
+                    <div class="arena-notification-title">${title}</div>
+                    <div class="arena-notification-message">${message}</div>
+                </div>
+                <button class="arena-notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(notification);
+            document.body.appendChild(container);
+
+            console.log('🎯 Notification created with responsive CSS');
+        });
+
+        function getIconForType(type) {
+            const icons = {
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌',
+                'info': 'ℹ️'
+            };
+            return icons[type] || '📢';
+        }
+    </script>
+</body>
+</html>

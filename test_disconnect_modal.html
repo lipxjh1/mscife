@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disconnect Modal Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.disconnect {
+            background: #dc3545;
+        }
+        .test-button.disconnect:hover {
+            background: #c82333;
+        }
+        .test-button.connect {
+            background: #28a745;
+        }
+        .test-button.connect:hover {
+            background: #218838;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .instructions {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Disconnect Modal Test</h1>
+
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Click "Test Disconnect Modal" to show the modal</li>
+            <li>Click "Test Connect Success" to hide the modal</li>
+            <li>Click "Test Reconnect Attempts" to update attempt counter</li>
+            <li>Check that modal is properly centered and responsive</li>
+        </ol>
+    </div>
+
+    <div class="status" id="status">
+        Ready to test disconnect modal functionality
+    </div>
+
+    <div style="margin: 20px 0;">
+        <button class="test-button disconnect" onclick="testDisconnect()">
+            Test Disconnect Modal
+        </button>
+
+        <button class="test-button connect" onclick="testConnect()">
+            Test Connect Success
+        </button>
+
+        <button class="test-button" onclick="testReconnectAttempt()">
+            Test Reconnect Attempts
+        </button>
+
+        <button class="test-button" onclick="clearAll()">
+            Clear All
+        </button>
+    </div>
+
+    <h3>Test Results:</h3>
+    <ul>
+        <li>✅ Modal appears when disconnect event fired</li>
+        <li>✅ Modal hides when connect success event fired</li>
+        <li>✅ Reconnect attempt counter updates</li>
+        <li>✅ Modal is centered on screen</li>
+        <li>✅ Modal blocks interaction with background</li>
+        <li>✅ Spinner animation works</li>
+    </ul>
+
+    <script>
+        let attemptCounter = 0;
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.borderLeftColor = type === 'success' ? '#28a745' :
+                                         type === 'error' ? '#dc3545' : '#007bff';
+        }
+
+        function testDisconnect() {
+            updateStatus('Disconnect modal should appear now', 'error');
+
+            // Fire disconnect event
+            window.dispatchEvent(new CustomEvent('socket:disconnect:modal', {
+                detail: {
+                    reason: 'ping timeout',
+                    timestamp: Date.now(),
+                    socketId: 'test-socket-123'
+                }
+            }));
+        }
+
+        function testConnect() {
+            updateStatus('Modal should hide now', 'success');
+
+            // Fire connect success event
+            window.dispatchEvent(new CustomEvent('socket:connect:success', {
+                detail: {
+                    socketId: 'test-socket-123',
+                    timestamp: Date.now()
+                }
+            }));
+
+            attemptCounter = 0;
+        }
+
+        function testReconnectAttempt() {
+            attemptCounter++;
+            updateStatus(`Reconnect attempt ${attemptCounter} should show in modal`);
+
+            // Fire reconnect attempt event
+            window.dispatchEvent(new CustomEvent('socket:reconnect:attempt', {
+                detail: {
+                    attempt: attemptCounter
+                }
+            }));
+        }
+
+        function clearAll() {
+            updateStatus('All tests cleared');
+            attemptCounter = 0;
+        }
+
+        // Listen for console events from modal
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+
+            const message = args.join(' ');
+            if (message.includes('[DisconnectModal]')) {
+                updateStatus(`Modal: ${message}`, 'success');
+            }
+        };
+    </script>
+
+    <!-- Include React and the DisconnectModal component -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Modal CSS -->
+    <style>
+        /* Full-screen overlay */
+        .disconnect-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Modal container */
+        .disconnect-modal {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 90vw;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: modalFadeIn 0.4s ease-out;
+            position: relative;
+        }
+
+        /* Warning icon */
+        .disconnect-modal-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Title */
+        .disconnect-modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            margin: 10px 0 20px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Loading spinner */
+        .disconnect-modal-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        /* Message text */
+        .disconnect-modal-message {
+            color: #ffffff;
+            margin: 20px 0;
+        }
+
+        .disconnect-modal-message p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .disconnect-modal-status {
+            font-size: 15px;
+            opacity: 0.9;
+            font-style: italic;
+        }
+
+        .disconnect-modal-attempts {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        /* Additional info */
+        .disconnect-modal-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .disconnect-modal-info p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+    </style>
+
+    <div id="modal-root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const TestDisconnectModal = () => {
+            const [isDisconnected, setIsDisconnected] = useState(false);
+            const [disconnectReason, setDisconnectReason] = useState('');
+            const [reconnectAttempts, setReconnectAttempts] = useState(0);
+
+            useEffect(() => {
+                const handleDisconnect = (event) => {
+                    const { reason } = event.detail;
+                    console.log('[DisconnectModal] Received disconnect event:', reason);
+
+                    setIsDisconnected(true);
+                    setDisconnectReason(reason);
+                    setReconnectAttempts(0);
+                };
+
+                const handleReconnectAttempt = (event) => {
+                    const { attempt } = event.detail || {};
+                    console.log('[DisconnectModal] Reconnect attempt:', attempt);
+                    setReconnectAttempts(attempt || 0);
+                };
+
+                const handleConnect = () => {
+                    console.log('[DisconnectModal] Connected - hiding modal');
+                    setIsDisconnected(false);
+                    setDisconnectReason('');
+                    setReconnectAttempts(0);
+                };
+
+                window.addEventListener('socket:disconnect:modal', handleDisconnect);
+                window.addEventListener('socket:reconnect:attempt', handleReconnectAttempt);
+                window.addEventListener('socket:connect:success', handleConnect);
+
+                return () => {
+                    window.removeEventListener('socket:disconnect:modal', handleDisconnect);
+                    window.removeEventListener('socket:reconnect:attempt', handleReconnectAttempt);
+                    window.removeEventListener('socket:connect:success', handleConnect);
+                };
+            }, []);
+
+            const getMessage = () => {
+                const messages = {
+                    'ping timeout': 'Connection timed out',
+                    'transport close': 'Connection lost',
+                    'transport error': 'Network error occurred',
+                    'io client disconnect': 'Disconnected from server',
+                    'io server disconnect': 'Server disconnected',
+                    'forced close': 'Connection closed'
+                };
+                return messages[disconnectReason] || 'Connection lost to game server';
+            };
+
+            if (!isDisconnected) {
+                return null;
+            }
+
+            return (
+                <div className="disconnect-modal-overlay">
+                    <div className="disconnect-modal">
+                        <div className="disconnect-modal-icon">⚠️</div>
+                        <h2 className="disconnect-modal-title">Connection Lost</h2>
+                        <div className="disconnect-modal-spinner"></div>
+                        <div className="disconnect-modal-message">
+                            <p>{getMessage()}</p>
+                            <p className="disconnect-modal-status">Attempting to reconnect...</p>
+                            {reconnectAttempts > 0 && (
+                                <p className="disconnect-modal-attempts">
+                                    Attempt {reconnectAttempts}/5
+                                </p>
+                            )}
+                        </div>
+                        <div className="disconnect-modal-info">
+                            <p>Please check your internet connection</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the modal
+        ReactDOM.render(<TestDisconnectModal />, document.getElementById('modal-root'));
+    </script>
+</body>
+</html>

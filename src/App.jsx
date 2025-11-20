@@ -48,6 +48,11 @@ import './services/socket.js'; // Initialize socket connection
 // ========================================
 import DisconnectModal from "./components/Connection/DisconnectModal.jsx";
 
+// ========================================
+// NEW: AUTH WRAPPER
+// ========================================
+import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
+
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
 function App() {
@@ -642,39 +647,41 @@ function App() {
 
     return (
         <div id="app">
-            {/* ========================================
-                NEW: DISCONNECT MODAL (Persistent, Center Screen)
-                ======================================== */}
-            <DisconnectModal />
+            <AuthWrapper>
+                {/* ========================================
+                    NEW: DISCONNECT MODAL (Persistent, Center Screen)
+                    ======================================== */}
+                <DisconnectModal />
 
-            {currentPage === "link-google" ? (
-                <LinkGoogleAccount />
-            ) : (
-                <PhaserGame
-                    ref={phaserRef}
-                    currentActiveScene={currentScene}
-                    phaserWalletConnect={ReactWalletConnect}
-                    phaserWalletDisconnect={ReactWalletDisconnect}
-                    phaserSendTransaction={ReactSendTransaction}
-                    phaserNftCharacters={ReactNftCharacters}
-                    // phaserSuiWalletConnect={ReactSuiWalletConnect}
-                    // phaserSuiWalletDisconnect={ReactSuiWalletDisconnect}
-                    phaserLoginGoogle={ReactLoginGoogle}
-                />
-            )}
-            <LoadingOverlay showLoading={showLoading} />
-            {popupConfig && (
-                <ConfirmPopup
-                    isOpen={isPopupOpen}
-                    title={popupConfig.title}
-                    message={popupConfig.message}
-                    confirmText={popupConfig.confirmText}
-                    cancelText={popupConfig.cancelText}
-                    onConfirm={popupConfig.onConfirm}
-                    onCancel={popupConfig.onCancel}
-                    showBothButtons={popupConfig.showBothButtons}
-                />
-            )}
+                {currentPage === "link-google" ? (
+                    <LinkGoogleAccount />
+                ) : (
+                    <PhaserGame
+                        ref={phaserRef}
+                        currentActiveScene={currentScene}
+                        phaserWalletConnect={ReactWalletConnect}
+                        phaserWalletDisconnect={ReactWalletDisconnect}
+                        phaserSendTransaction={ReactSendTransaction}
+                        phaserNftCharacters={ReactNftCharacters}
+                        // phaserSuiWalletConnect={ReactSuiWalletConnect}
+                        // phaserSuiWalletDisconnect={ReactSuiWalletDisconnect}
+                        phaserLoginGoogle={ReactLoginGoogle}
+                    />
+                )}
+
+                <LoadingOverlay showLoading={showLoading} />
+                {popupConfig && (
+                    <ConfirmPopup
+                        isOpen={isPopupOpen}
+                        title={popupConfig.title}
+                        message={popupConfig.message}
+                        confirmText={popupConfig.confirmText}
+                        cancelText={popupConfig.cancelText}
+                        onConfirm={popupConfig.onConfirm}
+                        onCancel={popupConfig.onCancel}
+                        showBothButtons={popupConfig.showBothButtons}
+                    />
+                )}
             <div>
                 {/* <ConnectModal
                     open={showModal}
@@ -879,7 +886,8 @@ function App() {
             {/* ========================================
                 NEW: ARENA UI COMPONENTS (Countdown + Notifications)
                 ======================================== */}
-            <ArenaUI />
+                <ArenaUI />
+            </AuthWrapper>
         </div>
     );
 }

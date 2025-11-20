@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .test-results { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Notification Anti-Spam Test</h1>
+
+    <button onclick="testSingleDisconnect()">Test Single Disconnect</button>
+    <button onclick="testRapidDisconnect()">Test Rapid Disconnect (5x)</button>
+    <button onclick="testReconnect()">Test Reconnect</button>
+    <button onclick="testDifferentMessages()">Test Different Messages</button>
+    <button onclick="clearNotifications()">Clear Notifications</button>
+
+    <div class="test-results" id="results">
+        <h3>Test Results:</h3>
+        <p>Click buttons above to test notification behavior.</p>
+    </div>
+
+    <script>
+        let notificationCount = 0;
+        let expectedNotifications = 0;
+
+        function log(message) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.innerHTML += `<p>[${timestamp}] ${message}</p>`;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function showNotification(type, title, message) {
+            const event = new CustomEvent('arena:notification', {
+                detail: { type, title, message }
+            });
+            window.dispatchEvent(event);
+            notificationCount++;
+            log(`📢 Notification sent: ${title} - ${message}`);
+        }
+
+        function testSingleDisconnect() {
+            notificationCount = 0;
+            expectedNotifications = 1;
+            log('--- Testing Single Disconnect ---');
+            showNotification('error', '⚠️ Connection Lost', 'Connection timeout - Please check your internet connection');
+            setTimeout(() => {
+                log(`✅ Expected: ${expectedNotifications}, Actual: ${notificationCount}`);
+            }, 1000);
+        }
+
+        function testRapidDisconnect() {
+            notificationCount = 0;
+            expectedNotifications = 1;
+            log('--- Testing Rapid Disconnect (5 notifications in 1 second) ---');
+
+            for (let i = 1; i <= 5; i++) {
+                setTimeout(() => {
+                    showNotification('error', '⚠️ Connection Lost', 'Connection timeout - Please check your internet connection');
+                }, i * 100);
+            }
+
+            setTimeout(() => {
+                log(`✅ Expected: ${expectedNotifications}, Actual: ${notificationCount}`);
+                if (notificationCount === 1) {
+                    log('🎉 ANTI-SPAM WORKING: Only 1 notification shown for 5 rapid events');
+                } else {
+                    log('❌ ANTI-SPAM FAILED: Multiple notifications shown');
+                }
+            }, 2000);
+        }
+
+        function testReconnect() {
+            notificationCount = 0;
+            expectedNotifications = 2;
+            log('--- Testing Disconnect + Reconnect Sequence ---');
+
+            showNotification('error', '⚠️ Connection Lost', 'Connection timeout - Please check your internet connection');
+
+            setTimeout(() => {
+                showNotification('success', '✅ Connected', 'Successfully connected to game server');
+            }, 1000);
+
+            setTimeout(() => {
+                log(`✅ Expected: ${expectedNotifications}, Actual: ${notificationCount}`);
+            }, 2000);
+        }
+
+        function testDifferentMessages() {
+            notificationCount = 0;
+            expectedNotifications = 3;
+            log('--- Testing Different Message Types ---');
+
+            showNotification('error', '⚠️ Connection Lost', 'Connection timeout');
+            setTimeout(() => {
+                showNotification('warning', '⚠️ Warning!', 'This is a different warning message');
+            }, 500);
+            setTimeout(() => {
+                showNotification('info', 'ℹ️ Info', 'This is an info message');
+            }, 1000);
+
+            setTimeout(() => {
+                log(`✅ Expected: ${expectedNotifications}, Actual: ${notificationCount}`);
+                if (notificationCount === 3) {
+                    log('🎉 DIFFERENT MESSAGES: All 3 unique notifications shown');
+                }
+            }, 2000);
+        }
+
+        function clearNotifications() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>Test Results:</h3><p>Cleared. Click buttons above to test again.</p>';
+            notificationCount = 0;
+        }
+
+        // Simulate notification listener
+        window.addEventListener('arena:notification', (event) => {
+            const { type, title, message } = event.detail;
+            log(`👀 Notification received: ${title} - ${message}`);
+
+            // Create visual notification
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? '#eb5757' : type === 'success' ? '#56ab2f' : '#f2994a'};
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                max-width: 400px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notif.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.remove();
+            }, 5000);
+        });
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

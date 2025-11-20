@@ -1,0 +1,227 @@
+.installModal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Icon Container */
+.iconContainer {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.installIcon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Title */
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    text-align: center;
+}
+
+/* Description */
+.description {
+    font-size: 16px;
+    color: #6B7280;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 280px;
+}
+
+/* Features */
+.features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.feature svg {
+    color: #10B981;
+    flex-shrink: 0;
+}
+
+/* Button Group */
+.buttonGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Install Button */
+.installButton {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.installButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+}
+
+.installButton:active {
+    transform: translateY(0);
+}
+
+/* Later Button */
+.laterButton {
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    color: #6B7280;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.laterButton:hover {
+    border-color: #D1D5DB;
+    color: #374151;
+    background: #F9FAFB;
+}
+
+/* Trust Indicator */
+.trustIndicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #9CA3AF;
+    padding: 8px 16px;
+    background: #F9FAFB;
+    border-radius: 20px;
+}
+
+.trustIndicator svg {
+    color: #6B7280;
+}
+
+/* Responsive - Tablet */
+@media (min-width: 768px) {
+    .buttonGroup {
+        flex-direction: row;
+    }
+
+    .installButton {
+        flex: 2;
+    }
+
+    .laterButton {
+        flex: 1;
+    }
+
+    .description {
+        max-width: 320px;
+    }
+}
+
+/* Responsive - Small Mobile */
+@media (max-width: 374px) {
+    .title {
+        font-size: 22px;
+    }
+
+    .description {
+        font-size: 15px;
+    }
+
+    .installButton {
+        height: 44px;
+        font-size: 15px;
+    }
+
+    .laterButton {
+        height: 40px;
+        font-size: 13px;
+    }
+}
+
+/* Responsive - Landscape */
+@media (max-height: 600px) and (orientation: landscape) {
+    .installModal {
+        gap: 16px;
+    }
+
+    .iconContainer {
+        width: 60px;
+        height: 60px;
+    }
+
+    .installIcon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .description {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .features {
+        gap: 8px;
+    }
+
+    .feature {
+        font-size: 13px;
+    }
+
+    .installButton {
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .laterButton {
+        height: 36px;
+        font-size: 12px;
+    }
+}

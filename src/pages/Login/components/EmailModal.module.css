@@ -1,0 +1,280 @@
+.emailForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Input Group */
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Input Label */
+.inputLabel {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.required {
+    color: #EF4444;
+}
+
+/* Input Container */
+.inputContainer {
+    position: relative;
+}
+
+/* Input Field */
+.inputField {
+    width: 100%;
+    height: 48px;
+    padding: 12px 16px 12px 48px;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    font-size: 16px;
+    color: #111827;
+    background: white;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.inputField::placeholder {
+    color: #9CA3AF;
+}
+
+.inputField:hover {
+    border-color: #D1D5DB;
+}
+
+.inputField:focus {
+    outline: none;
+    border-color: #6366F1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.inputField:disabled {
+    background: #F3F4F6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Password field with toggle */
+.inputFieldPassword {
+    padding-right: 52px;
+}
+
+/* Input Error State */
+.inputError {
+    border-color: #EF4444 !important;
+}
+
+.inputError:focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Input Icon */
+.inputIcon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: #9CA3AF;
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.inputField:focus ~ .inputIcon {
+    color: #6366F1;
+}
+
+.inputError ~ .inputIcon {
+    color: #EF4444;
+}
+
+/* Password Toggle */
+.passwordToggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.2s;
+    color: #6B7280;
+}
+
+.passwordToggle:hover {
+    background: #F3F4F6;
+}
+
+/* Error Message */
+.errorMessage {
+    font-size: 13px;
+    color: #EF4444;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.errorMessage svg {
+    flex-shrink: 0;
+}
+
+/* Forgot Password */
+.forgotPassword {
+    text-align: right;
+    margin-top: -12px;
+}
+
+.forgotPassword a {
+    font-size: 14px;
+    color: #6366F1;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.forgotPassword a:hover {
+    color: #4F46E5;
+    text-decoration: underline;
+}
+
+/* Submit Button */
+.submitButton {
+    height: 56px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    margin-top: 8px;
+}
+
+.submitButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+}
+
+.submitButton:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.submitButton:disabled {
+    background: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Loading State */
+.submitButtonLoading {
+    position: relative;
+    color: transparent;
+}
+
+.submitButtonLoading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Sign Up Section */
+.signupSection {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.signupText {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 0 0 8px 0;
+}
+
+.signupLink {
+    font-size: 15px;
+    color: #6366F1;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.signupLink:hover {
+    color: #4F46E5;
+    text-decoration: underline;
+}
+
+/* Responsive - Small Mobile */
+@media (max-width: 374px) {
+    .inputField {
+        height: 44px;
+        font-size: 15px;
+        padding-left: 44px;
+    }
+
+    .inputIcon {
+        left: 14px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .submitButton {
+        height: 52px;
+        font-size: 15px;
+    }
+}
+
+/* Responsive - Landscape */
+@media (max-height: 600px) and (orientation: landscape) {
+    .emailForm {
+        gap: 16px;
+    }
+
+    .inputField {
+        height: 44px;
+    }
+
+    .submitButton {
+        height: 48px;
+        margin-top: 4px;
+    }
+
+    .signupSection {
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+}
