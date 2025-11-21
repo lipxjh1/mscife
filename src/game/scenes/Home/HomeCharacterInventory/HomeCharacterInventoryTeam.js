@@ -862,7 +862,7 @@ function UpLevel(scene, unlockedPlayer) {
 
             centerData.RequestCharactersUpLevel(
                 unlockedPlayer._id,
-                (result) => {
+                () => {
                     CreateAlertPopup(
                         scene,
                         cdLocalization.getLocalization(
@@ -871,13 +871,11 @@ function UpLevel(scene, unlockedPlayer) {
                         )
                     );
 
-                    // Wait for backend to commit before refreshing
-                    setTimeout(() => {
-                        centerData.RequestUserInfo(() => {
-                            CreateCardOptions(scene, unlockedPlayer._id);
-                            UpdateCharactersInfo(scene);
-                        });
-                    }, 200);
+                    centerData.RequestUserInfo();
+
+                    UpdateCharactersInfo(scene, () => {
+                        CreateCardOptions(scene, unlockedPlayer._id);
+                    });
 
                     HideLoadingPopup();
                 },
