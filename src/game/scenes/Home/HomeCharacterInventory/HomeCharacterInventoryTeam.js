@@ -871,18 +871,19 @@ function UpLevel(scene, unlockedPlayer) {
                         )
                     );
 
-                    centerData.RequestUserInfo();
+                    // Wait for user info to update before refreshing UI
+                    centerData.RequestUserInfo(() => {
+                        UpdateCharactersInfo(scene, () => {
+                            // Force refresh character cards with updated data
+                            if (container_item_list && container_item_list.gridTable) {
+                                container_item_list.gridTable.setItems(
+                                    container_item_list.gridTable.items
+                                );
+                                container_item_list.gridTable.refresh();
+                            }
 
-                    UpdateCharactersInfo(scene, () => {
-                        // Force refresh character cards with updated data
-                        if (container_item_list && container_item_list.gridTable) {
-                            container_item_list.gridTable.setItems(
-                                container_item_list.gridTable.items
-                            );
-                            container_item_list.gridTable.refresh();
-                        }
-
-                        CreateCardOptions(scene, unlockedPlayer._id);
+                            CreateCardOptions(scene, unlockedPlayer._id);
+                        });
                     });
 
                     HideLoadingPopup();
