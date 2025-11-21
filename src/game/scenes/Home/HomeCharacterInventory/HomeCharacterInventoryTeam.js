@@ -874,6 +874,13 @@ function UpLevel(scene, unlockedPlayer) {
                     centerData.RequestUserInfo();
 
                     UpdateCharactersInfo(scene, () => {
+                        // Force refresh character cards with updated data
+                        if (container_item_list && container_item_list.gridTable) {
+                            container_item_list.gridTable.setItems(
+                                container_item_list.gridTable.items
+                            );
+                        }
+
                         CreateCardOptions(scene, unlockedPlayer._id);
                     });
 
