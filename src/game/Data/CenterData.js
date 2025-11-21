@@ -326,16 +326,6 @@ export class CenterData {
             },
         };
 
-        // ✅ NEW: Load On Demand data structures
-        this.basicCharacters = new Map();             // {characterId: basicInfo}
-        this.detailedCharacters = new Map();          // {characterId: fullInfo}
-        this.loadingCharacters = new Set();           // Set(characterId) - đang tải
-        this.failedCharacters = new Set();            // Set(characterId) - tải lỗi
-
-        // ✅ NEW: Loading state flags
-        this.loadingBasicInfo = false;                // Boolean - đang tải basic info
-        this.loadingDetailedInfo = false;             // Boolean - đang tải detailed info
-
         this.inventoryDictionary = {
             item_id_key: {
                 _id: "server_id",
@@ -770,33 +760,16 @@ export class CenterData {
 
     GetMergedCharacters() {
         //console.log("GetMergedCharacters:");
-        
-        const merged = {};
 
-        // Add all basic characters (lightweight)
-        this.basicCharacters.forEach((basic, id) => {
-            merged[id] = basic;
-        });
-
-        // Merge detailed data cho characters đã được tải
-        this.detailedCharacters.forEach((detailed, id) => {
-            merged[id] = { ...merged[id], ...detailed };
-        });
-
-        // Update legacy structures for backward compatibility
-        this.unlockedPlayer = Object.assign({}, 
-            ...Object.entries(merged)
-                .filter(([id, data]) => !data.mintedAddress) // Regular chars
-                .map(([id, data]) => ({[id]: data}))
+        const mergedPlayers = Object.assign(
+            {},
+            this.unlockedPlayer,
+            this.unlockedPlayerNFT
         );
 
-        this.unlockedPlayerNFT = Object.assign({}, 
-            ...Object.entries(merged)
-                .filter(([id, data]) => data.mintedAddress) // NFT chars
-                .map(([id, data]) => ({[id]: data}))
-        );
+        //console.log("mergedPlayers:", mergedPlayers);
 
-        return merged;
+        return mergedPlayers;
     }
 
     filterPlayers(codeToFind = "", starToFind = 1, levelToFind = 10) {
@@ -1568,48 +1541,49 @@ export class CenterData {
 
     //RequestComplexCharacters();
     async RequestMergedCharacters(onSuccess, onError) {
-        if (this.loadingBasicInfo) {
-            console.log('RequestMergedCharacters: Already loading basic info');
-            return Promise.resolve();
-        }
+        let requestCount = 0;
+        let requestDoneCount = 0;
 
-        try {
-            // Load basic info cho tất cả characters
-            const basicLoaded = await this.loadBasicInfoForAllCharacters();
+        // Bind this context cho hàm CheckRequestStatus
+        const CheckRequestStatus = () => {
+            if (requestCount >= 2 && requestDoneCount > 0) {
+                this.checkSelectedPlayerCorrect();
 
-            if (!basicLoaded) {
-                onError?.('Failed to load basic character info');
-                return Promise.resolve();
+                this.EmitUnlockedPlayerChange();
+
+                if (onSuccess && typeof onSuccess === "function") {
+                    onSuccess();
+                }
+            } else if (requestCount >= 2 && requestDoneCount == 0) {
+                if (onError && typeof onError === "function") {
+                    onError();
+                }
             }
+        };
 
-            // Load detailed data cho selected characters
-            if (this.selectedPlayerArr.length > 0) {
-                console.log(`Loading detailed data for ${this.selectedPlayerArr.length} selected characters`);
-
-                const selectedPromises = this.selectedPlayerArr.map(characterId =>
-                    this.loadFullCharacterData(characterId)
-                );
-
-                await Promise.allSettled(selectedPromises);
+        this.RequestCharacters(
+            () => {
+                requestCount++;
+                requestDoneCount++;
+                CheckRequestStatus();
+            },
+            (erro) => {
+                requestCount++;
+                CheckRequestStatus();
             }
+        );
 
-            // Validate selected players
-            this.checkSelectedPlayerCorrect();
-
-            // Emit update
-            this.EmitUnlockedPlayerChange();
-            
-            // Success
-            onSuccess?.();
-
-            return Promise.resolve();
-
-        } catch (error) {
-            console.error('RequestMergedCharacters failed:', error);
-            onError?.(error.message || 'Failed to load characters');
-
-            return Promise.reject(error);
-        }
+        this.RequestCharactersNFT(
+            () => {
+                requestCount++;
+                requestDoneCount++;
+                CheckRequestStatus();
+            },
+            (erro) => {
+                requestCount++;
+                CheckRequestStatus();
+            }
+        );
     }
 
     //request unlocked players
@@ -1687,15 +1661,6 @@ export class CenterData {
 
     //request unlocked players
     async RequestCharactersNFT(onSuccess, onError) {
-        // ✅ DEFENSIVE: Check if NFT character IDs array is empty
-        if (!this.unlockedPlayerNFTIds || this.unlockedPlayerNFTIds.length === 0) {
-            console.log('[RequestCharactersNFT] No NFT character IDs to load');
-            if (onSuccess && typeof onSuccess === "function") {
-                onSuccess({ success: true, data: [] });
-            }
-            return;
-        }
-
         const url = `${API_BASE_URL}/api/character/get-info`;
 
         const accessToken = this.GetAccessToken();
@@ -8282,111 +8247,6 @@ export class CenterData {
                     );
                 }
             });
-    }
-
-    // ✅ NEW: Load basic info for all characters
-    async loadBasicInfoForAllCharacters() {
-        if (this.loadingBasicInfo) return;
-        this.loadingBasicInfo = true;
-
-        try {
-            const response = await apiClient.get(this.endpoints.USER.GET_CHARACTERS);
-            
-            if (response.data.success) {
-                this.basicCharacters.clear();
-                
-                response.data.data.forEach(character => {
-                    const basicInfo = {
-                        _id: character._id,
-                        code: character.code,
-                        name: character.name,
-                        role: character.role,
-                        rank: character.rank,
-                        level: character.level,
-                        star: character.star
-                    };
-                    this.basicCharacters.set(character._id, basicInfo);
-                });
-
-                this.updateLegacyBasicData();
-                return true;
-            }
-        } catch (error) {
-            console.error('loadBasicInfoForAllCharacters failed:', error);
-            return false;
-        } finally {
-            this.loadingBasicInfo = false;
-        }
-    }
-
-    // ✅ NEW: Load full data for specific character
-    async loadFullCharacterData(characterId) {
-        if (this.detailedCharacters.has(characterId)) {
-            return this.detailedCharacters.get(characterId);
-        }
-
-        if (this.loadingCharacters.has(characterId)) {
-            return null;
-        }
-
-        this.loadingCharacters.add(characterId);
-        this.failedCharacters.delete(characterId);
-
-        try {
-            const response = await apiClient.get(this.endpoints.USER.GET_CHARACTERS);
-            const fullData = response.data.data.find(c => c._id === characterId);
-
-            if (fullData) {
-                this.detailedCharacters.set(characterId, fullData);
-                this.updateLegacyDataForCharacter(characterId, fullData);
-                this.emitCharacterDataUpdated(characterId, fullData);
-                return fullData;
-            }
-        } catch (error) {
-            console.error(`loadFullCharacterData(${characterId}) failed:`, error);
-            this.failedCharacters.add(characterId);
-            return null;
-        } finally {
-            this.loadingCharacters.delete(characterId);
-        }
-    }
-
-    // ✅ NEW: Helper functions
-    isCharacterFullyLoaded(characterId) {
-        return this.detailedCharacters.has(characterId);
-    }
-
-    isCharacterLoading(characterId) {
-        return this.loadingCharacters.has(characterId);
-    }
-
-    getCharacterBasicInfo(characterId) {
-        return this.basicCharacters.get(characterId) || null;
-    }
-
-    getCharacterFullInfo(characterId) {
-        if (this.detailedCharacters.has(characterId)) {
-            return this.detailedCharacters.get(characterId);
-        }
-
-        setTimeout(() => this.loadFullCharacterData(characterId), 0);
-        return this.basicCharacters.get(characterId) || null;
-    }
-
-    // ✅ NEW: Legacy compatibility helpers
-    updateLegacyBasicData() {
-        this.unlockedPlayer = {};
-        this.basicCharacters.forEach((basic, id) => {
-            this.unlockedPlayer[id] = basic;
-        });
-    }
-
-    updateLegacyDataForCharacter(characterId, fullData) {
-        this.unlockedPlayer[characterId] = fullData;
-    }
-
-    emitCharacterDataUpdated(characterId, fullData) {
-        this.EmitUnlockedPlayerChange();
     }
 
     LogOut() {
