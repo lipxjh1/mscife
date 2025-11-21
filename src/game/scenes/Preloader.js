@@ -117,6 +117,21 @@ export class Preloader extends Scene {
         CreateAudioBackground(this);
         CreatePlayerDictionary();
 
+        // Preload character card images để tránh race condition khi render cards
+        // Fix: Cards render trước khi lazy load assets → missing images
+        console.log('[Preloader] Loading character card images...');
+        let cardCount = 0;
+        Object.entries(playerSpineDictionary).forEach(([charName, charData]) => {
+            if (charData.UICardInventory && charData.UICardInventory.key) {
+                this.load.image(
+                    charData.UICardInventory.key,
+                    charData.UICardInventory.url
+                );
+                cardCount++;
+            }
+        });
+        console.log(`[Preloader] Queued ${cardCount} character card images for preload`);
+
         this.load.on("progress", (value) => {
             const percent = Math.floor(value * 100);
             if (this.loadingPercentText) {
