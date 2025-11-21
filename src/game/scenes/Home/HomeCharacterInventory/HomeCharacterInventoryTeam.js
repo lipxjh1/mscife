@@ -879,6 +879,7 @@ function UpLevel(scene, unlockedPlayer) {
                             container_item_list.gridTable.setItems(
                                 container_item_list.gridTable.items
                             );
+                            container_item_list.gridTable.refresh();
                         }
 
                         CreateCardOptions(scene, unlockedPlayer._id);
