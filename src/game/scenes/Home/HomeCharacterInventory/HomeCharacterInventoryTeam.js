@@ -871,20 +871,12 @@ function UpLevel(scene, unlockedPlayer) {
                         )
                     );
 
-                    // Wait for user info to update before refreshing UI
-                    centerData.RequestUserInfo(() => {
-                        UpdateCharactersInfo(scene, () => {
-                            // Force refresh character cards with updated data
-                            if (container_item_list && container_item_list.gridTable) {
-                                container_item_list.gridTable.setItems(
-                                    container_item_list.gridTable.items
-                                );
-                                container_item_list.gridTable.refresh();
-                            }
-
+                    // Wait for backend to commit before refreshing
+                    setTimeout(() => {
+                        centerData.RequestUserInfo(() => {
                             CreateCardOptions(scene, unlockedPlayer._id);
                         });
-                    });
+                    }, 200);
 
                     HideLoadingPopup();
                 },

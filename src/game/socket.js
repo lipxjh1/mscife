@@ -51,7 +51,9 @@ class SocketService {
                     token: sessionStorage.getItem("accessToken"),
                 },
                 reconnection: true,
-                reconnectionAttempts: Infinity,
+                reconnectionAttempts: 10,
+                reconnectionDelayMax: 5000,
+                timeout: 20000,
             });
 
             this.socket.on("heartbeat", () => {
