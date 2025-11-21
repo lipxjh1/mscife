@@ -512,21 +512,44 @@ function renderBasicCard(container, characterData, scene) {
     container.container_card_inner.add(frame_0);
     
     // Add basic character info
-    if (characterData.cardImgInventoryKey) {
+    // ✅ Fix: Fallback to centerDataPlayer if centerData missing cardImgInventoryKey
+    // This fixes the issue where progressive loading shows text ID instead of character image
+    let imageKey = characterData.cardImgInventoryKey;
+
+    // Fallback to centerDataPlayer (sync data source) if async centerData doesn't have key
+    if (!imageKey && container.code && typeof centerDataPlayer !== 'undefined') {
+        try {
+            const playerData = centerDataPlayer.getPlayerById(container.code);
+            if (playerData && playerData.cardImgInventoryKey) {
+                imageKey = playerData.cardImgInventoryKey;
+                console.log(`[CharacterCard] ✅ Fallback to centerDataPlayer for ${container.code}: ${imageKey}`);
+            }
+        } catch (error) {
+            console.warn(`[CharacterCard] ⚠️ centerDataPlayer fallback failed for ${container.code}:`, error);
+        }
+    }
+
+    // Render card with image if key is available from either source
+    if (imageKey) {
         const avatar = scene.add
-            .image(319 / 2, 384, characterData.cardImgInventoryKey)
+            .image(319 / 2, 384, imageKey)
             .setOrigin(0.5, 1);
         container.container_card_inner.add(avatar);
     } else {
-        const text_id = scene.add
-            .text(319 / 2, 444 / 2, characterData._id || container.code, {
+        // Better fallback: Show loading state instead of text ID
+        // This provides better UX while waiting for async data
+        console.warn(`[CharacterCard] ⚠️ No image key available for ${characterData._id || container.code}, showing placeholder`);
+
+        // Show loading text (temporary - better than character ID)
+        const loadingText = scene.add
+            .text(319 / 2, 444 / 2, "Loading...", {
                 fontFamily: "Russo One",
-                fontSize: "60px",
-                color: "#ffffff",
+                fontSize: "40px",
+                color: "#888888",
                 align: "center",
             })
             .setOrigin(0.5, 0.5);
-        container.container_card_inner.add(text_id);
+        container.container_card_inner.add(loadingText);
     }
     
     // Add level
