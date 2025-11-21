@@ -619,12 +619,14 @@ export function CreateCardOptions(scene, _id) {
     }
 
     if (item.unlockedPlayer.level < 10) {
+        // ✅ FIXED: Display cost on button text
+        const levelUpCost = item.unlockedPlayer.nextLevelProperties.chipToUpgrade || 0;
         const btn_level_up = CreateOptionsButton1(
             scene,
             405 + 312 / 2,
             1495 + 15 + 84 / 2,
             "home_character_option_btn_1",
-            "Level up"
+            `Level up (${levelUpCost} Chip)`
         );
 
         btn_level_up.button.on("pointerdown", function () {
