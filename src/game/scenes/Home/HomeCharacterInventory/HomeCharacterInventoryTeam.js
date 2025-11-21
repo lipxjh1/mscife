@@ -302,8 +302,10 @@ export function CreateCardOptions(scene, _id) {
         .setOrigin(0, 0);
     container_card_options.add(text_damage);
 
+    // ✅ FIX: Add null check to prevent crash
+    const currentDamage = item.unlockedPlayer?.properties?.attachDamage || 0;
     const text_current_damage = scene.add
-        .text(405, 1322, item.unlockedPlayer.properties.attachDamage, {
+        .text(405, 1322, currentDamage, {
             fontFamily: cdLocalization.getCurrentFont(),
             fontSize: "36px",
             color: "#D6D6D6",
@@ -359,8 +361,10 @@ export function CreateCardOptions(scene, _id) {
         .setOrigin(0, 0);
     container_card_options.add(text_delay);
 
+    // ✅ FIX: Add null check to prevent crash
+    const currentAttackDelay = item.unlockedPlayer?.properties?.attackDelay || 0;
     const text_current_delay = scene.add
-        .text(405, 1428, item.unlockedPlayer.properties.attackDelay, {
+        .text(405, 1428, currentAttackDelay, {
             fontFamily: cdLocalization.getCurrentFont(),
             fontSize: "36px",
             color: "#D6D6D6",
