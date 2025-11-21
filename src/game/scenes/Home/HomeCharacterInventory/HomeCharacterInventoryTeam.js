@@ -302,10 +302,8 @@ export function CreateCardOptions(scene, _id) {
         .setOrigin(0, 0);
     container_card_options.add(text_damage);
 
-    // ✅ FIX: Add null check to prevent crash
-    const currentDamage = item.unlockedPlayer?.properties?.attachDamage || 0;
     const text_current_damage = scene.add
-        .text(405, 1322, currentDamage, {
+        .text(405, 1322, item.unlockedPlayer.properties.attachDamage, {
             fontFamily: cdLocalization.getCurrentFont(),
             fontSize: "36px",
             color: "#D6D6D6",
@@ -361,10 +359,8 @@ export function CreateCardOptions(scene, _id) {
         .setOrigin(0, 0);
     container_card_options.add(text_delay);
 
-    // ✅ FIX: Add null check to prevent crash
-    const currentAttackDelay = item.unlockedPlayer?.properties?.attackDelay || 0;
     const text_current_delay = scene.add
-        .text(405, 1428, currentAttackDelay, {
+        .text(405, 1428, item.unlockedPlayer.properties.attackDelay, {
             fontFamily: cdLocalization.getCurrentFont(),
             fontSize: "36px",
             color: "#D6D6D6",
@@ -623,14 +619,12 @@ export function CreateCardOptions(scene, _id) {
     }
 
     if (item.unlockedPlayer.level < 10) {
-        // ✅ FIXED: Display cost on button text
-        const levelUpCost = item.unlockedPlayer.nextLevelProperties.chipToUpgrade || 0;
         const btn_level_up = CreateOptionsButton1(
             scene,
             405 + 312 / 2,
             1495 + 15 + 84 / 2,
             "home_character_option_btn_1",
-            `Level up (${levelUpCost} Chip)`
+            "Level up"
         );
 
         btn_level_up.button.on("pointerdown", function () {
