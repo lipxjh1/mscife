@@ -218,7 +218,8 @@ async function CreateItemList(scene, receivedData) {
             const container = itemContainerPool.get();
             
             // Update container with item data
-            updateItemContainer(container, indexData, scene);
+            // FIX: Pass index to correctly position item containers
+            updateItemContainer(container, indexData, scene, i);
             
             // Add to panel
             scrollablePanel.getElement('panel').add(container);
@@ -269,11 +270,12 @@ async function CreateItemList(scene, receivedData) {
 }
 
 // ✅ NEW: Helper function to update container with item data
-function updateItemContainer(container, itemData, scene) {
+function updateItemContainer(container, itemData, scene, index) {
     // Update container position based on array index
     const itemHeight = 125;
     const itemSpacing = 12; // Match original spacing
-    container.y = visibleItemContainers.length * (itemHeight + itemSpacing);
+    // FIX: Use correct index instead of array length for positioning
+    container.y = index * (itemHeight + itemSpacing);
     
     // Update container data
     container.itemData = itemData;
