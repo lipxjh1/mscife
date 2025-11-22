@@ -72,7 +72,7 @@ function LoadAssetsDone(scene) {
         380 + 328 / 2,
         909 + 86 / 2,
         "home_guild_btn_play",
-        "Reuqest"
+        "Request"
     );
     container_main.add(btn_request);
 
