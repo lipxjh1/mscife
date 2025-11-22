@@ -253,7 +253,18 @@ export function destroySpine(spine, scene) {
             }
         }
 
-        // Step 6: Destroy the GameObject
+        // Step 6: CRITICAL FIX - Remove from Phaser update lists BEFORE destroy
+        // This ensures Phaser doesn't try to update destroyed spine objects
+        if (scene && scene.sys) {
+            if (scene.sys.updateList && scene.sys.updateList.remove) {
+                scene.sys.updateList.remove(spine);
+            }
+            if (scene.sys.displayList && scene.sys.displayList.remove) {
+                scene.sys.displayList.remove(spine);
+            }
+        }
+
+        // Step 7: Destroy the GameObject
         if (spine.destroy) {
             spine.destroy();
         }

@@ -638,12 +638,36 @@ class Enemy {
 
                     // Destroy container after spine cleanup
                     if (this.container) {
+                        // CRITICAL FIX: Remove from Phaser update lists BEFORE destroy
+                        // This prevents Phaser from calling preUpdate() on destroyed objects
+                        if (this.scene && this.scene.sys) {
+                            if (this.scene.sys.updateList) {
+                                this.scene.sys.updateList.remove(this.container);
+                            }
+                            if (this.scene.sys.displayList) {
+                                this.scene.sys.displayList.remove(this.container);
+                            }
+                        }
+
+                        // Now safe to destroy
                         this.container.destroy();
                     }
                 });
             } else {
                 // No spine, destroy container directly
                 if (this.container) {
+                    // CRITICAL FIX: Remove from Phaser update lists BEFORE destroy
+                    // This prevents Phaser from calling preUpdate() on destroyed objects
+                    if (this.scene && this.scene.sys) {
+                        if (this.scene.sys.updateList) {
+                            this.scene.sys.updateList.remove(this.container);
+                        }
+                        if (this.scene.sys.displayList) {
+                            this.scene.sys.displayList.remove(this.container);
+                        }
+                    }
+
+                    // Now safe to destroy
                     this.container.destroy();
                 }
             }
