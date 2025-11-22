@@ -583,6 +583,12 @@ export class Gameplay extends Scene {
             }
 
             // Step 4: Clear spine cache
+            // CRITICAL FIX: DON'T clear cache in shutdown()
+            // This causes race condition when scene restarts
+            // Cache will be naturally cleared when new assets load
+            // Or cleared in scene destroy event (if needed)
+
+            /* COMMENTED OUT TO FIX RACE CONDITION
             const spineKeys = [
                 'gameplay_enemy_0',
                 'gameplay_enemy_1',
@@ -596,6 +602,9 @@ export class Gameplay extends Scene {
             ];
 
             clearSpineCache(this, spineKeys);
+            */
+
+            console.log('[Gameplay] Shutdown completed - spine cache NOT cleared to avoid race condition');
 
             // Step 5: Cleanup damage pools
             if (this.damagePool) {
@@ -650,8 +659,41 @@ export class Gameplay extends Scene {
 
     // Override scene destroy
     destroy() {
-        //console.log("Scene destroy triggered");
+        console.log('[Gameplay] Scene destroy called');
+
+        // Now it's safe to clear cache
+        // Scene is completely stopped and removed
+        const spineKeys = [
+            'gameplay_enemy_0',
+            'gameplay_enemy_1',
+            'gameplay_enemy_2',
+            'enemy_drone_0',
+            'enemy_drone_1',
+            'enemy_drone_2',
+            'enemy_ghost_0',
+            'gameplay_enemy_boss_0',
+            'gameplay_enemy_boss_1'
+        ];
+
+        // Only clear if we're not restarting the same scene
+        if (this.scene && this.scene.isActive && this.scene.isActive('Gameplay')) {
+            console.log('[Gameplay] Scene is restarting, NOT clearing cache');
+        } else {
+            console.log('[Gameplay] Scene is fully destroyed, clearing cache');
+            try {
+                clearSpineCache(this, spineKeys);
+            } catch (error) {
+                console.error('[Gameplay] Error clearing spine cache:', error);
+            }
+        }
+
+        // Clean up socket events
         this.cleanupSocketEvents();
+
+        // Call parent destroy if it exists
+        if (super.destroy) {
+            super.destroy();
+        }
     }
 
     shakeCamera(camera, duration) {

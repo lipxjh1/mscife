@@ -99,34 +99,52 @@ class Boss {
             this.container.add(this.sprite);
         } else {
             // Tạo spine cho boss
-            this.spine = this.scene.add.spine(
-                0,
-                480,
-                this.spineKey,
-                this.spineKey + "_atlas"
-            );
-            //console.log("spine_key = " + this.spineKey);
+            // CRITICAL FIX: Add safety check for spine loading
+            // Prevents NULL POINTER error during scene transitions
+            try {
+                // Check if spine asset is loaded
+                if (!this.scene.cache.custom.spine || !this.scene.cache.custom.spine.has(this.spineKey)) {
+                    console.error(`[Boss] Spine key not found in cache: ${this.spineKey}`);
+                    console.log('[Boss] Attempting to reload spine asset...');
 
-            this.playIdleAnimation();
-
-            this.spine.setInteractive({ useHandCursor: true });
-
-            // Sự kiện khi click vào spine
-            this.spine.on("pointerdown", (pointer) => {
-                // this.spine.skeleton.slots.forEach((slot) => {
-                //   console.log(slot.data.name); // Hiển thị tên của mỗi slot
-                // });
-
-                //console.log(`Clicked on boss ${this.id}`);
-
-                // Gọi hàm callback thành công nếu có
-                if (onHit && typeof onHit === "function") {
-                    onHit(pointer);
+                    // Mark this boss for deferred creation
+                    this.spineLoadFailed = true;
+                    return; // Don't create spine yet
                 }
-            });
 
-            // Thêm sprite vào container
-            this.container.add(this.spine);
+                this.spine = this.scene.add.spine(
+                    0,
+                    480,
+                    this.spineKey,
+                    this.spineKey + "_atlas"
+                );
+                //console.log("spine_key = " + this.spineKey);
+
+                this.playIdleAnimation();
+
+                this.spine.setInteractive({ useHandCursor: true });
+
+                // Sự kiện khi click vào spine
+                this.spine.on("pointerdown", (pointer) => {
+                    // this.spine.skeleton.slots.forEach((slot) => {
+                    //   console.log(slot.data.name); // Hiển thị tên của mỗi slot
+                    // });
+
+                    //console.log(`Clicked on boss ${this.id}`);
+
+                    // Gọi hàm callback thành công nếu có
+                    if (onHit && typeof onHit === "function") {
+                        onHit(pointer);
+                    }
+                });
+
+                // Thêm sprite vào container
+                this.container.add(this.spine);
+
+            } catch (error) {
+                console.error('[Boss] Error creating spine:', error);
+                this.spineLoadFailed = true;
+            }
         }
 
         scene.GetMap().AddToContainerEnemy(this.container);

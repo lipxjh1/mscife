@@ -547,7 +547,12 @@ function PlayCampain(scene) {
         if (assetsLoaded === assetsToLoad) {
             HideLoadingPopup();
 
-            scene.scene.start("Gameplay");
+            // CRITICAL FIX: Ensure proper scene transition order
+            // Wait a frame to ensure old scene cleanup is complete
+            scene.time.delayedCall(100, () => {
+                console.log('[PlayCampain] All assets loaded, starting Gameplay scene...');
+                scene.scene.start("Gameplay");
+            });
         }
     };
 
