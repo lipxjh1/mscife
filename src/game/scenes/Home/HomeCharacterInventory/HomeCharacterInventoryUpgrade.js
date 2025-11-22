@@ -1137,6 +1137,17 @@ function RequestUpgrade(scene, unlockedPlayer) {
 
             CreateAlertPopup(scene, result.message);
 
+            // ✅ Auto-refresh transaction history after upgrade
+            if (result.user) {
+                centerData.userInfo = result.user;
+            }
+
+            // ✅ Refresh CHIP transaction list
+            centerData.RequestTransactionHistoryChip(0,
+                () => { console.log('✅ Transaction history refreshed'); },
+                (err) => { console.error('❌ Failed to refresh transactions:', err); }
+            );
+
             Close(scene);
         },
         (err) => {
