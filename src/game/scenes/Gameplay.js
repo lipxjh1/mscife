@@ -650,6 +650,23 @@ export class Gameplay extends Scene {
 
             this.destroyCustomEvents();
 
+            // IMPORTANT FIX: Clear animation keys to prevent duplicates
+            if (this.anims) {
+                console.log('[Gameplay] Clearing animation keys...');
+
+                // Remove specific animation keys created in create()
+                if (this.anims.exists('enemy_fx_explosion_animation')) {
+                    this.anims.remove('enemy_fx_explosion_animation');
+                    console.log('[Gameplay] Removed enemy_fx_explosion_animation');
+                }
+                if (this.anims.exists('enemy_fx_strike_anim_animation')) {
+                    this.anims.remove('enemy_fx_strike_anim_animation');
+                    console.log('[Gameplay] Removed enemy_fx_strike_anim_animation');
+                }
+
+                console.log('[Gameplay] Animation keys cleared');
+            }
+
             console.log('[Gameplay] Scene shutdown completed');
 
         } catch (error) {
