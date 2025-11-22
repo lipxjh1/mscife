@@ -211,11 +211,37 @@ class Enemy {
     }
 
     handleUpdate(time, delta) {
+        // CRITICAL: Check if enemy is being destroyed first
         if (this.isDead == true) return;
 
-        this.updateMoveToPosition(time, delta);
+        // CRITICAL: Validate scene exists
+        if (!this.scene || this.scene.destroyed) {
+            console.warn('[Enemy] handleUpdate: scene is null or destroyed, cleaning up');
+            this.destroy();
+            return;
+        }
 
-        this.updateSway(time, delta);
+        try {
+            // Validate container exists
+            if (!this.container) {
+                console.warn('[Enemy] handleUpdate: container is null, destroying enemy');
+                this.destroy();
+                return;
+            }
+
+            this.updateMoveToPosition(time, delta);
+
+            // Only update sway if spine exists
+            if (this.spine) {
+                this.updateSway(time, delta);
+            }
+
+        } catch (error) {
+            console.error('[Enemy] handleUpdate error:', error);
+            console.error('[Enemy] Error stack:', error.stack);
+            // Cleanup on error to prevent further crashes
+            this.destroy();
+        }
     }
 
     setMoveToPosition(
@@ -561,6 +587,9 @@ class Enemy {
     destroy() {
         console.log(`[Enemy] Destroying enemy: ${this.id || 'unnamed'}`);
 
+        // ⚠️ CRITICAL: Set isDead = true IMMEDIATELY to stop handleUpdate()
+        this.isDead = true;
+
         try {
             // Step 1: Remove update event
             this.scene.RemoveUpdateEvent((time, delta) =>
@@ -663,16 +692,28 @@ class Enemy {
     updateSway(time, delta) {
         if (this.isSwaying == null || this.isSwaying == false) return;
 
-        // Tăng góc dao động
-        this.swayAngle += this.swaySpeed;
+        // CRITICAL: Check if spine still exists
+        if (!this.spine) {
+            console.warn('[Enemy] updateSway: spine is null, disabling sway');
+            this.isSwaying = false;
+            return;
+        }
 
-        // Tính toán dao động dựa trên hàm sin
-        const swayOffsetX = Math.sin(this.swayAngle) * this.swayDistance;
-        const swayOffsetY = Math.cos(this.swayAngle) * this.swayDistance;
+        try {
+            // Tăng góc dao động
+            this.swayAngle += this.swaySpeed;
 
-        // Áp dụng dao động vào vị trí của container
-        this.spine.x = this.swayOrigin.x + swayOffsetX;
-        this.spine.y = this.swayOrigin.y + swayOffsetY;
+            // Tính toán dao động dựa trên hàm sin
+            const swayOffsetX = Math.sin(this.swayAngle) * this.swayDistance;
+            const swayOffsetY = Math.cos(this.swayAngle) * this.swayDistance;
+
+            // Áp dụng dao động vào vị trí của container
+            this.spine.x = this.swayOrigin.x + swayOffsetX;
+            this.spine.y = this.swayOrigin.y + swayOffsetY;
+        } catch (error) {
+            console.error('[Enemy] updateSway error:', error);
+            this.isSwaying = false; // Disable sway on error
+        }
     }
 }
 

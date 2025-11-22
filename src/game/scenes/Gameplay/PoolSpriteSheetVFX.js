@@ -36,7 +36,7 @@ export default class PoolSpriteSheet {
                 key: animationKey,
                 frames: this.scene.anims.generateFrameNumbers(spriteKey, {
                     start: 0,
-                    end: 10,
+                    end: 9,
                 }),
                 frameRate,
                 repeat: 0,

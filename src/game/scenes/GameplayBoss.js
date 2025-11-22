@@ -138,7 +138,7 @@ export class GameplayBoss extends Scene {
             key: "enemy_fx_explosion_animation",
             frames: this.anims.generateFrameNumbers("enemy_fx_explosion", {
                 start: 0,
-                end: 10,
+                end: 9,
             }),
             frameRate: 30,
             repeat: 0,
