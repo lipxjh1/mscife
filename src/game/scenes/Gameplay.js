@@ -133,6 +133,7 @@ import Player from "./Player/Player.js";
 import PoolDamageNumber from "./Gameplay/PoolDamageNumber.js";
 
 import centerData from "../Data/CenterData.js";
+import { clearSpineCache } from "../utils/spineUtils.js";
 
 import centerDataBattle from "../Data/DataBattle/CenterDataBattle.js";
 
@@ -529,39 +530,122 @@ export class Gameplay extends Scene {
     shutdown() {
         console.log("Scene gameplay shutdown triggered");
 
-        // Cleanup damage pools
-        if (this.damagePool) {
-            this.damagePool.destroy();
-        }
-        if (this.damagePoolShield) {
-            this.damagePoolShield.destroy();
-        }
+        try {
+            // Step 1: Destroy all enemies
+            if (this.enemies && Array.isArray(this.enemies)) {
+                console.log(`[Gameplay] Destroying ${this.enemies.length} enemies`);
 
-        // Cleanup stage time event
-        if (this.stageTimeEvent) {
-            this.stageTimeEvent.remove();
+                this.enemies.forEach((enemy, index) => {
+                    try {
+                        if (enemy && enemy.destroy) {
+                            enemy.destroy();
+                        }
+                    } catch (error) {
+                        console.error(`[Gameplay] Error destroying enemy ${index}:`, error);
+                    }
+                });
+
+                this.enemies = [];
+            }
+
+            // Step 2: Destroy all bosses
+            if (this.bosses && Array.isArray(this.bosses)) {
+                console.log(`[Gameplay] Destroying ${this.bosses.length} bosses`);
+
+                this.bosses.forEach((boss, index) => {
+                    try {
+                        if (boss && boss.destroy) {
+                            boss.destroy();
+                        }
+                    } catch (error) {
+                        console.error(`[Gameplay] Error destroying boss ${index}:`, error);
+                    }
+                });
+
+                this.bosses = [];
+            }
+
+            // Step 3: Destroy all drones
+            if (this.enemyDrones && Array.isArray(this.enemyDrones)) {
+                console.log(`[Gameplay] Destroying ${this.enemyDrones.length} enemy drones`);
+
+                this.enemyDrones.forEach((drone, index) => {
+                    try {
+                        if (drone && drone.destroy) {
+                            drone.destroy();
+                        }
+                    } catch (error) {
+                        console.error(`[Gameplay] Error destroying drone ${index}:`, error);
+                    }
+                });
+
+                this.enemyDrones = [];
+            }
+
+            // Step 4: Clear spine cache
+            const spineKeys = [
+                'gameplay_enemy_0',
+                'gameplay_enemy_1',
+                'gameplay_enemy_2',
+                'enemy_drone_0',
+                'enemy_drone_1',
+                'enemy_drone_2',
+                'enemy_ghost_0',
+                'gameplay_enemy_boss_0',
+                'gameplay_enemy_boss_1'
+            ];
+
+            clearSpineCache(this, spineKeys);
+
+            // Step 5: Cleanup damage pools
+            if (this.damagePool) {
+                this.damagePool.destroy();
+            }
+            if (this.damagePoolShield) {
+                this.damagePoolShield.destroy();
+            }
+
+            // Step 6: Cleanup stage time event
+            if (this.stageTimeEvent) {
+                this.stageTimeEvent.remove();
+            }
+
+            // Step 7: Clear all timers
+            if (this.time) {
+                this.time.removeAllEvents();
+            }
+
+            // Step 8: Clear all tweens
+            if (this.tweens) {
+                this.tweens.killAll();
+            }
+
+            // Step 9: Cleanup socket events
+            this.cleanupSocketEvents();
+
+            // Step 10: Hủy đăng ký sự kiện BLUR và FOCUS
+            if (this.game && this.game.events) {
+                this.game.events.removeListener(
+                    Phaser.Core.Events.BLUR,
+                    this.handleBlur
+                );
+                this.game.events.removeListener(
+                    Phaser.Core.Events.FOCUS,
+                    this.handleFocus
+                );
+            }
+
+            if (this.changeVisibilityListener) {
+                this.changeVisibilityListener();
+            }
+
+            this.destroyCustomEvents();
+
+            console.log('[Gameplay] Scene shutdown completed');
+
+        } catch (error) {
+            console.error('[Gameplay] Error during shutdown:', error);
         }
-
-        // Cleanup socket events
-        this.cleanupSocketEvents();
-
-        // Hủy đăng ký sự kiện BLUR và FOCUS
-        if (this.game && this.game.events) {
-            this.game.events.removeListener(
-                Phaser.Core.Events.BLUR,
-                this.handleBlur
-            );
-            this.game.events.removeListener(
-                Phaser.Core.Events.FOCUS,
-                this.handleFocus
-            );
-        }
-
-        if (this.changeVisibilityListener) {
-            this.changeVisibilityListener();
-        }
-
-        this.destroyCustomEvents();
     }
 
     // Override scene destroy

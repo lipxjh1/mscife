@@ -13,6 +13,7 @@ import {
     playIdleAnimation,
     playAttackAnimation,
     playCustomAnimation,
+    destroySpine,
 } from "../../utils/spineUtils.js";
 
 export const ENEMY_KEYS = {
@@ -558,39 +559,70 @@ class Enemy {
     }
 
     destroy() {
-        this.scene.RemoveUpdateEvent((time, delta) =>
-            this.handleUpdate(time, delta)
-        );
+        console.log(`[Enemy] Destroying enemy: ${this.id || 'unnamed'}`);
 
-        if (this.spine) {
-            this.spine.removeAllListeners();
+        try {
+            // Step 1: Remove update event
+            this.scene.RemoveUpdateEvent((time, delta) =>
+                this.handleUpdate(time, delta)
+            );
 
-            const animName = "die";
-
-            playCustomAnimation(this.spine, animName, false);
-
-            // Tìm animation trong dữ liệu skeleton của spine
-            const animation = this.spine.skeleton.data.findAnimation(animName);
-
-            let animTime = 1;
-
-            if (animation) {
-                animTime = animation.duration; // Thời gian hoạt ảnh tính bằng giây
-                // console.log(
-                //     `Thời gian của hoạt ảnh ${animName}: ${animTime} giây`
-                // );
+            // Step 2: Cleanup timers
+            if (this.attackLoopEvent) {
+                this.scene.time.removeEvent(this.attackLoopEvent);
+                this.attackLoopEvent = null;
             }
 
-            this.scene.time.delayedCall(animTime * 1000, () => {
-                if (this.spine != null) {
-                    this.spine.destroy();
+            if (this.hitLoopEvent) {
+                this.scene.time.removeEvent(this.hitLoopEvent);
+                this.hitLoopEvent = null;
+            }
+
+            // Step 3: Clear tweens
+            if (this.scene && this.scene.tweens) {
+                this.scene.tweens.killTweensOf(this.container);
+            }
+
+            // Step 4: Play death animation then destroy spine properly
+            if (this.spine) {
+                this.spine.removeAllListeners();
+
+                const animName = "die";
+                playCustomAnimation(this.spine, animName, false);
+
+                // Tìm animation trong dữ liệu skeleton của spine
+                const animation = this.spine.skeleton.data.findAnimation(animName);
+
+                let animTime = 1;
+
+                if (animation) {
+                    animTime = animation.duration; // Thời gian hoạt ảnh tính bằng giây
                 }
 
-                this.spine = null;
-                this.container.destroy();
-            });
-        } else {
-            this.container.destroy();
+                // Wait for death animation then cleanup spine properly
+                this.scene.time.delayedCall(animTime * 1000, () => {
+                    if (this.spine != null) {
+                        // Use new destroySpine function for proper cleanup
+                        destroySpine(this.spine, this.scene);
+                        this.spine = null;
+                    }
+
+                    // Destroy container after spine cleanup
+                    if (this.container) {
+                        this.container.destroy();
+                    }
+                });
+            } else {
+                // No spine, destroy container directly
+                if (this.container) {
+                    this.container.destroy();
+                }
+            }
+
+            console.log('[Enemy] Enemy destroy initiated');
+
+        } catch (error) {
+            console.error('[Enemy] Error during destroy:', error);
         }
     }
 

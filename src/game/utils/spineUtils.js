@@ -187,6 +187,143 @@ export function playCustomAnimation(spine, animationName, loop = false) {
 }
 
 /**
+ * Destroy Spine object và cleanup memory
+ * @param {SpineGameObject} spine - Spine object cần destroy
+ * @param {Phaser.Scene} scene - Scene chứa spine object
+ */
+export function destroySpine(spine, scene) {
+    if (!spine || !spine.active) {
+        return; // Already destroyed
+    }
+
+    try {
+        console.log(`[SpineUtils] Destroying spine: ${spine.name || 'unnamed'}`);
+
+        // Step 1: Clear animation state
+        if (spine.animationState) {
+            try {
+                // Stop all animations
+                spine.animationState.clearTracks();
+
+                // Clear listeners (prevent memory leaks)
+                spine.animationState.clearListeners();
+
+                // Nullify reference
+                spine.animationState = null;
+            } catch (error) {
+                console.warn('[SpineUtils] Error clearing animationState:', error);
+            }
+        }
+
+        // Step 2: Clear skeleton data
+        if (spine.skeleton) {
+            try {
+                // Clear skeleton reference
+                spine.skeleton = null;
+            } catch (error) {
+                console.warn('[SpineUtils] Error clearing skeleton:', error);
+            }
+        }
+
+        // Step 3: Remove all event listeners
+        if (spine.state) {
+            try {
+                spine.state.clearListeners();
+                spine.state = null;
+            } catch (error) {
+                console.warn('[SpineUtils] Error clearing state:', error);
+            }
+        }
+
+        // Step 4: Clear plugin data
+        if (spine.plugin) {
+            try {
+                spine.plugin = null;
+            } catch (error) {
+                console.warn('[SpineUtils] Error clearing plugin:', error);
+            }
+        }
+
+        // Step 5: Remove from scene display list
+        if (scene && spine.scene) {
+            try {
+                spine.scene = null;
+            } catch (error) {
+                console.warn('[SpineUtils] Error removing from scene:', error);
+            }
+        }
+
+        // Step 6: Destroy the GameObject
+        if (spine.destroy) {
+            spine.destroy();
+        }
+
+        console.log('[SpineUtils] Spine destroyed successfully');
+
+    } catch (error) {
+        console.error('[SpineUtils] Fatal error destroying spine:', error);
+    }
+}
+
+/**
+ * Destroy multiple spine objects
+ * @param {Array<SpineGameObject>} spines - Array of spine objects
+ * @param {Phaser.Scene} scene - Scene chứa spine objects
+ */
+export function destroySpines(spines, scene) {
+    if (!Array.isArray(spines)) {
+        console.warn('[SpineUtils] destroySpines: input is not an array');
+        return;
+    }
+
+    console.log(`[SpineUtils] Destroying ${spines.length} spine objects`);
+
+    spines.forEach((spine, index) => {
+        try {
+            destroySpine(spine, scene);
+        } catch (error) {
+            console.error(`[SpineUtils] Error destroying spine ${index}:`, error);
+        }
+    });
+
+    console.log('[SpineUtils] All spines destroyed');
+}
+
+/**
+ * Clear spine texture cache (gọi khi scene shutdown)
+ * @param {Phaser.Scene} scene - Scene cần clear cache
+ * @param {Array<string>} spineKeys - Array of spine keys to clear
+ */
+export function clearSpineCache(scene, spineKeys = []) {
+    if (!scene || !scene.textures) {
+        console.warn('[SpineUtils] clearSpineCache: invalid scene');
+        return;
+    }
+
+    console.log(`[SpineUtils] Clearing spine cache for ${spineKeys.length} keys`);
+
+    try {
+        spineKeys.forEach(key => {
+            // Remove từ texture manager
+            if (scene.textures.exists(key)) {
+                scene.textures.remove(key);
+                console.log(`[SpineUtils] Removed texture: ${key}`);
+            }
+
+            // Remove từ cache manager
+            if (scene.cache && scene.cache.json && scene.cache.json.exists(key)) {
+                scene.cache.json.remove(key);
+            }
+        });
+
+        console.log('[SpineUtils] Spine cache cleared successfully');
+
+    } catch (error) {
+        console.error('[SpineUtils] Error clearing spine cache:', error);
+    }
+}
+
+/**
  * Debug function to check spine object
  * @param {Object} spine - The spine object to debug
  */
