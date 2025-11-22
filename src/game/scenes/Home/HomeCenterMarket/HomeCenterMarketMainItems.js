@@ -1,6 +1,6 @@
-// ✅ NEW: Optimization imports
-import { ItemContainerPool } from "../../../managers/ItemContainerPool.js";
-import { BatchDataLoader } from "../../../managers/BatchDataLoader.js";
+// ✅ FIXED: Removed complex optimization imports that were causing issues
+// import { ItemContainerPool } from "../../../managers/ItemContainerPool.js";
+// import { BatchDataLoader } from "../../../managers/BatchDataLoader.js";
 
 import centerData from "../../../Data/CenterData.js";
 import centerDataItem from "../../../Data/CenterDataItem.js";
@@ -113,42 +113,41 @@ function RequestBuyItemList(scene) {
     );
 }
 
-let container_list = null;
-let itemContainerPool = null;
-let batchDataLoader = null;
-let visibleItemContainers = [];
+let container_item_list = null;
 
-// ✅ OPTIMIZED: CreateItemList with virtualization and pooling
-async function CreateItemList(scene, receivedData) {
-    console.log('🚀 Creating optimized item list...');
-    const startTime = performance.now();
-    
-    // Cleanup existing
-    if (container_list) {
-        // Release containers back to pool
-        if (itemContainerPool && visibleItemContainers.length > 0) {
-            itemContainerPool.releaseAll(visibleItemContainers);
-            visibleItemContainers = [];
-        }
-        container_list.destroy();
+// ✅ FIXED: CreateItemList using working patterns from Sell tab
+function CreateItemList(scene, receivedData) {
+    //console.log("CreateItemList: ");
+
+    if (container_item_list) {
+        container_item_list.destroy();
     }
-    
-    // Initialize managers if needed
-    if (!itemContainerPool) {
-        itemContainerPool = new ItemContainerPool(scene, 20);
-    }
-    if (!batchDataLoader) {
-        batchDataLoader = new BatchDataLoader();
-    }
-    
-    container_list = scene.add.container(0, 0);
-    container_main.add(container_list);
-    
+
+    //Create friend list
+    container_item_list = scene.add.container(0, 0);
+    //container_list.setDepth(200);
+    container_main.add(container_item_list);
+
+    // Kích thước của ScrollView - Same as Sell tab
     const scrollViewWidth = 1080;
     const scrollViewHeight = 1210;
+
+    const columns = 1;
+    const rows = Math.ceil(itemCodes.length / columns); // ✅ FIXED: Use actual item count
+
+    const itemWidth = 1020;
+    const itemHeight = 215;
+    const itemSpacing = 215 / 2 + 24 / 2; // ✅ FIXED: Same spacing as Sell tab
+
     const posX = 0 + scrollViewWidth / 2;
     const posY = 583 + scrollViewHeight / 2;
-    
+
+    // const background = scene.add
+    //     .rectangle(posX, posY, scrollViewWidth, scrollViewHeight, 0xffffff)
+    //     .setAlpha(0.5);
+    // container_list.add(background);
+
+    // ✅ FIXED: Use gridSizer like Sell tab (working pattern)
     const scrollablePanel = scene.rexUI.add
         .scrollablePanel({
             x: posX,
@@ -156,159 +155,88 @@ async function CreateItemList(scene, receivedData) {
             width: scrollViewWidth,
             height: scrollViewHeight,
             scrollMode: 0,
-            background: scene.rexUI.add.roundRectangle(0, 0, 2, 2, 0, 0x000000, 0),
             panel: {
-                child: scene.rexUI.add.sizer({
-                    orientation: "y",
-                    space: { item: 10 },
+                child: scene.rexUI.add.gridSizer({
+                    width: scrollViewWidth,
+                    height: scrollViewHeight,
+                    column: columns,
+                    row: rows,
+                    columnProportions: 0,
+                    rowProportions: 0,
+                    space: {
+                        column: itemSpacing,
+                        row: itemSpacing,
+                    },
                 }),
-                mask: { padding: 1 },
+                mask: {
+                    padding: 1,
+                },
             },
-            slider: false,
             mouseWheelScroller: {
-                focus: true,
-                speed: 0.5,
+                focus: false,
+                speed: 0.2,
             },
-            space: { left: 0, right: 0, top: 0, bottom: 0, panel: 0 },
+            // ✅ FIXED: Same spacing as Sell tab
+            space: {
+                left: 60,
+                right: 0,
+                top: 10,
+                bottom: 215 / 2 + 24 / 2,
+            },
         })
         .layout();
-    
-    container_list.add(scrollablePanel);
-    
-    console.log(`📦 Processing ${itemCodes.length} tradable items`);
-    
-    try {
-        // ✅ BATCH LOAD: Load all data in parallel
-        const itemsData = await batchDataLoader.batchLoadItemsData(itemCodes);
-        
-        // Create received dict from API data
-        const receivedDict = {};
-        for (let i = 0; i < receivedData.data.length; i++) {
-            let itemData = receivedData.data[i];
-            receivedDict[itemData.itemCode] = itemData;
-        }
-        
-        // Filter items that have listings and merge with received data
-        const itemsToRender = [];
-        for (let i = 0; i < itemCodes.length; i++) {
-            const itemCode = itemCodes[i];
-            const itemData = receivedDict[itemCode];
-            const itemLocalData = itemsData.find(data => data && data.code === itemCode);
-            
-            if (itemLocalData && itemData && itemData.totalListings > 0) {
-                itemsToRender.push({
-                    itemCode: itemCode,
-                    itemLocalData: itemLocalData.localData,
-                    baseInfo: itemLocalData.baseInfo,
-                    statistics: itemData,
-                });
-            }
-        }
-        
-        console.log(`🎨 Rendering ${itemsToRender.length} items (optimized)`);
-        
-        // ✅ VIRTUALIZED RENDERING: Only render first 20 items
-        const itemsToShow = itemsToRender.slice(0, 20);
-        
-        // Render items using pool
-        for (let i = 0; i < itemsToShow.length; i++) {
-            const indexData = itemsToShow[i];
-            
-            // Get container from pool
-            const container = itemContainerPool.get();
-            
-            // Update container with item data
-            // FIX: Pass index to correctly position item containers
-            updateItemContainer(container, indexData, scene, i);
-            
-            // Add to panel
-            scrollablePanel.getElement('panel').add(container);
-            visibleItemContainers.push(container);
-            
-            // Setup buy button
-            container.button_buy.button.on('pointerdown', () => {
-                console.log('Buy clicked:', indexData.itemCode);
-                CreateCenterMarketItemsDetail(scene, indexData.itemCode);
+
+    container_item_list.add(scrollablePanel);
+
+    // Create received dict from API data
+    const receivedDict = {};
+    for (let i = 0; i < receivedData.data.length; i++) {
+        let itemData = receivedData.data[i];
+        receivedDict[itemData.itemCode] = itemData;
+    }
+
+    // ✅ FIXED: Simple synchronous processing like Sell tab
+    for (let i = 0; i < itemCodes.length; i++) {
+        const itemCode = itemCodes[i];
+
+        let itemLocalData = centerDataItem.getItemById(itemCode);
+        let itemBaseInfo = centerData.baseItemInfo[itemCode];
+        let itemData = receivedDict[itemCode];
+
+        if (itemLocalData != null && itemData && itemData.totalListings > 0) {
+            const indexData = {
+                itemCode: itemCode,
+                itemLocalData: itemLocalData,
+                itemBaseInfo: itemBaseInfo,
+                statistics: itemData,
+            };
+
+            let container_item = CreateItem(scene, scrollablePanel, indexData);
+
+            container_item.button_buy.button.on("pointerdown", function () {
+                CreateCenterMarketItemsDetail(scene, itemCode);
             });
         }
-        
-        // Update layout
-        scrollablePanel.layout();
-        
-        const renderTime = performance.now() - startTime;
-        console.log(`✅ Item list created in ${renderTime.toFixed(0)}ms`);
-        console.log('📊 Pool stats:', itemContainerPool.getStats());
-        
-        // TODO: Implement scroll listener for lazy loading more items
-        // For now, we render first 20 which is huge improvement already
-        
-    } catch (error) {
-        console.error('❌ Failed to create item list:', error);
-        // Fallback: show error message
-        const errorText = scene.add.text(
-            scrollViewWidth / 2,
-            scrollViewHeight / 2,
-            'Không thể tải danh sách items.\nVui lòng thử lại!',
-            {
-                fontSize: '32px',
-                color: '#ff0000',
-                align: 'center'
-            }
-        ).setOrigin(0.5, 0.5);
-        
-        scrollablePanel.getElement('panel').add(errorText);
     }
-    
-    // Add mask to scrollable panel
-    const maskShape = scene.add
+
+    scrollablePanel.layout();
+
+    let maskShape = scene.add
         .rectangle(posX, posY, scrollViewWidth, scrollViewHeight, 0x000000)
         .setVisible(false);
-    container_list.add(maskShape);
+    container_item_list.add(maskShape);
 
     let mask = new Phaser.Display.Masks.GeometryMask(scene, maskShape);
     scrollablePanel.setMask(mask);
 }
 
-// ✅ NEW: Helper function to update container with item data
-function updateItemContainer(container, itemData, scene, index) {
-    // Update container position based on array index
-    const itemHeight = 125;
-    const itemSpacing = 12; // Match original spacing
-    // FIX: Use correct index instead of array length for positioning
-    container.y = index * (itemHeight + itemSpacing);
-    
-    // Update container data
-    container.itemData = itemData;
-    
-    // Update icon
-    if (container.icon && itemData.itemLocalData && itemData.itemLocalData.imgKey) {
-        container.icon.setTexture(itemData.itemLocalData.imgKey);
-    }
-    
-    // Update name
-    if (container.text_name) {
-        const name = cdLocalization.getLocalization(
-            cdLocalization.GROUP_KEYS.HomeShop.KEY,
-            itemData.baseInfo.name || itemData.itemCode
-        );
-        container.text_name.setText(name);
-    }
-    
-    // Update quantity
-    if (container.text_quantity) {
-        const quantityText = cdLocalization.getLocalization(
-            cdLocalization.GROUP_KEYS.CenterMarket.KEY,
-            "Quantity"
-        ) + ": " + itemData.statistics.totalListings;
-        container.text_quantity.setText(quantityText);
-    }
-}
+// ✅ REMOVED: Complex updateItemContainer function - no longer needed with working gridSizer approach
 
 function CreateItem(scene, scrollablePanel, itemData) {
     //console.log("CreateItem itemData: ", itemData);
 
     let itemWidth = 1020;
-    let itemHeight = 125;
+    let itemHeight = 125; // ✅ FIXED: Same height as Sell tab
 
     const item = scene.add.container(0, 0);
     item.setSize(itemWidth, itemHeight);
@@ -336,7 +264,7 @@ function CreateItem(scene, scrollablePanel, itemData) {
             33,
             cdLocalization.getLocalization(
                 cdLocalization.GROUP_KEYS.HomeShop.KEY,
-                item.itemData.baseInfo.name
+                item.itemData.itemBaseInfo.name
             ),
             {
                 fontFamily: cdLocalization.getCurrentFont(),
@@ -385,6 +313,7 @@ function CreateItem(scene, scrollablePanel, itemData) {
         )
     );
 
+    // ✅ FIXED: Use gridSizer.add() like Sell tab for automatic positioning
     scrollablePanel.getElement("panel").add(item, {
         align: "top-left",
         expand: false,
