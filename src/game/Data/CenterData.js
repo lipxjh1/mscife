@@ -5476,13 +5476,29 @@ export class CenterData {
                 //     error
                 // );
 
-                // Gọi hàm callback thất bại nếu có
+                // Xử lý error message theo thứ tự ưu tiên
+                let errorMessage = "Neuralink upgrade failed";
+
+                // Priority 1: Check Axios error response từ backend
+                if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                }
+                // Priority 2: Check nếu backend trả full data object
+                else if (error.response?.data && typeof error.response.data === 'object') {
+                    errorMessage = JSON.stringify(error.response.data);
+                }
+                // Priority 3: Check nếu error đã là string
+                else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
+                // Priority 4: Network errors hoặc generic errors
+                else if (error.message) {
+                    errorMessage = error.message;
+                }
+
+                // Call error callback với message đã parse
                 if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Neuralink upgrade failed"
-                    );
+                    onError(errorMessage);
                 }
             });
     }

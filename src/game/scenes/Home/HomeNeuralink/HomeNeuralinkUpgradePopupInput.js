@@ -193,9 +193,14 @@ export function CreateNeuralinkToUpgradePopupInput(
                             if (onFailed && typeof onFailed === "function") {
                                 onFailed(error);
                             }
+                            // Format error message an toàn
+                            const errorText = typeof error === 'string'
+                                ? error
+                                : (error?.message || error?.toString() || "Unknown error");
+
                             CreateAlertPopup(
                                 scene,
-                                "Upgrade fail:" + "\n" + error.message
+                                "Upgrade fail:\n" + errorText
                             );
                         }
                     );
