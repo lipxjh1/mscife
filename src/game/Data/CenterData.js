@@ -6945,7 +6945,39 @@ export class CenterData {
             .catch((error) => {
                 // Gọi hàm callback thất bại nếu có
                 if (onError && typeof onError === "function") {
-                    onError(error.response.data.error || error.message);
+                    const errorData = error.response?.data || {};
+
+                    // ✅ FIX: Handle new backend response format with translation keys
+                    let errorMessage;
+
+                    if (errorData.message && errorData.message.startsWith('error.')) {
+                        // New format: translation key from backend
+                        const params = errorData.params || {};
+                        const paramsArray = [
+                            params.limit || 0,
+                            params.window || 0,
+                            params.retryAfter || 0
+                        ];
+
+                        errorMessage = CenterDataLocalization.getLocalization(
+                            CenterDataLocalization.GROUP_KEYS.Errors.KEY,
+                            errorData.message,
+                            paramsArray
+                        );
+                    } else if (errorData.error) {
+                        // Old format compatibility: {error: {message: "..."}}
+                        errorMessage = typeof errorData.error === 'string'
+                            ? errorData.error
+                            : errorData.error.message;
+                    } else {
+                        // Fallback to generic error
+                        errorMessage = error.message || CenterDataLocalization.getLocalization(
+                            CenterDataLocalization.GROUP_KEYS.Errors.KEY,
+                            'error.unknown'
+                        );
+                    }
+
+                    onError(errorMessage);
                 }
             });
     }

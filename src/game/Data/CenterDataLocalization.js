@@ -107,6 +107,9 @@ export class CenterDataLocalization {
             Neuralink: {
                 KEY: "neuralink",
             },
+            Errors: {
+                KEY: "errors",
+            },
         };
 
         // Thêm một instance EventTarget vào class Data
@@ -450,6 +453,56 @@ export class CenterDataLocalization {
 
                 this.localizations[this.GROUP_KEYS.Neuralink.KEY] = {
                     localization: localization,
+                };
+            }
+
+            // ✅ ADD: Error translations (hardcoded for now)
+            {
+                const errorTranslations = {
+                    en: {
+                        "error.rate_limit_create_listing": "You can only create {0} listings per minute. Please try again in {2} seconds.",
+                        "error.rate_limit_exceeded": "Too many requests. Limit: {0} per minute. Please try again in {2} seconds.",
+                        "error.unknown": "An unknown error occurred. Please try again."
+                    },
+                    vi: {
+                        "error.rate_limit_create_listing": "Bạn chỉ có thể tạo tối đa {0} listing mỗi phút. Vui lòng thử lại sau {2} giây.",
+                        "error.rate_limit_exceeded": "Quá nhiều yêu cầu. Giới hạn: {0} mỗi phút. Vui lòng thử lại sau {2} giây.",
+                        "error.unknown": "Đã xảy ra lỗi không xác định. Vui lòng thử lại."
+                    },
+                    ru: {
+                        "error.rate_limit_create_listing": "Вы можете создать только {0} объявлений в минуту. Повторите попытку через {2} секунд.",
+                        "error.rate_limit_exceeded": "Слишком много запросов. Лимит: {0} в минуту. Повторите попытку через {2} секунд.",
+                        "error.unknown": "Произошла неизвестная ошибка. Пожалуйста, попробуйте еще раз."
+                    },
+                    cn: {
+                        "error.rate_limit_create_listing": "您每分钟只能创建 {0} 个列表。请在 {2} 秒后重试。",
+                        "error.rate_limit_exceeded": "请求过多。限制：每分钟 {0} 次。请在 {2} 秒后重试。",
+                        "error.unknown": "发生未知错误。请重试。"
+                    },
+                    jp: {
+                        "error.rate_limit_create_listing": "1分あたり {0} 件のリストしか作成できません。{2} 秒後に再試行してください。",
+                        "error.rate_limit_exceeded": "リクエストが多すぎます。制限：毎分 {0} 回。{2} 秒後に再試行してください。",
+                        "error.unknown": "不明なエラーが発生しました。もう一度お試しください。"
+                    },
+                    kr: {
+                        "error.rate_limit_create_listing": "분당 {0}개의 리스팅만 생성할 수 있습니다. {2}초 후에 다시 시도하십시오.",
+                        "error.rate_limit_exceeded": "요청이 너무 많습니다. 제한: 분당 {0}회. {2}초 후에 다시 시도하십시오.",
+                        "error.unknown": "알 수 없는 오류가 발생했습니다. 다시 시도하십시오."
+                    },
+                    in: {
+                        "error.rate_limit_create_listing": "Anda hanya dapat membuat {0} listing per menit. Silakan coba lagi dalam {2} detik.",
+                        "error.rate_limit_exceeded": "Terlalu banyak permintaan. Batas: {0} per menit. Silakan coba lagi dalam {2} detik.",
+                        "error.unknown": "Terjadi kesalahan yang tidak diketahui. Silakan coba lagi."
+                    },
+                    de: {
+                        "error.rate_limit_create_listing": "Sie können nur {0} Einträge pro Minute erstellen. Bitte versuchen Sie es in {2} Sekunden erneut.",
+                        "error.rate_limit_exceeded": "Zu viele Anfragen. Limit: {0} pro Minute. Bitte versuchen Sie es in {2} Sekunden erneut.",
+                        "error.unknown": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+                    }
+                };
+
+                this.localizations[this.GROUP_KEYS.Errors.KEY] = {
+                    localization: errorTranslations,
                 };
             }
         } catch (error) {
