@@ -1629,6 +1629,28 @@ export class CenterData {
             });
     }
 
+    // Load full data for specific character
+    async loadFullCharacterData(characterId) {
+        try {
+            console.log(`[CenterData] Loading full character data for: ${characterId}`);
+
+            // Check if character exists in unlockedPlayer
+            const character = this.unlockedPlayer[characterId];
+
+            if (!character) {
+                console.warn(`[CenterData] Character ${characterId} not found in unlockedPlayer`);
+                return null;
+            }
+
+            console.log(`[CenterData] Successfully loaded character data for: ${characterId}`);
+            return character;
+
+        } catch (error) {
+            console.error(`[CenterData] loadFullCharacterData(${characterId}) failed:`, error);
+            throw error;
+        }
+    }
+
     ConvertToUnlockedPlayers(itemDataArr) {
         this.unlockedPlayer = {};
 
