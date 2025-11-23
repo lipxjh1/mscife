@@ -4,6 +4,7 @@ import { GetNftCharacters } from "../wallet/Wallet.js";
 import { EMPTY } from "rxjs";
 import { API_BASE_URL, setTokens, apiClient } from "./APIBase.js";
 import { API_ENDPOINTS } from "./services/ApiEndpoints.js";
+import cdLocalization from "./CenterDataLocalization.js";
 
 export class CenterData {
     constructor() {
@@ -6959,8 +6960,8 @@ export class CenterData {
                             params.retryAfter || 0
                         ];
 
-                        errorMessage = CenterDataLocalization.getLocalization(
-                            CenterDataLocalization.GROUP_KEYS.Errors.KEY,
+                        errorMessage = cdLocalization.getLocalization(
+                            cdLocalization.GROUP_KEYS.Errors.KEY,
                             errorData.message,
                             paramsArray
                         );
@@ -6971,8 +6972,8 @@ export class CenterData {
                             : errorData.error.message;
                     } else {
                         // Fallback to generic error
-                        errorMessage = error.message || CenterDataLocalization.getLocalization(
-                            CenterDataLocalization.GROUP_KEYS.Errors.KEY,
+                        errorMessage = error.message || cdLocalization.getLocalization(
+                            cdLocalization.GROUP_KEYS.Errors.KEY,
                             'error.unknown'
                         );
                     }
