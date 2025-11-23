@@ -412,7 +412,15 @@ function createTransactionItem(scene) {
         const hasAmount =
             transaction.amount !== undefined && transaction.amount !== null;
         if (hasAmount) {
-            text_amount.setText(transaction.amount);
+            // ✅ FIX: Thêm dấu +/- dựa vào isDebit field từ backend
+            const prefix = transaction.isDebit ? "- " : "+ ";
+            const displayAmount = prefix + transaction.amount;
+            text_amount.setText(displayAmount);
+
+            // ✅ FIX: Thêm màu phân biệt cộng/trừ tiền
+            const amountColor = transaction.isDebit ? "#FF6B6B" : "#4ECDC4";
+            text_amount.setColor(amountColor);
+
             text_amount.setVisible(true);
 
             // Ẩn tất cả các icon và text tiền tệ
