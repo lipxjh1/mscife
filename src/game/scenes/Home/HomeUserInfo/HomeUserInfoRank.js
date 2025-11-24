@@ -560,12 +560,7 @@ function createRankCard(scene) {
         const displayRank = item.rank != null ? item.rank : index + 1;
         const displayName = item.username || item.Username || "";
         const displayUserId = item.userId || item.UserId || "";
-        const displayPower =
-            item.power != null
-                ? item.power
-                : item.Power != null
-                ? item.Power
-                : 0;
+        const displayPower = item.score != null ? item.score : 0;
 
         // Cập nhật thông tin xếp hạng
         text_position.setText(`${displayRank}.`);
