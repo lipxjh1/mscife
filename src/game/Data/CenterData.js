@@ -1683,58 +1683,49 @@ export class CenterData {
     }
 
     //request unlocked players
-    async RequestCharactersNFT(onSuccess, onError) {
-        const url = `${API_BASE_URL}/api/character/get-info`;
+    RequestCharactersNFT(onSuccess, onError) {
+        const url = this.endpoints.CHARACTER.GET_INFO;
 
-        const accessToken = this.GetAccessToken();
+        // Sử dụng apiclient từ APIBase.js với then() và catch()
+        apiClient
+            .get(url)
+            .then((response) => {
+                const result = response.data;
+                // console.log(
+                //     "RequestCharactersNFT Response result:",
+                //     JSON.stringify(result, null, 2)
+                // );
 
-        const bodyData = {
-            ids: this.unlockedPlayerNFTIds,
-        };
+                if (result.success) {
+                    this.ConvertToUnlockedPlayersNFT(result.data);
 
-        //console.log("this.unlockedPlayerNFTIds:", this.unlockedPlayerNFTIds);
-        //console.log("RequestCharactersNFT body:", bodyData);
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + accessToken, // Thêm Bearer Token vào tiêu đề
-                },
-                body: JSON.stringify(bodyData),
-            });
-
-            const result = await response.json();
-            // console.log(
-            //     "RequestCharactersNFT Response result:",
-            //     JSON.stringify(result, null, 2)
-            // );
-
-            if (result.success) {
-                this.ConvertToUnlockedPlayersNFT(result.data);
-
-                // Gọi hàm callback thành công nếu có
-                if (onSuccess && typeof onSuccess === "function") {
-                    onSuccess(result);
+                    // Gọi hàm callback thành công nếu có
+                    if (onSuccess && typeof onSuccess === "function") {
+                        onSuccess(result);
+                    }
+                } else {
+                    // Gọi hàm callback thất bại nếu có
+                    if (onError && typeof onError === "function") {
+                        onError(result);
+                    }
+                    throw new Error(result);
                 }
-            } else {
+            })
+            .catch((error) => {
+                // console.error(
+                //     "RequestCharactersNFT Lỗi khi gửi yêu cầu GET:",
+                //     error
+                // );
+
                 // Gọi hàm callback thất bại nếu có
                 if (onError && typeof onError === "function") {
-                    onError(result);
+                    onError(
+                        error.message ||
+                            error.response.data ||
+                            "Get characters NFT failed"
+                    );
                 }
-            }
-        } catch (error) {
-            // console.error(
-            //     "RequestCharactersNFT Lỗi khi gửi yêu cầu POST:",
-            //     error
-            // );
-
-            // Gọi hàm callback thất bại nếu có
-            if (onError && typeof onError === "function") {
-                onError(error.message);
-            }
-        }
+            });
     }
 
     ConvertToUnlockedPlayersNFT(itemDataArr) {
