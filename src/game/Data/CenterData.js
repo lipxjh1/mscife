@@ -2007,6 +2007,21 @@ export class CenterData {
 
     //request extract
     RequestCharactersMultiExtract(characterOfUserIds, onSuccess, onError) {
+        // Validate input parameter
+        if (!characterOfUserIds || !Array.isArray(characterOfUserIds)) {
+            if (onError && typeof onError === "function") {
+                onError(new Error("Character IDs must be an array"));
+            }
+            return;
+        }
+
+        if (characterOfUserIds.length === 0) {
+            if (onError && typeof onError === "function") {
+                onError(new Error("Please select at least one character to extract"));
+            }
+            return;
+        }
+
         const url = `/api/character/decompose-multiple`;
 
         const bodyData = {

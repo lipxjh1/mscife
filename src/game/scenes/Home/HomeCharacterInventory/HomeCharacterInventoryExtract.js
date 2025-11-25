@@ -302,11 +302,12 @@ function RequestToExtract(scene, _ids, chipWhenDecay) {
             HideLoadingPopup();
 
             let removeCharacterIds = [];
-            for (let i = 0; i < result.data.results.length; i++) {
-                let _id = result.data.results[i].characterId;
-
-                removeCharacterIds.push(_id);
-                extractedCharacterIds.push(_id);
+            if (result.data && result.data.results && Array.isArray(result.data.results)) {
+                for (let i = 0; i < result.data.results.length; i++) {
+                    let _id = result.data.results[i].characterId;
+                    removeCharacterIds.push(_id);
+                    extractedCharacterIds.push(_id);
+                }
             }
 
             let newArr = characterIds.filter(
