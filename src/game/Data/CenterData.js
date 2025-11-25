@@ -2044,11 +2044,13 @@ export class CenterData {
 
                 // Gọi hàm callback thất bại nếu có
                 if (onError && typeof onError === "function") {
-                    onError(
-                        error.message ||
-                            error.response.data ||
-                            "Character multi-extract failed"
-                    );
+                    // Normalize error message from various error formats
+                    const errorMessage = error.response?.data?.message ||
+                                       error.message ||
+                                       error.response?.data?.error ||
+                                       error.toString() ||
+                                       "Character multi-extract failed";
+                    onError(new Error(errorMessage));
                 }
             });
     }

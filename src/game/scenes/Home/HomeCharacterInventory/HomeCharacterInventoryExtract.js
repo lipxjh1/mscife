@@ -348,7 +348,9 @@ function RequestToExtract(scene, _ids, chipWhenDecay) {
         (err) => {
             HideLoadingPopup();
 
-            CreateAlertPopup(scene, "Extract failed\n" + err.message);
+            // Extract error message from various possible locations
+            const errorMessage = err.message || err.response?.data?.message || err.response?.data?.error || err.toString() || "Unknown error occurred";
+            CreateAlertPopup(scene, "Extract failed\n" + errorMessage);
         }
     );
 }
