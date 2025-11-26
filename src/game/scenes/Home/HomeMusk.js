@@ -32,7 +32,7 @@ const packs = {
 };
 
 export function OpenMuskContainer(scene) {
-    return;
+    // return; // ENABLED: Musk purchase UI - 2025-11-26
 
     CreateLoadingPopup();
 
