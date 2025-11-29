@@ -76,7 +76,7 @@ let btn_wallet_address = null;
 let btn_change_wallet = null;
 
 function CreateWalletAddress(scene) {
-    return;
+    // return; // Enabled - Show wallet address when connected
 
     let walletAddress = centerData.GetWalletAddress();
 
@@ -617,93 +617,93 @@ function CreateButtons(scene) {
 
     //btn change wallet
     {
-        // btn_change_wallet = scene.add.container(74 + 939 / 2, 1611 + 131 / 2);
-        // container_popup_wallet.add(btn_change_wallet);
-        // const label_inner = scene.add.container(-939 / 2, -131 / 2);
-        // btn_change_wallet.add(label_inner);
-        // const bg = scene.add
-        //     .image(0, 0, "home_earn_wallet_label_1")
-        //     .setOrigin(0, 0)
-        //     .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        //     .on("pointerdown", function () {
-        //         let walletAddress = centerData.GetWalletAddress();
-        //         console.log("centerData.walletType:", centerData.walletType);
-        //         if (walletAddress != null && walletAddress !== "") {
-        //             if (
-        //                 centerData.walletType === centerData.WalletType.TON.KEY
-        //             ) {
-        //                 DisconnectWallet();
-        //             } else if (
-        //                 centerData.walletType === centerData.WalletType.SUI.KEY
-        //             ) {
-        //                 DisconnectSuiWallet();
-        //             }
-        //             CheckDisconnect(scene);
-        //         } else {
-        //             // ConnectWallet();
-        //             // CheckConnect(scene);
-        //             CreateSelectWalletPopup(scene);
-        //         }
-        //     })
-        //     .on("pointerover", function () {
-        //         scene.tweens.add({
-        //             targets: btn_change_wallet,
-        //             scaleX: 1.2, // Phóng to 20% theo chiều ngang
-        //             scaleY: 1.2, // Phóng to 20% theo chiều dọc
-        //             duration: 100, // Thời gian hiệu ứng (ms)
-        //             ease: "Power2",
-        //         });
-        //     })
-        //     .on("pointerout", function () {
-        //         scene.tweens.add({
-        //             targets: btn_change_wallet,
-        //             scaleX: 1, // Phóng to 20% theo chiều ngang
-        //             scaleY: 1, // Phóng to 20% theo chiều dọc
-        //             duration: 100, // Thời gian hiệu ứng (ms)
-        //             ease: "Power2",
-        //         });
-        //     });
-        // label_inner.add(bg);
-        // const text_titile = scene.add
-        //     .text(64, 131 / 2, "wallet status", {
-        //         fontFamily: cdLocalization.getCurrentFont(),
-        //         fontSize: "40px",
-        //         color: "#ffffff",
-        //         align: "left",
-        //     })
-        //     .setOrigin(0, 0.5);
-        // label_inner.add(text_titile);
-        // const icon = scene.add
-        //     .image(798 + 69 / 2, 131 / 2, "home_earn_wallet_icon_4")
-        //     .setOrigin(0.5, 0.5);
-        // label_inner.add(icon);
-        // btn_change_wallet.setConnected = function () {
-        //     //btn_change_wallet.setVisible(true);
-        //     text_titile.setText(
-        //         cdLocalization.getLocalization(
-        //             cdLocalization.GROUP_KEYS.HomeWallet.KEY,
-        //             "Change Wallet"
-        //         )
-        //     );
-        // };
-        // btn_change_wallet.setDisconnected = function () {
-        //     //btn_change_wallet.setVisible(false);
-        //     text_titile.setText(
-        //         cdLocalization.getLocalization(
-        //             cdLocalization.GROUP_KEYS.HomeWallet.KEY,
-        //             "Connect Wallet"
-        //         )
-        //     );
-        // };
-        // btn_change_wallet.checkStats = function () {
-        //     let walletAddress = centerData.GetWalletAddress();
-        //     if (walletAddress != null && walletAddress !== "") {
-        //         btn_change_wallet.setConnected();
-        //     } else {
-        //         btn_change_wallet.setDisconnected();
-        //     }
-        // };
-        // btn_change_wallet.checkStats();
+        btn_change_wallet = scene.add.container(74 + 939 / 2, 1611 + 131 / 2);
+        container_popup_wallet.add(btn_change_wallet);
+        const label_inner = scene.add.container(-939 / 2, -131 / 2);
+        btn_change_wallet.add(label_inner);
+        const bg = scene.add
+            .image(0, 0, "home_earn_wallet_label_1")
+            .setOrigin(0, 0)
+            .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+            .on("pointerdown", function () {
+                let walletAddress = centerData.GetWalletAddress();
+                console.log("centerData.walletType:", centerData.walletType);
+                if (walletAddress != null && walletAddress !== "") {
+                    if (
+                        centerData.walletType === centerData.WalletType.TON.KEY
+                    ) {
+                        DisconnectWallet();
+                    } else if (
+                        centerData.walletType === centerData.WalletType.SUI.KEY
+                    ) {
+                        DisconnectSuiWallet();
+                    }
+                    CheckDisconnect(scene);
+                } else {
+                    // ConnectWallet();
+                    // CheckConnect(scene);
+                    CreateSelectWalletPopup(scene);
+                }
+            })
+            .on("pointerover", function () {
+                scene.tweens.add({
+                    targets: btn_change_wallet,
+                    scaleX: 1.2, // Phóng to 20% theo chiều ngang
+                    scaleY: 1.2, // Phóng to 20% theo chiều dọc
+                    duration: 100, // Thời gian hiệu ứng (ms)
+                    ease: "Power2",
+                });
+            })
+            .on("pointerout", function () {
+                scene.tweens.add({
+                    targets: btn_change_wallet,
+                    scaleX: 1, // Phóng to 20% theo chiều ngang
+                    scaleY: 1, // Phóng to 20% theo chiều dọc
+                    duration: 100, // Thời gian hiệu ứng (ms)
+                    ease: "Power2",
+                });
+            });
+        label_inner.add(bg);
+        const text_titile = scene.add
+            .text(64, 131 / 2, "wallet status", {
+                fontFamily: cdLocalization.getCurrentFont(),
+                fontSize: "40px",
+                color: "#ffffff",
+                align: "left",
+            })
+            .setOrigin(0, 0.5);
+        label_inner.add(text_titile);
+        const icon = scene.add
+            .image(798 + 69 / 2, 131 / 2, "home_earn_wallet_icon_4")
+            .setOrigin(0.5, 0.5);
+        label_inner.add(icon);
+        btn_change_wallet.setConnected = function () {
+            //btn_change_wallet.setVisible(true);
+            text_titile.setText(
+                cdLocalization.getLocalization(
+                    cdLocalization.GROUP_KEYS.HomeWallet.KEY,
+                    "Change Wallet"
+                )
+            );
+        };
+        btn_change_wallet.setDisconnected = function () {
+            //btn_change_wallet.setVisible(false);
+            text_titile.setText(
+                cdLocalization.getLocalization(
+                    cdLocalization.GROUP_KEYS.HomeWallet.KEY,
+                    "Connect Wallet"
+                )
+            );
+        };
+        btn_change_wallet.checkStats = function () {
+            let walletAddress = centerData.GetWalletAddress();
+            if (walletAddress != null && walletAddress !== "") {
+                btn_change_wallet.setConnected();
+            } else {
+                btn_change_wallet.setDisconnected();
+            }
+        };
+        btn_change_wallet.checkStats();
     }
 }
 
