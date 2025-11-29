@@ -30,3 +30,7 @@ dist-ssr
 nul
 *.backup*
 *.backup
+
+
+#Ignore cursor AI rules
+.cursor\rules\codacy.mdc

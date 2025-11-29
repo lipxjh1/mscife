@@ -32,27 +32,28 @@ export function CreateCenterMarketOrderBuyMSCI(scene) {
         .setOrigin(0, 0);
     container_main.add(lockBg);
 
-    const emptyText = scene.add
-        .text(
-            540,
-            600,
-            cdLocalization.getLocalization(
-                cdLocalization.GROUP_KEYS.Main.KEY,
-                "SYSTEM MAINTENANCE ANNOUNCEMENT"
-            ),
-            {
-                fontFamily: cdLocalization.getCurrentFont(),
-                fontSize: "38px",
-                color: "#ffffff",
-                align: "center",
-                stroke: "#000000",
-                strokeThickness: 10,
-            }
-        )
-        .setOrigin(0.5, 0.5);
-    container_main.add(emptyText);
+    // Maintenance message removed - Show listings instead
+    // const emptyText = scene.add
+    //     .text(
+    //         540,
+    //         600,
+    //         cdLocalization.getLocalization(
+    //             cdLocalization.GROUP_KEYS.Main.KEY,
+    //             "SYSTEM MAINTENANCE ANNOUNCEMENT"
+    //         ),
+    //         {
+    //             fontFamily: cdLocalization.getCurrentFont(),
+    //             fontSize: "38px",
+    //             color: "#ffffff",
+    //             align: "center",
+    //             stroke: "#000000",
+    //             strokeThickness: 10,
+    //         }
+    //     )
+    //     .setOrigin(0.5, 0.5);
+    // container_main.add(emptyText);
 
-    //RequestOrderBuyList(scene);
+    RequestOrderBuyList(scene); // Enabled - Load MSCI listings
 
     Open(scene);
 }
@@ -60,21 +61,31 @@ export function CreateCenterMarketOrderBuyMSCI(scene) {
 function RequestOrderBuyList(scene) {
     CreateLoadingPopup();
 
-    centerData.RequestCenterMarketOrderBuy(
+    // Get active MSCI listings from market
+    centerData.RequestGetCMarketMSCIListing(
+        1, // page
+        20, // limit - show more listings
         (result) => {
             HideLoadingPopup();
-            // Lọc chỉ lấy đơn hàng mua MSCI
-            let msciOrders = result.orders.filter(
-                (order) =>
-                    order.type === "buy" &&
-                    order.assetType === "TOKEN" &&
-                    order.assetIdentifier === "MSCI"
-            );
-            CreateItemList(scene, msciOrders);
+
+            if (result.success && result.data && result.data.listings) {
+                CreateMSCIListingItems(scene, result.data.listings);
+            } else {
+                // Show empty state
+                ShowEmptyListings(scene);
+            }
         },
         (error) => {
             HideLoadingPopup();
-            //console.error("RequestCenterMarketOrderBuy error:", error);
+            console.error("RequestGetCMarketMSCIListing error =>", error);
+
+            // Show error message
+            CreateAlertPopup(
+                scene,
+                error.message || "Failed to load M-Coin listings",
+                () => {},
+                null
+            );
         }
     );
 }
@@ -435,4 +446,352 @@ function Destroy(scene) {
     if (container_main) {
         container_main.destroy();
     }
+}
+
+// Show empty state when no listings available
+function ShowEmptyListings(scene) {
+    if (container_list) {
+        container_list.destroy();
+    }
+
+    container_list = scene.add.container(0, 0);
+    container_main.add(container_list);
+
+    const emptyText = scene.add
+        .text(
+            540,
+            600,
+            "No M-Coin listings available\nCreate a sell order to list your M-Coin",
+            {
+                fontFamily: cdLocalization.getCurrentFont(),
+                fontSize: "32px",
+                color: "#999999",
+                align: "center",
+                stroke: "#000000",
+                strokeThickness: 8,
+            }
+        )
+        .setOrigin(0.5, 0.5);
+    container_list.add(emptyText);
+}
+
+// Create scrollable list of MSCI listings
+function CreateMSCIListingItems(scene, listings) {
+    if (container_list) {
+        container_list.destroy();
+    }
+
+    container_list = scene.add.container(0, 0);
+    container_main.add(container_list);
+
+    if (!listings || listings.length === 0) {
+        ShowEmptyListings(scene);
+        return;
+    }
+
+    // Kích thước của ScrollView
+    const scrollViewWidth = 1080;
+    const scrollViewHeight = 1210;
+
+    const itemWidth = 1020;
+    const itemHeight = 220;
+    const itemSpacingWidth = 20;
+    const itemSpacingHeight = 20;
+
+    const posX = 20 + scrollViewWidth / 2;
+    const posY = 583 + scrollViewHeight / 2;
+
+    const columns = 1;
+    const rows = Math.ceil(listings.length / columns);
+
+    // Tạo một Scrollable Panel (bảng cuộn)
+    const scrollablePanel = scene.rexUI.add
+        .scrollablePanel({
+            x: posX,
+            y: posY,
+            width: scrollViewWidth,
+            height: scrollViewHeight,
+            scrollMode: 0,
+            panel: {
+                child: scene.rexUI.add.gridSizer({
+                    width: scrollViewWidth,
+                    height: scrollViewHeight,
+                    column: columns,
+                    row: rows,
+                    columnProportions: 0,
+                    rowProportions: 0,
+                    space: {
+                        column: itemSpacingWidth,
+                        row: itemSpacingHeight,
+                    },
+                }),
+                mask: {
+                    padding: 1,
+                },
+            },
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.2,
+            },
+            space: {
+                left: 0,
+                right: 0,
+                top: 10,
+                bottom: itemHeight / 2 + 24 / 2,
+            },
+        })
+        .layout();
+
+    container_list.add(scrollablePanel);
+
+    // Add each listing item
+    for (let i = 0; i < listings.length; i++) {
+        const listing = listings[i];
+        CreateMSCIListingItem(scene, scrollablePanel, listing, i);
+    }
+
+    scrollablePanel.layout();
+
+    // Thiết lập mask
+    let maskShape = scene.add
+        .rectangle(posX, posY, scrollViewWidth, scrollViewHeight, 0x000000)
+        .setVisible(false);
+    container_list.add(maskShape);
+
+    let mask = new Phaser.Display.Masks.GeometryMask(scene, maskShape);
+    scrollablePanel.setMask(mask);
+}
+
+// Create single listing item with buy button
+function CreateMSCIListingItem(scene, scrollablePanel, listing, index) {
+    const itemWidth = 1020;
+    const itemHeight = 220;
+
+    const itemContainer = scene.add.container(0, 0);
+    itemContainer.setSize(itemWidth, itemHeight);
+
+    const innerContainer = scene.add.container(0, 0);
+    itemContainer.add(innerContainer);
+
+    // Background
+    const bg = scene.add
+        .image(0, 0, "home_center_market_main_element_bg")
+        .setDisplaySize(itemWidth, itemHeight)
+        .setOrigin(0, 0);
+    innerContainer.add(bg);
+
+    // Item icon
+    const itemLocalData = centerDataItem.getItemById("MSCI");
+    const icon = scene.add
+        .image(28 + 150 / 2, 33 + 150 / 2, itemLocalData.imgKey)
+        .setScale(150 / 350)
+        .setOrigin(0.5, 0.5);
+    innerContainer.add(icon);
+
+    // Seller info
+    const sellerText = scene.add.text(
+        238,
+        15,
+        "Seller: " + (listing.sellerId?.UserId || "Unknown"),
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "28px",
+            color: "#cccccc",
+            stroke: "#000000",
+            strokeThickness: 8,
+        }
+    );
+    innerContainer.add(sellerText);
+
+    // Amount
+    const amountText = scene.add.text(
+        238,
+        50,
+        cdLocalization.getLocalization(
+            cdLocalization.GROUP_KEYS.CenterMarket.KEY,
+            "Amount"
+        ) +
+            ": " +
+            listing.amount.toLocaleString() +
+            " $MSCI",
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "32px",
+            color: "#FFD700",
+            stroke: "#000000",
+            strokeThickness: 10,
+        }
+    );
+    innerContainer.add(amountText);
+
+    // Price per unit
+    const priceText = scene.add.text(
+        238,
+        90,
+        listing.pricePerUnit + " M-Coin per $MSCI",
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "28px",
+            color: "#FFA600",
+            stroke: "#000000",
+            strokeThickness: 8,
+        }
+    );
+    innerContainer.add(priceText);
+
+    // Total price
+    const totalText = scene.add.text(
+        238,
+        125,
+        "Total: " + listing.totalPrice.toLocaleString() + " M-Coin",
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "30px",
+            color: "#00ff00",
+            stroke: "#000000",
+            strokeThickness: 10,
+        }
+    );
+    innerContainer.add(totalText);
+
+    // Created time
+    const timeText = scene.add.text(
+        238,
+        160,
+        "Listed: " + formatDateTime(listing.createdAt),
+        {
+            fontFamily: cdLocalization.getCurrentFont(),
+            fontSize: "24px",
+            color: "#87CEEB",
+            stroke: "#000000",
+            strokeThickness: 6,
+        }
+    );
+    innerContainer.add(timeText);
+
+    // Buy button
+    const buyButton = CreateButton0(
+        scene,
+        innerContainer,
+        779 + 218 / 2,
+        63 + 98 / 2,
+        "BUY"
+    );
+
+    // Buy button handler
+    buyButton.button.off("pointerdown");
+    buyButton.button.on("pointerdown", function () {
+        HandleBuyListing(scene, listing);
+    });
+
+    // Add to scrollable panel
+    scrollablePanel.getElement("panel").add(itemContainer, {
+        align: "top-left",
+        expand: false,
+    });
+
+    return itemContainer;
+}
+
+// Handle buy listing action
+function HandleBuyListing(scene, listing) {
+    // Check if trying to buy own listing
+    const myUserId = scene.registry.get("UserId");
+    if (listing.sellerId && listing.sellerId.UserId === myUserId) {
+        CreateAlertPopup(
+            scene,
+            "You cannot buy your own listing!",
+            () => {},
+            null
+        );
+        return;
+    }
+
+    // Confirm purchase
+    const confirmMessage =
+        "Buy " +
+        listing.amount.toLocaleString() +
+        " $MSCI\n" +
+        "for " +
+        listing.totalPrice.toLocaleString() +
+        " M-Coin?\n\n" +
+        "Price: " +
+        listing.pricePerUnit +
+        " M-Coin per $MSCI";
+
+    CreateAlertPopup(
+        scene,
+        confirmMessage,
+        () => {
+            // User confirmed - Execute purchase
+            ExecutePurchase(scene, listing);
+        },
+        () => {
+            // User cancelled
+            console.log("Purchase cancelled by user");
+        }
+    );
+}
+
+// Execute the purchase API call
+function ExecutePurchase(scene, listing) {
+    CreateLoadingPopup();
+
+    centerData.RequestPostCMarketMSCIPurchase(
+        listing._id,
+        (result) => {
+            HideLoadingPopup();
+
+            if (result.success) {
+                // Success - Update balances and refresh
+                const newMSCI = result.data?.buyer?.MSCI || 0;
+                const newMusk = result.data?.buyer?.Musk || 0;
+
+                scene.registry.set("MSCI", newMSCI);
+                scene.registry.set("Musk", newMusk);
+
+                // Show success message
+                CreateAlertPopup(
+                    scene,
+                    "Purchase successful!\n\n" +
+                        "You received: " +
+                        listing.amount.toLocaleString() +
+                        " $MSCI\n" +
+                        "Paid: " +
+                        listing.totalPrice.toLocaleString() +
+                        " M-Coin\n\n" +
+                        "New balance:\n" +
+                        "$MSCI: " +
+                        newMSCI.toLocaleString() +
+                        "\n" +
+                        "M-Coin: " +
+                        newMusk.toLocaleString(),
+                    () => {
+                        // Refresh the listings
+                        RequestOrderBuyList(scene);
+                    },
+                    null
+                );
+            } else {
+                // Failed
+                CreateAlertPopup(
+                    scene,
+                    result.message || "Purchase failed",
+                    () => {},
+                    null
+                );
+            }
+        },
+        (error) => {
+            HideLoadingPopup();
+
+            // Error
+            const errorMsg =
+                error.message || error.error || "Failed to purchase M-Coin";
+
+            CreateAlertPopup(scene, "Error: " + errorMsg, () => {}, null);
+
+            console.error("Purchase error:", error);
+        }
+    );
 }
