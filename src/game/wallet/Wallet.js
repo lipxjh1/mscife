@@ -91,25 +91,35 @@ export async function DisconnectSuiWallet(onDisconnected, onDisconnectedError) {
 
 // Hàm gửi giao dịch
 export async function SendTransaction(amount, receiver, onSuccess, onError) {
+    console.log("📡 Wallet.SendTransaction CALLED");
+    console.log("📊 Parameters:", {
+        amount,
+        receiver,
+        hasSuccessCallback: typeof onSuccess === "function",
+        hasErrorCallback: typeof onError === "function"
+    });
+
+    console.log("📡 Emitting EventBus 'react-send-transaction'...");
+
     EventBus.emit(
         "react-send-transaction",
         amount,
         receiver,
         (result) => {
+            console.log("✅ Wallet.SendTransaction SUCCESS callback received:", result);
             if (onSuccess && typeof onSuccess === "function") {
                 onSuccess(result);
             }
-
-            //console.log("EventBus Send transaction success: ", result);
         },
         (error) => {
+            console.error("❌ Wallet.SendTransaction ERROR callback received:", error);
             if (onError && typeof onError === "function") {
                 onError(error);
             }
-
-            //console.log("EventBus Send transaction error: ", error);
         }
     );
+
+    console.log("📡 EventBus.emit completed (async)");
 }
 
 // Hàm kết nối ví

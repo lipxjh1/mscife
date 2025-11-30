@@ -451,6 +451,34 @@ function App() {
         onSuccess,
         onError
     ) => {
+        // ═══════════════════════════════════════════════════════
+        // DEBUG LOGGING - START
+        // ═══════════════════════════════════════════════════════
+        console.log("═".repeat(60));
+        console.log("🚀 ReactSendTransaction CALLED");
+        console.log("═".repeat(60));
+        console.log("📊 Parameters:", {
+            amount,
+            receiver,
+            receiverLength: receiver?.length,
+            receiverPrefix: receiver?.substring(0, 3),
+            hasOnSuccess: typeof onSuccess === "function",
+            hasOnError: typeof onError === "function"
+        });
+        console.log("🔗 TonConnect State:", {
+            tonConnectUI: !!tonConnectUI,
+            connected: tonConnectUI?.connected,
+            account: tonConnectUI?.account?.address,
+            wallet: tonConnectUI?.wallet?.name
+        });
+        console.log("👤 User Info:", {
+            userId: centerData?.userInfo?.UserId,
+            hasCenterData: !!centerData
+        });
+        // ═══════════════════════════════════════════════════════
+        // DEBUG LOGGING - END
+        // ═══════════════════════════════════════════════════════
+
         const body = beginCell()
             .storeUint(0, 32)
             .storeStringTail(`${centerData.userInfo.UserId || ""}|${amount}`)
@@ -467,20 +495,35 @@ function App() {
             ],
         };
 
-        // console.log("UserId: ", centerData.userInfo.UserId);
-        // console.log("amount: ", amount);
-        // console.log("receiver: ", receiver);
-        // console.log("transaction: ", transaction);
+        console.log("📤 Transaction Object:", {
+            validUntil: transaction.validUntil,
+            messageCount: transaction.messages.length,
+            message: {
+                address: transaction.messages[0].address,
+                amount: transaction.messages[0].amount,
+                payloadLength: transaction.messages[0].payload.length
+            }
+        });
 
         try {
+            console.log("🔗 Calling tonConnectUI.sendTransaction...");
             const result = await tonConnectUI.sendTransaction(transaction);
-            // console.log("Transaction sent successfully:", result);
+
+            console.log("✅ SUCCESS! Transaction sent:", result);
 
             if (onSuccess && typeof onSuccess === "function") {
                 onSuccess(result);
             }
         } catch (error) {
-            // console.error("Transaction failed:", error);
+            console.error("═".repeat(60));
+            console.error("❌ TRANSACTION FAILED");
+            console.error("═".repeat(60));
+            console.error("❌ Error Type:", error.constructor.name);
+            console.error("❌ Error Message:", error.message);
+            console.error("❌ Error Code:", error.code);
+            console.error("❌ Error Stack:", error.stack);
+            console.error("❌ Full Error Object:", error);
+            console.error("═".repeat(60));
 
             if (onError && typeof onError === "function") {
                 onError(error);
