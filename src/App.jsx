@@ -544,15 +544,43 @@ function App() {
             console.error("❌ Error Type:", error.constructor.name);
             console.error("❌ Error Message:", error.message);
             console.error("❌ Error Code:", error.code);
-            console.error("❌ Error Stack:", error.stack);
-            console.error("❌ Full Error Object:", error);
+
+            // ═══════════════════════════════════════════════════════
+            // FIX: SMART ERROR DETECTION
+            // ═══════════════════════════════════════════════════════
+            let userMessage = "Transaction failed. Please try again.";
+
+            // Detect error type based on message and name
+            const errorMsg = (error.message || "").toLowerCase();
+            const errorName = error.name || "";
+
+            if (errorName === 'UserRejectsError' ||
+                errorMsg.includes('reject') ||
+                errorMsg.includes('cancel') ||
+                (errorMsg.includes('user') && errorMsg.includes('cancel'))) {
+                userMessage = "Transaction cancelled by user";
+                console.error("   → User cancellation detected");
+            } else if (errorMsg.includes('insufficient')) {
+                userMessage = "Insufficient funds in wallet";
+                console.error("   → Insufficient funds detected");
+            } else if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
+                userMessage = "Transaction timed out. Please try again";
+                console.error("   → Timeout detected");
+            } else if (errorMsg.includes('network') || errorMsg.includes('connection')) {
+                userMessage = "Network error. Check your connection";
+                console.error("   → Network error detected");
+            } else {
+                console.error("   → Generic error - using default message");
+            }
+
+            console.error("❌ User-facing message:", userMessage);
             console.error("═".repeat(60));
+            // ═══════════════════════════════════════════════════════
 
             if (onError && typeof onError === "function") {
-                onError(error);
+                onError(new Error(userMessage));
             }
-        }
-    };
+        }    };
 
     function toNanoTon(amount) {
         amount = Number(amount);

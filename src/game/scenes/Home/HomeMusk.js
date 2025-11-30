@@ -390,8 +390,10 @@ function RequestBuyMusk(scene, item) {
                     )
                 );
             },
-            () => {
-                CreateAlertPopup(scene, "Transaction failed");
+            (error) => { // ✅ ADD ERROR PARAMETER
+                const message = error?.message || "Transaction failed";
+                console.log("Transaction error in HomeMusk:", message);
+                CreateAlertPopup(scene, message); // ✅ USE SPECIFIC ERROR MESSAGE
             }
         );
     } else {
