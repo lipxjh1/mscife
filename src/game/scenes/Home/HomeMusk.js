@@ -328,11 +328,27 @@ function card_item(scene, i, item) {
 }
 
 function ClickItem(scene, item) {
+    // ═══════════════════════════════════════════════════════
+    // WALLET CONNECTION VALIDATION - Enhanced logging
+    // ═══════════════════════════════════════════════════════
+    console.log("🔍 Checking wallet connection before purchase...");
+    console.log("Item details:", { musk: item.musk, tonPrice: item.tonPrice });
+
     let wallet_address = centerData.GetWalletAddress();
+    console.log("Wallet validation:", {
+        wallet_address,
+        walletType: centerData.walletType,
+        walletTypeKeys: centerData.WalletType,
+        isNull: wallet_address == null,
+        isEmpty: wallet_address === "",
+        isValid: wallet_address != null && wallet_address !== ""
+    });
 
     if (centerData.walletType === centerData.WalletType.SUI.KEY) {
+        console.log("❌ SUI wallet detected - showing development message");
         CreateAlertPopup(scene, "Sui Wallet is currently under development");
     } else if (wallet_address == null || wallet_address === "") {
+        console.error("❌ Wallet not connected - showing connection warning");
         CreateAlertPopup(
             scene,
             cdLocalization.getLocalization(
@@ -341,6 +357,8 @@ function ClickItem(scene, item) {
             )
         );
     } else {
+        console.log("✅ Wallet connected successfully - proceeding with purchase");
+        // ═══════════════════════════════════════════════════════
         CreateAlertPopup(
             scene,
             cdLocalization.getLocalization(

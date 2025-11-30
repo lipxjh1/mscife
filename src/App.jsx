@@ -484,12 +484,34 @@ function App() {
             .storeStringTail(`${centerData.userInfo.UserId || ""}|${amount}`)
             .endCell();
 
+        // ═══════════════════════════════════════════════════════
+        // FIX: AMOUNT FORMAT - Convert to STRING
+        // ═══════════════════════════════════════════════════════
+        console.log("💰 Converting amount to nanoton string...");
+
+        let amountInNanoton;
+        try {
+            // Convert TON to nanoton (1 TON = 1,000,000,000 nanoton)
+            // Must be STRING for TonConnect SDK
+            amountInNanoton = BigInt(Math.floor(amount * 1e9)).toString();
+
+            console.log("   Original amount (TON):", amount);
+            console.log("   Nanoton (number):", Math.floor(amount * 1e9));
+            console.log("   Nanoton (string):", amountInNanoton);
+            console.log("   ✅ Amount converted to string format");
+        } catch (conversionError) {
+            console.error("❌ Amount conversion failed:", conversionError);
+            if (onError) onError(new Error("Failed to convert amount"));
+            return;
+        }
+        // ═══════════════════════════════════════════════════════
+
         const transaction = {
             validUntil: Math.floor(Date.now() / 1000) + 60, // 1 minutes
             messages: [
                 {
                     address: receiver,
-                    amount: toNanoTon(amount), // 0.02 TON in nanotons
+                    amount: amountInNanoton, // ← FIXED: String format
                     payload: body.toBoc().toString("base64"),
                 },
             ],
@@ -501,6 +523,7 @@ function App() {
             message: {
                 address: transaction.messages[0].address,
                 amount: transaction.messages[0].amount,
+                amountType: typeof transaction.messages[0].amount, // Should show "string"
                 payloadLength: transaction.messages[0].payload.length
             }
         });
