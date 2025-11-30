@@ -494,6 +494,19 @@ function App() {
         return amount * 1_000_000_000; // Chuyển từ TON sang nanoton
     }
 
+    // EventBus listener for TON transactions
+    useEffect(() => {
+        const handleReactSendTransaction = (amount, receiver, onSuccess, onError) => {
+            ReactSendTransaction(amount, receiver, onSuccess, onError);
+        };
+
+        EventBus.on("react-send-transaction", handleReactSendTransaction);
+
+        return () => {
+            EventBus.off("react-send-transaction", handleReactSendTransaction);
+        };
+    }, []); // Empty deps = run once on mount
+
     // Hoặc sử dụng tonAPI
     const ReactNftCharacters = async (onSuccess, onError) => {
         if (!tonConnectUI.account) return;
