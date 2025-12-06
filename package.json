@@ -47,6 +47,7 @@
         "buffer": "^6.0.3",
         "esbuild": "^0.25.5",
         "jwt-decode": "^4.0.0",
+        "mongodb": "^7.0.0",
         "papaparse": "^5.5.2",
         "phaser": "^3.87.0",
         "phaser3-rex-plugins": "^1.80.11",

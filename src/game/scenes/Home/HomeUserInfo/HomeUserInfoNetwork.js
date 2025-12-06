@@ -24,7 +24,7 @@ let sampleData = {
         {
             _id: "678621a076ebc9af17e4a82f",
             TelegramId: 5781740370,
-            InviteBy: "A000000010",
+            InviteBy: "A00000010",
             InviteCount: 6,
             Username: "Jenny_DeFiX",
             Chip: 1055900,
@@ -65,7 +65,7 @@ let sampleData = {
         {
             _id: "6785f81c76ebc9af17e205c9",
             TelegramId: 5875444430,
-            InviteBy: "A000000010",
+            InviteBy: "A00000010",
             InviteCount: 0,
             Username: "Mrbin2004",
             Chip: 92500,
