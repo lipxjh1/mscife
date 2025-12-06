@@ -775,7 +775,7 @@ export class Login extends Scene {
             540,                                    // Center X
             1450,                                   // Y position (below divider, above Forgot)
             "login_btn_0",                          // Same texture as Login button
-            "Đăng nhập bằng Vorld"                 // Button text
+            // "Đăng nhập bằng Vorld"                 // Button text - HIDDEN
         );
         
         // Add Vorld logo to button (logo on left side of text)
