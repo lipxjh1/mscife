@@ -934,12 +934,12 @@ function App() {
             />
             
             {/* ========================================
-                NEW: VORLD LOGIN MODAL
+                NEW: VORLD LOGIN MODAL - DISABLED
                 ======================================== */}
-            <VorldLoginModal 
+            {/* <VorldLoginModal
                 isOpen={showVorldLoginPopup}
                 onClose={() => setShowVorldLoginPopup(false)}
-            />
+            /> */}
             
             {/* ========================================
                 EXISTING: VORLD OTP INPUT

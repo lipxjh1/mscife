@@ -183,11 +183,11 @@ const LoginPage = ({ onLoginSuccess }) => {
                 onInstall={handlePWAInstall}
             />
 
-            {/* Use existing Vorld Login Modal */}
-            <VorldLoginModal
+            {/* Use existing Vorld Login Modal - DISABLED */}
+            {/* <VorldLoginModal
                 isOpen={showVorldModal}
                 onClose={() => setShowVorldModal(false)}
-            />
+            /> */}
         </div>
     );
 };
