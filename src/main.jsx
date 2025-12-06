@@ -13,6 +13,9 @@ import "@suiet/wallet-kit/style.css";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+// World ID MiniKit
+import { MiniKitProvider } from "./minikit";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
     // <React.StrictMode>
     //     <WalletProvider>
@@ -23,11 +26,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     // </React.StrictMode>
 
     <React.StrictMode>
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-            <TonConnectUIProvider manifestUrl={manifestUrl}>
-                <App />
-            </TonConnectUIProvider>
-        </GoogleOAuthProvider>
+        <MiniKitProvider>
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                <TonConnectUIProvider manifestUrl={manifestUrl}>
+                    <App />
+                </TonConnectUIProvider>
+            </GoogleOAuthProvider>
+        </MiniKitProvider>
     </React.StrictMode>
 );
 

@@ -53,9 +53,18 @@ import DisconnectModal from "./components/Connection/DisconnectModal.jsx";
 // ========================================
 import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
 
+// ========================================
+// WORLD ID MINIKIT IMPORT
+// ========================================
+import { useMiniKit, WorldIdLogin, NotInWorldApp } from "./minikit";
+import WorldIdWrapper from "./components/WorldIdWrapper";
+
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
 function App() {
+    // World ID MiniKit state
+    const { isInstalled, isReady } = useMiniKit();
+
     // The sprite can only be moved in the MainMenu Scene
     const [canMoveSprite, setCanMoveSprite] = useState(true);
 
@@ -315,6 +324,29 @@ function App() {
         } else {
             setCurrentPage("game");
         }
+    }, []);
+
+    // World ID login success listener
+    useEffect(() => {
+        const handleWorldIdLoginSuccess = (data) => {
+            console.log('🎉 World ID login successful in App!', data);
+
+            // Get current scene and notify it
+            const currentScene = phaserRef.current?.scene;
+            if (currentScene) {
+                EventBus.emit('auth-success', {
+                    type: 'world-id',
+                    user: data.user,
+                    tokens: data.tokens
+                });
+            }
+        };
+
+        EventBus.on('world-id-login-success', handleWorldIdLoginSuccess);
+
+        return () => {
+            EventBus.off('world-id-login-success', handleWorldIdLoginSuccess);
+        };
     }, []);
 
     // Google auth: chỉ mount One Tap khi người dùng yêu cầu
@@ -751,6 +783,41 @@ function App() {
         setShowVorldOTP(false);
         setVorldEmail('');
     };
+
+    // Check if we should show World ID login or regular app
+    if (!isReady) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}>
+                <div style={{
+                    color: 'white',
+                    fontSize: '1.2rem',
+                    textAlign: 'center'
+                }}>
+                    Loading...
+                </div>
+            </div>
+        );
+    }
+
+    // If in World App and not logged in, show World ID login
+    if (isInstalled && !localStorage.getItem('accessToken')) {
+        return <WorldIdLogin />;
+    }
+
+    // If not in World App and not logged in, show regular login or fallback
+    if (!isInstalled && !localStorage.getItem('accessToken')) {
+        // In production, show NotInWorldApp
+        if (process.env.NODE_ENV === 'production') {
+            return <NotInWorldApp />;
+        }
+        // In development, show regular app with warning
+    }
 
     return (
         <div id="app">

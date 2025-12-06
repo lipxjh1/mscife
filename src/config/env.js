@@ -29,6 +29,12 @@ export const ENV = {
   ARENA_API_URL: import.meta.env.VITE_ARENA_API_URL || 'https://pro.m-sci.net',
   ARENA_WS_URL: import.meta.env.VITE_ARENA_WS_URL || 'wss://pro.m-sci.net',
   VORLD_APP_ID: import.meta.env.VITE_VORLD_APP_ID || 'app_mh96pk5z_ca7db3dd',
+
+  // ========================================
+  // WORLD ID CONFIGURATION
+  // ========================================
+  WORLD_ID_APP_ID: import.meta.env.VITE_WORLD_ID_APP_ID || 'app_c1f666c83bbbc687bde452e4acb51b40',
+  WORLD_ID_ACTION: import.meta.env.VITE_WORLD_ID_ACTION || 'msci-login',
 };
 
 // Validate required environment variables

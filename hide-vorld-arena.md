@@ -78,6 +78,57 @@
 - Không ảnh hưởng đến logic khác
 - Sử dụng CSS display: none để đảm bảo compatibility
 
-## Git Commit
-- Commit: a5ceb48
-- Message: "feat: ẩn Vorld login button và Arena game button"
+### 1b. Vorld Login Modal Text
+**File:** `src/game/scenes/Share/share-react/VorldLoginModal.jsx`
+
+**Change:**
+```jsx
+// Ẩn toàn bộ modal bằng return null
+return null;
+```
+
+**Effect:** Toàn bộ modal "Đăng nhập bằng Vorld" không hiển thị
+
+### 1c. Vorld Login Modal Complete Removal
+**Files:**
+- `src/App.jsx`
+- `src/pages/Login/index.jsx`
+
+**Change:**
+```jsx
+// Comment render logic in both files
+{/* <VorldLoginModal
+    isOpen={showVorldLoginPopup}
+    onClose={() => setShowVorldLoginPopup(false)}
+/> */}
+```
+
+**Effect:**
+- Modal không được render vào DOM
+- Không còn backdrop/overlay gây UI overlap
+- UI sạch, không bị chồng đè
+
+### 1d. Vorld Login Text (Phaser Scene)
+**File:** `src/game/scenes/Login.js`
+
+**Change:**
+```javascript
+// "Đăng nhập bằng Vorld"                 // Button text - HIDDEN
+```
+
+**Effect:** Text trong Phaser scene cũ đã được comment
+
+---
+
+## Files Modified Total:
+1. `src/pages/Login/components/LoginButtons.module.css` - Hide vorld button
+2. `src/game/scenes/Share/share-react/VorldLoginModal.jsx` - Hide entire modal
+3. `src/game/scenes/Login.js` - Comment text in Phaser scene
+4. `src/App.jsx` - Comment VorldLoginModal render ← NEW
+5. `src/pages/Login/index.jsx` - Comment VorldLoginModal render ← NEW
+6. `src/components/Arena/ArenaTab.jsx` - Hide arena button
+
+## Git Commits:
+- a5ceb48 - "feat: ẩn Vorld login button và Arena game button"
+- cfafb88 - "fix: ẩn hoàn toàn Vorld login modal và text"
+- 6ba85a9 - "fix: xóa hoàn toàn VorldLoginModal render khỏi DOM" ← NEW

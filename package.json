@@ -43,6 +43,7 @@
         "@telegram-apps/sdk": "^2.11.3",
         "@ton/core": "^0.61.0",
         "@tonconnect/ui-react": "^2.2.0",
+        "@worldcoin/minikit-js": "^1.9.8",
         "axios": "^1.7.7",
         "buffer": "^6.0.3",
         "esbuild": "^0.25.5",
