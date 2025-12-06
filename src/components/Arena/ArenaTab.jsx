@@ -39,7 +39,8 @@ export default function ArenaTab() {
       position: 'fixed',
       bottom: '20px',
       right: '20px',
-      zIndex: 1000
+      zIndex: 1000,
+      display: 'none'
     }}>
       <button
         onClick={() => setShowArena(true)}
