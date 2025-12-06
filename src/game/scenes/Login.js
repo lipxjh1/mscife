@@ -791,7 +791,7 @@ export class Login extends Scene {
         // ========================================
         // Click handler - emit event to show login popup
         btn_vorld_login.button.on("pointerdown", () => {
-            console.log("[Vorld Login] Button clicked - showing popup");
+            // console.log("[Vorld Login] Button clicked - showing popup"); // DISABLED
             
             // Emit event để hiện Vorld Login Modal
             // Modal sẽ handle việc nhận email/password từ user

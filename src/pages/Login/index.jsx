@@ -76,11 +76,6 @@ const LoginPage = ({ onLoginSuccess }) => {
         }, 5000);
     };
 
-    const handleVorldLogin = () => {
-        console.log('Initiating Vorld login...');
-        setShowVorldModal(true);
-    };
-
     const handleEmailLogin = () => {
         console.log('Opening email login modal...');
         setShowEmailModal(true);
@@ -153,7 +148,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                 <div className={styles.loginSection}>
                     <LoginButtons
                         onGoogleLogin={handleGoogleLogin}
-                        onVorldLogin={handleVorldLogin}
                         onEmailLogin={handleEmailLogin}
                         isLoading={isLoading}
                     />
