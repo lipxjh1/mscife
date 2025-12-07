@@ -160,7 +160,38 @@ export class Login extends Scene {
         // Cleanup khi shutdown để tránh rò rỉ timer
         this.events.on("shutdown", () => {
             this.clearLockCountdown();
+
+            // Clean up World ID element if exists
+            if (this.worldIDElement) {
+                document.body.removeChild(this.worldIDElement);
+                this.worldIDElement = null;
+            }
+
+            // Remove event listeners
+            if (this.worldIDVerifiedHandler) {
+                EventBus.off('world-id-verified', this.worldIDVerifiedHandler);
+            }
+            if (this.worldIDErrorHandler) {
+                EventBus.off('world-id-error', this.worldIDErrorHandler);
+            }
         });
+
+        // ========================================
+// NEW: WORLD ID INTEGRATION
+// ========================================
+        // Check if user has World ID token
+        const hasAccessToken = localStorage.getItem('accessToken');
+        const hasUserData = localStorage.getItem('userData');
+
+        if (hasAccessToken && hasUserData) {
+            // User already verified with World ID, proceed to game
+            console.log('World ID token found, proceeding to game...');
+            this.GetPlayerInfo(this);
+            return;
+        }
+
+        // Show World ID verification button
+        this.ShowWorldIDVerification(this);
 
         this.RegisterGoogleButtonLogin(this);
 
@@ -1603,6 +1634,76 @@ export class Login extends Scene {
         };
 
         return btn_container;
+    }
+
+    // ========================================
+    // NEW: WORLD ID VERIFICATION METHOD
+    // ========================================
+    ShowWorldIDVerification(scene) {
+        // Hide login form elements
+        if (input_referer_id) input_referer_id.setVisible(false);
+        if (btn_register) btn_register.setVisible(false);
+        if (btn_login) btn_login.setVisible(false);
+        if (btn_forgot_password) btn_forgot_password.setVisible(false);
+        if (btn_vorld_login) btn_vorld_login.setVisible(false);
+
+        // Create container for World ID button
+        const worldIDContainer = scene.add.container(540, 540);
+        worldIDContainer.setDepth(1000);
+
+        // Add dark background
+        const bgOverlay = scene.add.rectangle(0, 0, 1080, 1920, 0x000000, 0.9);
+        bgOverlay.setOrigin(0.5);
+        worldIDContainer.add(bgOverlay);
+
+        // Add instructions text
+        const instructionText = scene.add.text(0, -200, 'Welcome to MSCI Game\n\nPlease verify with World ID to continue', {
+            fontFamily: 'Arial',
+            fontSize: '32px',
+            color: '#ffffff',
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+        worldIDContainer.add(instructionText);
+
+        // Create HTML element for React World ID button
+        const worldIDElement = document.createElement('div');
+        worldIDElement.id = 'worldid-login-container';
+        worldIDElement.style.position = 'absolute';
+        worldIDElement.style.top = '50%';
+        worldIDElement.style.left = '50%';
+        worldIDElement.style.transform = 'translate(-50%, -50%)';
+        worldIDElement.style.zIndex = '9999';
+        document.body.appendChild(worldIDElement);
+
+        // Trigger React to render in this container
+        EventBus.emit('render-worldid-login', 'worldid-login-container');
+
+        // Store reference for cleanup
+        this.worldIDElement = worldIDElement;
+
+        // Store event handlers for cleanup
+        this.worldIDVerifiedHandler = () => {
+            console.log('World ID verification successful!');
+            // Clean up World ID element
+            if (this.worldIDElement) {
+                document.body.removeChild(this.worldIDElement);
+                this.worldIDElement = null;
+            }
+            scene.GetPlayerInfo(scene);
+        };
+
+        this.worldIDErrorHandler = (error) => {
+            console.error('World ID verification error:', error);
+            text_respone.setText(error || 'Verification failed');
+        };
+
+        // Listen for verification success
+        EventBus.on('world-id-verified', this.worldIDVerifiedHandler);
+
+        // Listen for verification error
+        EventBus.on('world-id-error', this.worldIDErrorHandler);
     }
 }
 

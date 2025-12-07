@@ -53,6 +53,12 @@ import DisconnectModal from "./components/Connection/DisconnectModal.jsx";
 // ========================================
 import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
 
+// ========================================
+// NEW: WORLD ID MINIKIT
+// ========================================
+import { MiniKitProvider } from "./minikit/MiniKitProvider";
+import WorldIDLoginManager from "./components/WorldIDLoginManager";
+
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
 function App() {
@@ -754,7 +760,9 @@ function App() {
 
     return (
         <div id="app">
-            <AuthWrapper>
+            <MiniKitProvider>
+                <AuthWrapper>
+                    <WorldIDLoginManager />
                 {/* ========================================
                     NEW: DISCONNECT MODAL (Persistent, Center Screen)
                     ======================================== */}
@@ -994,7 +1002,8 @@ function App() {
                 NEW: ARENA UI COMPONENTS (Countdown + Notifications)
                 ======================================== */}
                 <ArenaUI />
-            </AuthWrapper>
+                </AuthWrapper>
+            </MiniKitProvider>
         </div>
     );
 }
