@@ -1,40 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
 
+console.log('MiniKitProvider: Bắt đầu render');
+
 export const MiniKitProvider = ({ children }: { children: React.ReactNode }) => {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    console.log('MiniKitProvider: Đang check MiniKit.isInstalled()...');
+    console.log('MiniKit object:', MiniKit);
+    console.log('MiniKit.isInstalled():', MiniKit.isInstalled());
+
     if (MiniKit.isInstalled()) {
+      console.log('MINIKIT PHÁT HIỆN THÀNH CÔNG – GAME SẼ CHẠY');
       setIsReady(true);
+    } else {
+      console.log('MINIKIT KHÔNG TÌM THẤY – SẼ HIỆN MÀN HÌNH ĐEN');
     }
   }, []);
 
-  // Nếu KHÔNG mở trong World App → hiện màn hình thông báo
   if (!MiniKit.isInstalled()) {
+    console.log('RENDER: HIỆN MÀN HÌNH "MỞ TRONG WORLD APP"');
     return (
       <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'linear-gradient(135deg, #1a0033, #000000)',
-        color: '#ffffff',
-        fontFamily: 'Arial, sans-serif',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        padding: '20px',
-        zIndex: 9999
+        position: 'fixed', inset: 0, background: '#000',
+        color: '#0f0', fontSize: '28px', fontWeight: 'bold',
+        display: 'grid', placeItems: 'center', textAlign: 'center',
+        padding: '20px', fontFamily: 'monospace'
       }}>
-        <h1 style={{ fontSize: '42px', marginBottom: '20px' }}>MỞ TRONG WORLD APP</h1>
-        <p style={{ fontSize: '22px' }}>Game chỉ hoạt động trong ứng dụng World</p>
-        <div style={{ marginTop: '40px', fontSize: '18px', opacity: 0.8 }}>
-          Vào World App → Mini Apps → Tìm "MSCI Game"
+        <div>
+          <h1>MỞ TRONG WORLD APP</h1>
+          <p>MiniKit: {MiniKit.isInstalled() ? 'OK' : 'KHÔNG TÌM THẤY'}</p>
+          <p>URL: {window.location.href}</p>
         </div>
       </div>
     );
   }
 
+  console.log('RENDER: CHO PHÉP VÀO GAME – MiniKit đã ready');
   return <>{children}</>;
 };

@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
 import { MiniKit, VerificationLevel, VerifyCommandInput } from '@worldcoin/minikit-js';
 
+console.log('useWorldID: Hook được gọi');
+console.log('BACKEND_URL hiện tại:', "https://wld.m-sci.net");
+
 const BACKEND_URL = "https://wld.m-sci.net";
 
 interface UserData {
@@ -27,6 +30,7 @@ export const useWorldID = () => {
   const verify = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    console.log('BẤM NÚT VERIFY – BẮT ĐẦU XÁC THỰC WORLD ID');
 
     try {
       // Check if MiniKit is installed
@@ -41,10 +45,11 @@ export const useWorldID = () => {
         signal: "", // Optional: add signal if needed
       });
 
-      console.log('MiniKit verify response:', verifyResponse);
+      console.log('NHẬN PROOF THÀNH CÔNG:', verifyResponse);
 
       if (verifyResponse.status === "success") {
         // Send proof to backend
+        console.log('GỬI PROOF LÊN BACKEND:', `${BACKEND_URL}/api/world-id/login`);
         const response = await fetch(`${BACKEND_URL}/api/world-id/login`, {
           method: "POST",
           headers: {
