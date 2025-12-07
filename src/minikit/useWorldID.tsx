@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { MiniKit, VerificationLevel, VerifyCommandInput } from '@worldcoin/minikit-js';
 
-const BACKEND_URL = "https://worldapp.m-sci.net";
+const BACKEND_URL = "https://wls.m-sci.net";
 
 interface UserData {
   id: string;

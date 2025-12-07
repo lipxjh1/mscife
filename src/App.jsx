@@ -56,14 +56,17 @@ import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
 // ========================================
 // NEW: WORLD ID MINIKIT
 // ========================================
-import { MiniKitProvider } from "./minikit/MiniKitProvider";
+import { MiniKitProvider, useMiniKit } from "./minikit/MiniKitProvider";
 import WorldIDLoginManager from "./components/WorldIDLoginManager";
 
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
-function App() {
+function AppContent() {
     // The sprite can only be moved in the MainMenu Scene
     const [canMoveSprite, setCanMoveSprite] = useState(true);
+
+    // Use MiniKit hook
+    const { isReady, isInstalled } = useMiniKit();
 
     //  References to the PhaserGame component (game and scene are exposed)
     const phaserRef = useRef();
@@ -818,9 +821,8 @@ function App() {
 
     return (
         <div id="app">
-            <MiniKitProvider>
-                <AuthWrapper>
-                    <WorldIDLoginManager />
+            <AuthWrapper>
+                <WorldIDLoginManager />
                 {/* ========================================
                     NEW: DISCONNECT MODAL (Persistent, Center Screen)
                     ======================================== */}
@@ -1060,9 +1062,16 @@ function App() {
                 NEW: ARENA UI COMPONENTS (Countdown + Notifications)
                 ======================================== */}
                 <ArenaUI />
-                </AuthWrapper>
-            </MiniKitProvider>
+            </AuthWrapper>
         </div>
+    );
+}
+
+function App() {
+    return (
+        <MiniKitProvider>
+            <AppContent />
+        </MiniKitProvider>
     );
 }
 
