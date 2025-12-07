@@ -184,6 +184,6 @@ export { default as OTPInput } from './OTPInput';
 export const VORLD_MODULE = {
   name: 'vorld-auth',
   version: '1.0.0',
-  backend: 'https://wls.m-sci.net/api/vorld',
+  backend: 'https://wld.m-sci.net/api/vorld',
   endpoints: API
 };

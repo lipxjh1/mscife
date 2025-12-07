@@ -20,14 +20,14 @@ export const ENV = {
   TELEGRAM_BOT_USERNAME: import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "MSCIgamebot",
 
   // Game URLs
-  GAME_BASE_URL: import.meta.env.VITE_GAME_BASE_URL || "https://wls.m-sci.net",
+  GAME_BASE_URL: import.meta.env.VITE_GAME_BASE_URL || "https://wld.m-sci.net",
   WEB_BASE_URL: import.meta.env.VITE_WEB_BASE_URL || "https://sta.m-sci.net",
 
   // ========================================
   // ARENA BACKEND CONFIGURATION (NEW)
   // ========================================
-  ARENA_API_URL: import.meta.env.VITE_ARENA_API_URL || 'https://wls.m-sci.net',
-  ARENA_WS_URL: import.meta.env.VITE_ARENA_WS_URL || 'wss://wls.m-sci.net',
+  ARENA_API_URL: import.meta.env.VITE_ARENA_API_URL || 'https://wld.m-sci.net',
+  ARENA_WS_URL: import.meta.env.VITE_ARENA_WS_URL || 'wss://wld.m-sci.net',
   VORLD_APP_ID: import.meta.env.VITE_VORLD_APP_ID || 'app_mh96pk5z_ca7db3dd',
 
   // ========================================
