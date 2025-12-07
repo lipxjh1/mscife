@@ -107,12 +107,14 @@ export function extractSessionId(url) {
  * Supports both Vite and Next.js env formats
  */
 export function getVorldAppId() {
-  const appId = import.meta.env.VITE_VORLD_APP_ID ||
+  const appId = import.meta.env.VITE_WORLD_ID_APP_ID ||
+                import.meta.env.VITE_VORLD_APP_ID ||
                 import.meta.env.VITE_APP_VORLD_APP_ID ||
                 process.env.NEXT_PUBLIC_VORLD_APP_ID ||
-                'app_mh96pk5z_ca7db3dd'; // Fallback from current .env
+                'app_c1f666c83bbbc687bde452e4acb51b40'; // Updated fallback
 
   console.log('[WebSocket] Vorld App ID resolved:', {
+    env_world_id: import.meta.env.VITE_WORLD_ID_APP_ID,
     env_vite: import.meta.env.VITE_VORLD_APP_ID,
     env_next: process.env.NEXT_PUBLIC_VORLD_APP_ID,
     final: appId,
