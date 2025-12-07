@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { MiniKit, VerificationLevel, VerifyCommandOutput } from '@worldcoin/minikit-js';
+import { MiniKit, VerificationLevel, VerifyCommandInput } from '@worldcoin/minikit-js';
 
 const BACKEND_URL = "https://worldapp.m-sci.net";
 
@@ -29,13 +29,13 @@ export const useWorldID = () => {
     setError(null);
 
     try {
-      // Check if MiniKit is ready
+      // Check if MiniKit is installed
       if (!MiniKit.isInstalled()) {
-        throw new Error('World App not detected. Please open in World App.');
+        throw new Error('World App MiniKit is not installed');
       }
 
-      // Start verification
-      const verifyResponse: VerifyCommandOutput = await MiniKit.commands.verify({
+      // Verify with World ID
+      const verifyResponse = await MiniKit.commands.verify({
         action: "msci-login",
         verification_level: VerificationLevel.Device,
         signal: "", // Optional: add signal if needed
@@ -51,101 +51,91 @@ export const useWorldID = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            payload: {
-              proof: verifyResponse.proof?.proof || "",
-              merkle_root: verifyResponse.proof?.merkle_root || "",
-              nullifier_hash: verifyResponse.proof?.nullifier_hash || "",
-              verification_level: verifyResponse.proof?.verification_level || VerificationLevel.Device,
-            }
-          })
+            proof: verifyResponse.finalResponse,
+            nullifier_hash: verifyResponse.finalResponse.nullifier_hash,
+            merkle_root: verifyResponse.finalResponse.merkle_root,
+            verification_level: verifyResponse.finalResponse.verification_level,
+          }),
         });
 
         const data: LoginResponse = await response.json();
-        console.log('Backend response:', data);
 
-        if (data.success && data.accessToken && data.refreshToken && data.data) {
-          // Save tokens and user data to localStorage
+        if (data.success && data.accessToken) {
+          // Store tokens in localStorage
           localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          localStorage.setItem('userData', JSON.stringify(data.data));
+          if (data.refreshToken) {
+            localStorage.setItem('refreshToken', data.refreshToken);
+          }
 
-          // Also save user ID for game usage
-          localStorage.setItem('userId', data.data.id);
+          // Store user data
+          if (data.data) {
+            localStorage.setItem('userData', JSON.stringify(data.data));
+          }
 
-          return {
-            success: true,
-            userData: data.data
-          };
+          return { success: true };
         } else {
-          throw new Error(data.message || 'Verification failed on backend');
+          throw new Error(data.message || 'Verification failed');
         }
       } else {
-        throw new Error('Verification cancelled or failed');
+        throw new Error('World ID verification failed');
       }
-    } catch (err: any) {
-      console.error('World ID verification error:', err);
-      const errorMessage = err.message || "Verification error. Please try again.";
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
-      return {
-        success: false,
-        error: errorMessage
-      };
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const logout = useCallback(() => {
-    // Clear all auth data
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userData');
-    localStorage.removeItem('userId');
-  }, []);
-
-  const isVerified = useCallback(() => {
-    return !!localStorage.getItem('accessToken');
-  }, []);
-
-  const getUserData = useCallback((): UserData | null => {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      try {
-        return JSON.parse(userData);
-      } catch (e) {
-        console.error('Failed to parse user data:', e);
-        return null;
-      }
-    }
-    return null;
+    setError(null);
   }, []);
 
   const getAccessToken = useCallback(() => {
     return localStorage.getItem('accessToken');
   }, []);
 
+  const getUserData = useCallback((): UserData | null => {
+    const userData = localStorage.getItem('userData');
+    return userData ? JSON.parse(userData) : null;
+  }, []);
+
+  const isVerified = useCallback(() => {
+    return !!getAccessToken();
+  }, [getAccessToken]);
+
   const refreshToken = useCallback(async () => {
-    const refreshTokenValue = localStorage.getItem('refreshToken');
-    if (!refreshTokenValue) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
       throw new Error('No refresh token available');
     }
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          refreshToken: refreshTokenValue
-        })
+        body: JSON.stringify({ refreshToken }),
       });
 
-      const data: any = await response.json();
+      const data: LoginResponse = await response.json();
 
       if (data.success && data.accessToken) {
         localStorage.setItem('accessToken', data.accessToken);
-        return data.accessToken;
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
+
+        if (data.data) {
+          localStorage.setItem('userData', JSON.stringify(data.data));
+        }
+
+        return data;
       } else {
         throw new Error(data.message || 'Token refresh failed');
       }

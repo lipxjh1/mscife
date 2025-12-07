@@ -54,24 +54,14 @@ import DisconnectModal from "./components/Connection/DisconnectModal.jsx";
 import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
 
 // ========================================
-<<<<<<< HEAD
-// WORLD ID MINIKIT IMPORT
-// ========================================
-import { useMiniKit, WorldIdLogin, NotInWorldApp } from "./minikit";
-import WorldIdWrapper from "./components/WorldIdWrapper";
-=======
 // NEW: WORLD ID MINIKIT
 // ========================================
 import { MiniKitProvider } from "./minikit/MiniKitProvider";
 import WorldIDLoginManager from "./components/WorldIDLoginManager";
->>>>>>> main
 
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
 
 function App() {
-    // World ID MiniKit state
-    const { isInstalled, isReady } = useMiniKit();
-
     // The sprite can only be moved in the MainMenu Scene
     const [canMoveSprite, setCanMoveSprite] = useState(true);
 

@@ -1,38 +1,30 @@
 import React, { useState } from 'react';
-import { useWorldId } from './useWorldId';
+import { useWorldID } from './useWorldID';
 import { EventBus } from '../game/EventBus';
 
 const WorldIdLogin = ({ onLoginSuccess }) => {
-    const { verifyAndLogin, isLoading, error, clearError } = useWorldId();
+    const { verify, isLoading, error } = useWorldID();
     const [success, setSuccess] = useState(false);
 
     const handleLogin = async () => {
-        clearError();
         setSuccess(false);
 
         console.log('🚀 Starting World ID login flow...');
 
-        const result = await verifyAndLogin({
-            verification_level: 'device' // Default to device for wider compatibility
-        });
+        const result = await verify();
 
         if (result.success) {
-            console.log('🎉 World ID login successful!', result);
+            console.log('🎉 World ID login successful!');
             setSuccess(true);
 
             // Emit event to App.jsx and Phaser game
             EventBus.emit('world-id-login-success', {
-                user: result.user,
-                isNewUser: result.isNewUser,
-                tokens: {
-                    accessToken: result.accessToken,
-                    refreshToken: result.refreshToken
-                }
+                success: true
             });
 
             // Call success callback if provided
             if (onLoginSuccess) {
-                onLoginSuccess(result);
+                onLoginSuccess();
             }
 
             // Auto-redirect after success
