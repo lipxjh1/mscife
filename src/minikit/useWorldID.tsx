@@ -1,10 +1,13 @@
 import { useCallback, useState } from 'react';
 import { MiniKit, VerificationLevel, VerifyCommandInput } from '@worldcoin/minikit-js';
 
-console.log('useWorldID: Hook được gọi');
-console.log('BACKEND_URL hiện tại:', "https://wld.m-sci.net");
+// ✅ Dùng env variables
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "https://wld.m-sci.net";
+const ACTION = import.meta.env.VITE_WORLD_ID_ACTION || "msci-login";
 
-const BACKEND_URL = "https://wld.m-sci.net";
+console.log('useWorldID: Hook loaded');
+console.log('BACKEND_URL:', BACKEND_URL);
+console.log('ACTION:', ACTION);
 
 interface UserData {
   id: string;
@@ -27,65 +30,94 @@ export const useWorldID = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ Thêm clearError function
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   const verify = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    console.log('BẤM NÚT VERIFY – BẮT ĐẦU XÁC THỰC WORLD ID');
+    console.log('🚀 BẮT ĐẦU XÁC THỰC WORLD ID');
 
     try {
       // Check if MiniKit is installed
       if (!MiniKit.isInstalled()) {
-        throw new Error('World App MiniKit is not installed');
+        throw new Error('Vui lòng mở trong World App');
       }
 
-      // Verify with World ID
-      const verifyResponse = await MiniKit.commands.verify({
-        action: "msci-login",
+      console.log('📱 MiniKit detected, starting verification...');
+      console.log('📝 Action:', ACTION);
+
+      // ✅ ĐÚNG: Dùng commandsAsync thay vì commands
+      const { finalPayload } = await MiniKit.commandsAsync.verify({
+        action: ACTION,  // ✅ Dùng env variable
         verification_level: VerificationLevel.Device,
-        signal: "", // Optional: add signal if needed
+        signal: "",
       });
 
-      console.log('NHẬN PROOF THÀNH CÔNG:', verifyResponse);
+      console.log('📦 Verify response:', finalPayload);
 
-      if (verifyResponse.status === "success") {
-        // Send proof to backend
-        console.log('GỬI PROOF LÊN BACKEND:', `${BACKEND_URL}/api/world-id/login`);
+      // ✅ Handle error status
+      if (finalPayload.status === "error") {
+        const errorMsg = finalPayload.error_code || 'Xác thực thất bại';
+        console.error('❌ Verification error:', errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      // ✅ Handle success
+      if (finalPayload.status === "success") {
+        console.log('✅ World ID verification successful!');
+        console.log('📤 Sending proof to backend:', `${BACKEND_URL}/api/world-id/login`);
+
+        // ✅ ĐÚNG: Response structure với finalPayload
         const response = await fetch(`${BACKEND_URL}/api/world-id/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            proof: verifyResponse.finalResponse,
-            nullifier_hash: verifyResponse.finalResponse.nullifier_hash,
-            merkle_root: verifyResponse.finalResponse.merkle_root,
-            verification_level: verifyResponse.finalResponse.verification_level,
+            proof: finalPayload.proof,
+            nullifier_hash: finalPayload.nullifier_hash,
+            merkle_root: finalPayload.merkle_root,
+            verification_level: finalPayload.verification_level,
           }),
         });
 
+        if (!response.ok) {
+          throw new Error(`Backend error: ${response.status}`);
+        }
+
         const data: LoginResponse = await response.json();
+        console.log('📥 Backend response:', data);
 
         if (data.success && data.accessToken) {
-          // Store tokens in localStorage
+          // Store tokens
           localStorage.setItem('accessToken', data.accessToken);
           if (data.refreshToken) {
             localStorage.setItem('refreshToken', data.refreshToken);
           }
-
-          // Store user data
           if (data.data) {
             localStorage.setItem('userData', JSON.stringify(data.data));
           }
 
-          return { success: true };
+          console.log('✅ Login successful! Tokens stored.');
+          return { success: true, data: data.data };
         } else {
-          throw new Error(data.message || 'Verification failed');
+          throw new Error(data.message || 'Backend verification failed');
         }
-      } else {
-        throw new Error('World ID verification failed');
       }
+
+      // Handle cancelled
+      if (finalPayload.status === "cancelled") {
+        throw new Error('Người dùng đã hủy xác thực');
+      }
+
+      throw new Error('Unexpected verification status');
+
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage = err instanceof Error ? err.message : 'Lỗi không xác định';
+      console.error('❌ Verification failed:', errorMessage);
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -98,6 +130,7 @@ export const useWorldID = () => {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userData');
     setError(null);
+    console.log('👋 Logged out');
   }, []);
 
   const getAccessToken = useCallback(() => {
@@ -114,8 +147,8 @@ export const useWorldID = () => {
   }, [getAccessToken]);
 
   const refreshToken = useCallback(async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
+    const token = localStorage.getItem('refreshToken');
+    if (!token) {
       throw new Error('No refresh token available');
     }
 
@@ -125,7 +158,7 @@ export const useWorldID = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken: token }),
       });
 
       const data: LoginResponse = await response.json();
@@ -135,17 +168,14 @@ export const useWorldID = () => {
         if (data.refreshToken) {
           localStorage.setItem('refreshToken', data.refreshToken);
         }
-
         if (data.data) {
           localStorage.setItem('userData', JSON.stringify(data.data));
         }
-
         return data;
       } else {
         throw new Error(data.message || 'Token refresh failed');
       }
     } catch (err) {
-      // Clear tokens on refresh failure
       logout();
       throw err;
     }
@@ -157,6 +187,7 @@ export const useWorldID = () => {
     refreshToken,
     isLoading,
     error,
+    clearError,  // ✅ Export clearError
     isVerified: isVerified(),
     userData: getUserData(),
     accessToken: getAccessToken()

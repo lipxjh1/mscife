@@ -3,7 +3,7 @@ import { useWorldID } from './useWorldID';
 import { EventBus } from '../game/EventBus';
 
 const WorldIdLogin = ({ onLoginSuccess }) => {
-    const { verify, isLoading, error } = useWorldID();
+    const { verify, isLoading, error, clearError } = useWorldID();
     const [success, setSuccess] = useState(false);
 
     const handleLogin = async () => {

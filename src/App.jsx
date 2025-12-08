@@ -56,7 +56,7 @@ import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
 // ========================================
 // NEW: WORLD ID MINIKIT
 // ========================================
-import { MiniKitProvider, useMiniKit } from "./minikit/MiniKitProvider";
+import { useMiniKit } from "./minikit/MiniKitProvider";
 import WorldIDLoginManager from "./components/WorldIDLoginManager";
 
 //import { useWallet, ConnectButton, ConnectModal } from "@suiet/wallet-kit";
@@ -1068,11 +1068,7 @@ function AppContent() {
 }
 
 function App() {
-    return (
-        <MiniKitProvider>
-            <AppContent />
-        </MiniKitProvider>
-    );
+    return <AppContent />;
 }
 
 export default App;
