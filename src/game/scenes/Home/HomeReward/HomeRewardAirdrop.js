@@ -1,4 +1,4 @@
-import { openTelegramLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK import - using window.open() instead
 
 import {
     CreateAlertPopup,
@@ -491,7 +491,7 @@ function CreateList(scene, arr_data) {
                 );
                 btn_invite.button.on("pointerdown", async function () {
                     if (await isTelegramMiniApp()) {
-                        openTelegramLink(centerData.GetTelegramShareUrl());
+                        window.open(centerData.GetTelegramShareUrl(), "_blank");
                     } else {
                         window.open(
                             getWebInviteUrl(centerData.userInfo.UserId),

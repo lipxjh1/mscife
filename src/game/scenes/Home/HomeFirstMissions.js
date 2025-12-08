@@ -1,5 +1,4 @@
-import { openLink } from "@telegram-apps/sdk";
-import { openTelegramLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK imports - using window.open() instead
 
 import centerData from "../../Data/CenterData.js";
 import centerDataPlayer from "../../Data/CenterDataPlayer.js";
@@ -438,7 +437,7 @@ function CreateDavidMisson(scene) {
         let url = `https://x.com/msci2049`;
 
         if (await isTelegramMiniApp()) {
-            openLink(url);
+            window.open(url, "_blank");
         } else {
             window.open(url, "_blank");
         }
@@ -494,7 +493,7 @@ function CreateHenryMisson(scene) {
         let url = `https://t.me/msciofficial2049`;
 
         if (await isTelegramMiniApp()) {
-            openLink(url);
+            window.open(url, "_blank");
         } else {
             window.open(url, "_blank");
         }
@@ -550,7 +549,7 @@ function CreateMarcusMisson(scene) {
         let url = `https://t.me/mscicommunity`;
 
         if (await isTelegramMiniApp()) {
-            openLink(url);
+            window.open(url, "_blank");
         } else {
             window.open(url, "_blank");
         }
@@ -607,7 +606,7 @@ function CreateChipMisson(scene) {
         let url = `https://www.youtube.com/@M-SCIOfficial`;
 
         if (await isTelegramMiniApp()) {
-            openLink(url);
+            window.open(url, "_blank");
         } else {
             window.open(url, "_blank");
         }
@@ -665,7 +664,7 @@ function CreateMuskMisson(scene) {
         let url = `https://www.tiktok.com/@msciofficial`;
 
         if (await isTelegramMiniApp()) {
-            openLink(url);
+            window.open(url, "_blank");
         } else {
             window.open(url, "_blank");
         }

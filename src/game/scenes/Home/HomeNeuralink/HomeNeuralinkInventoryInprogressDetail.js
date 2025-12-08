@@ -1,4 +1,4 @@
-import { openTelegramLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK import - using window.open() instead
 
 import {
     CreateAlertPopup,

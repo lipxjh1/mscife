@@ -1,4 +1,4 @@
-import { retrieveLaunchParams } from "@telegram-apps/sdk";
+// Removed retrieveLaunchParams import - not needed without Telegram SDK
 
 import { GetNftCharacters } from "../wallet/Wallet.js";
 import { EMPTY } from "rxjs";
@@ -848,13 +848,14 @@ export class CenterData {
         this.modalState = state;
     }
 
-    //Request login
+    //Request login - Removed Telegram SDK functionality
     RequestLoginTelegram(onSuccess, onError) {
-        //this.SetFirstMissionsDone(true);
-
-        const url = this.endpoints.AUTH.LOGIN_TELEGRAM;
-
-        const { initDataRaw, initData, startParam } = retrieveLaunchParams();
+        // Telegram login disabled - using only World App MiniKit
+        console.log("Telegram login disabled - please use World ID login");
+        if (onError) {
+            onError(new Error("Telegram login disabled"));
+        }
+        return;
 
         console.log("telegram initData: ", initData);
 

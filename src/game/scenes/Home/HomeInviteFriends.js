@@ -1,4 +1,4 @@
-import { openTelegramLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK import - using window.open() instead
 
 import centerData from "../../Data/CenterData";
 
@@ -54,7 +54,7 @@ export function CreateInviteFriends(scene) {
             //console.log("btn_share clicked");
 
             if (await isTelegramMiniApp()) {
-                openTelegramLink(centerData.GetTelegramShareUrl());
+                window.open(centerData.GetTelegramShareUrl(), "_blank");
             } else {
                 window.open(getWebInviteUrl(centerData.userInfo.UserId), "_blank");
             }

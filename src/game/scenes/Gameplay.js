@@ -149,7 +149,7 @@ import PoolSpriteSheet from "./Gameplay/PoolSpriteSheetVFX.js";
 import PoolAudioVFX from "./Gameplay/PoolAudioVFX.js";
 import centerDataPlayer from "../Data/CenterDataPlayer.js";
 
-import { on } from "@telegram-apps/sdk";
+// Removed Telegram SDK import - using generic visibility handling
 import { isTelegramMiniApp } from "../utils.js";
 import { CreateGuideGameplay } from "./Guide/GuideGameplay.js";
 
@@ -381,31 +381,18 @@ export class Gameplay extends Scene {
 
         this.blurTimestamp = 0;
 
-        if (isTelegramMiniApp()) {
-            this.changeVisibilityListener = on(
-                "visibility_changed",
-                (payload) => {
-                    console.log("visibility_changed:", payload);
-                    if (payload.is_visible) {
-                        this.handleFocus();
-                    } else {
-                        this.handleBlur();
-                    }
-                }
-            );
-        } else {
-            // Lắng nghe sự kiện BLUR
-            this.game.events.addListener(
-                Phaser.Core.Events.BLUR,
-                this.handleBlur
-            );
+        // Use generic visibility handling for all platforms
+        // Lắng nghe sự kiện BLUR
+        this.game.events.addListener(
+            Phaser.Core.Events.BLUR,
+            this.handleBlur
+        );
 
-            // Lắng nghe sự kiện FOCUS
-            this.game.events.addListener(
-                Phaser.Core.Events.FOCUS,
-                this.handleFocus
-            );
-        }
+        // Lắng nghe sự kiện FOCUS
+        this.game.events.addListener(
+            Phaser.Core.Events.FOCUS,
+            this.handleFocus
+        );
 
         CreateGuideGameplay(this);
     }

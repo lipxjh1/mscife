@@ -1,6 +1,6 @@
 import centerData from "../../Data/CenterData";
 import cdLocalization from "../../Data/CenterDataLocalization";
-import { isTelegramMiniApp } from "../../utils.js";
+// Removed isTelegramMiniApp import - using only World App MiniKit
 import ENV from "../../../config/env.js";
 
 let container_select_invite = null;
@@ -69,11 +69,8 @@ export function CreateSelectInvitePopup(scene) {
                 return;
             }
             let inviteUrl = getTelegramInviteUrl(centerData.userInfo.UserId);
-            if (await isTelegramMiniApp()) {
-                window.copyToClipboard(inviteUrl);
-            } else {
-                window.copyToClipboardNormal(inviteUrl);
-            }
+            // Always use copyToClipboardNormal since Telegram SDK is removed
+            window.copyToClipboardNormal(inviteUrl);
             container_select_invite.destroy();
         } catch (error) {
             console.error("Error copying Telegram invite URL:", error);
@@ -100,11 +97,8 @@ export function CreateSelectInvitePopup(scene) {
                 return;
             }
             let inviteUrl = getWebInviteUrl(centerData.userInfo.UserId);
-            if (await isTelegramMiniApp()) {
-                window.copyToClipboard(inviteUrl);
-            } else {
-                window.copyToClipboardNormal(inviteUrl);
-            }
+            // Always use copyToClipboardNormal since Telegram SDK is removed
+            window.copyToClipboardNormal(inviteUrl);
             container_select_invite.destroy();
         } catch (error) {
             console.error("Error copying Web invite URL:", error);

@@ -1,4 +1,4 @@
-import { openLink, openTelegramLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK imports - using window.open() instead
 
 import {
     CreateAlertPopup,
@@ -13,7 +13,6 @@ import cdLocalization from "../../../Data/CenterDataLocalization.js";
 import { CreateBuyVip } from "../HomeBuyVip.js";
 import {
     HideGoogleButtonLoginTelegramLink,
-    isTelegramMiniApp,
     ShowGoogleButtonLoginTelegramLink,
 } from "../../../utils.js";
 import { CreateUserInfoEquip } from "./HomeUserInfoEquip.js";
@@ -25,7 +24,7 @@ import {
 
 import { EventBus } from "../../../EventBus.js";
 import { CreateFriends } from "../HomeFriends/HomeFriends.js";
-import TelegramUtils from "../../../utils/telegramUtils.js";
+// Removed TelegramUtils import - not needed without Telegram SDK
 
 let container_account = null;
 
@@ -221,11 +220,8 @@ function Create(scene) {
         "Invite Friend"
     );
     btn_invite.button.on("pointerdown", async function () {
-        if (await isTelegramMiniApp()) {
-            openTelegramLink(centerData.GetTelegramShareUrl());
-        } else {
-            window.open(getWebInviteUrl(centerData.userInfo.UserId), "_blank");
-        }
+        // Always use web invite URL since Telegram SDK is removed
+        window.open(getWebInviteUrl(centerData.userInfo.UserId), "_blank");
     });
 
     const btn_share_link = CreateButton(
@@ -310,38 +306,7 @@ function Create(scene) {
     //     container_account_1.add(text_linked_google);
     // }
 
-    //Telegram Mini App link google
-    if (
-        isTelegramMiniApp() &&
-        centerData.userInfo.linkedAccounts.google == false
-    ) {
-        btn_telegram_link_google = CreateButton(
-            scene,
-            container_account_1,
-            56 + 416 / 2,
-            1409 + 78 / 2,
-            "share_btn_signin_google",
-            ""
-        );
-
-        btn_telegram_link_google.button.setScale(78 / 69);
-
-        btn_telegram_link_google.button.on("pointerdown", function () {
-            requestLinkGoogle = true;
-
-            btn_telegram_link_google.button.disableInteractive();
-            btn_telegram_link_google.setVisible(false);
-
-            const deepLinkUrl = TelegramUtils.createDeepLinkUrl(
-                window.location.origin,
-                centerData.GetAccessToken()
-            );
-
-            window.open(deepLinkUrl, "_blank");
-        });
-
-        scene.game.events.addListener(Phaser.Core.Events.FOCUS, _onFocus);
-    }
+    // Removed Telegram Mini App link google section - using only World App MiniKit
 
     //Normal link google
     ShowGoogleButtonLoginTelegramLink();

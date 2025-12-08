@@ -1,5 +1,4 @@
-import { openLink } from "@telegram-apps/sdk";
-import { openTelegramLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK imports - using window.open() instead
 
 import {
     CreateAlertPopup,
@@ -388,7 +387,7 @@ function CreateButtonGo(scene, container, x, y, item) {
 
         if (item.quest.code === "INVITE") {
             if (await isTelegramMiniApp()) {
-                openTelegramLink(centerData.GetTelegramShareUrl());
+                window.open(centerData.GetTelegramShareUrl(), "_blank");
             } else {
                 window.open(
                     getWebInviteUrl(centerData.userInfo.UserId),
@@ -400,17 +399,14 @@ function CreateButtonGo(scene, container, x, y, item) {
                 let url = item.quest.payload;
 
                 if (await isTelegramMiniApp()) {
-                    openTelegramLink(url);
+                    window.open(url, "_blank");
                 } else {
                     window.open(url, "_blank");
                 }
             } else {
                 if (await isTelegramMiniApp()) {
                     // Gọi hàm openLink với url và các tùy chọn (tuỳ chọn này là không bắt buộc)
-                    openLink(item.quest.payload, {
-                        try_instant_view: true, // Mở bằng Telegram Instant View nếu có
-                        disable_web_page_preview: true, // Tắt xem trước trang web
-                    });
+                    window.open(item.quest.payload, "_blank");
                 } else {
                     window.open(item.quest.payload, "_blank");
                 }

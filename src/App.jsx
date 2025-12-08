@@ -6,7 +6,7 @@ import LinkGoogleAccount from "./pages/LinkGoogleAccount";
 import vorldAuth, { OTPInput } from './modules/vorld-auth';
 import VorldLoginModal from './game/scenes/Share/share-react/VorldLoginModal.jsx';
 
-import { init as initTelegramWebApp, viewport } from "@telegram-apps/sdk";
+// Removed Telegram SDK import - keeping only World App MiniKit
 
 import {
     useTonConnectUI,
@@ -299,22 +299,7 @@ function AppContent() {
         setCanMoveSprite(scene.scene.key !== "MainMenu");
     };
 
-    const ReactInitRelegram = async () => {
-        // Khởi tạo Telegram WebApp
-        await initTelegramWebApp();
-        // Mount viewport trước
-        await viewport.mount();
-        // Sau đó mới gọi requestFullscreen
-        try {
-            await viewport.requestFullscreen();
-        } catch (error) {
-            //console.error("Không thể chuyển sang chế độ toàn màn hình:", error);
-        }
-    };
-
-    useEffect(() => {
-        ReactInitRelegram();
-    }, []);
+    // Removed Telegram initialization - using only World App MiniKit
 
     // Routing logic
     useEffect(() => {

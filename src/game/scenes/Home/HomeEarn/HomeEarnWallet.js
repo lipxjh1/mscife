@@ -1,4 +1,4 @@
-import { openLink } from "@telegram-apps/sdk";
+// Removed Telegram SDK import - using window.open() instead
 
 import centerData from "../../../Data/CenterData.js";
 

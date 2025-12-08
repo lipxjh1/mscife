@@ -1,9 +1,4 @@
-import {
-    requestWriteAccess,
-    popup,
-    retrieveLaunchParams,
-    openTelegramLink,
-} from "@telegram-apps/sdk";
+// Removed Telegram SDK imports - using only World App MiniKit
 
 import { EventBus } from "./EventBus";
 import centerData from "./Data/CenterData";
@@ -44,71 +39,8 @@ window.originHeight = originHeight;
 // window.copyToClipboard = copyToClipboard;
 
 async function copyToClipboard(text) {
-    try {
-        // First request write access
-        const status = await requestWriteAccess();
-
-        if (status === "allowed") {
-            // Create a temporary textarea element
-            const textarea = document.createElement("textarea");
-            textarea.value = text;
-
-            // Make it invisible but keep it in the viewport
-            textarea.style.position = "fixed";
-            textarea.style.opacity = "0";
-            textarea.style.left = "0";
-            textarea.style.top = "0";
-
-            // Add it to the document
-            document.body.appendChild(textarea);
-
-            // Select and copy
-            textarea.focus();
-            textarea.select();
-
-            try {
-                // Try using the modern clipboard API first
-                await navigator.clipboard.writeText(text);
-
-                // Show success popup
-                popup.open({
-                    title: "Success",
-                    message: "Text copied to clipboard",
-                    buttons: [{ type: "ok" }],
-                });
-            } catch (clipboardError) {
-                // Fallback to document.execCommand
-                try {
-                    document.execCommand("copy");
-
-                    // Show success popup
-                    popup.open({
-                        title: "Success",
-                        message: "Text copied to clipboard",
-                        buttons: [{ type: "ok" }],
-                    });
-                } catch (execError) {
-                    throw new Error("Failed to copy text");
-                }
-            }
-
-            // Clean up
-            document.body.removeChild(textarea);
-        } else {
-            popup.open({
-                title: "Error",
-                message: "Write access denied",
-                buttons: [{ type: "ok" }],
-            });
-        }
-    } catch (error) {
-        //console.error("Failed to copy:", error);
-        popup.open({
-            title: "Error",
-            message: "Failed to copy text",
-            buttons: [{ type: "ok" }],
-        });
-    }
+    // Use the normal copyToClipboardNormal function since Telegram SDK is removed
+    copyToClipboardNormal(text);
 }
 
 window.copyToClipboard = copyToClipboard;
@@ -162,27 +94,14 @@ let isTelegramCache = null;
  * The result is cached, so subsequent calls are synchronous and fast.
  * @returns {Promise<boolean>} True if running in Telegram Mini App, otherwise false.
  */
+// Telegram detection removed - always return false
 export async function isTelegramMiniApp() {
-    if (isTelegramCache !== null) {
-        return isTelegramCache;
-    }
-
-    try {
-        const launchParams = await retrieveLaunchParams();
-        isTelegramCache = !!launchParams.platform;
-    } catch (error) {
-        // This is expected when not running in a Telegram environment.
-        isTelegramCache = false;
-    }
-    return isTelegramCache;
+    return false;
 }
 
 export async function shareUrl(url) {
-    if (await isTelegramMiniApp()) {
-        openTelegramLink(url);
-    } else {
-        window.open(url, "_blank");
-    }
+    // Always use window.open since Telegram SDK is removed
+    window.open(url, "_blank");
 }
 
 export function forceReload() {
@@ -207,8 +126,8 @@ export function HideGoogleButtonLogin() {
 export function ShowGoogleButtonLoginTelegramLink() {
     if (
         centerData.userInfo.linkedAccounts.google == false &&
-        centerData.GetIsGoogleLogin() == false &&
-        isTelegramMiniApp() == false
+        centerData.GetIsGoogleLogin() == false
+        // Removed isTelegramMiniApp() check - always show since Telegram SDK is removed
     ) {
         EventBus.emit("ui:show-google-login-telegram-link");
     }
