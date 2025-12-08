@@ -77,10 +77,12 @@ export const useWorldID = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            proof: finalPayload.proof,
-            nullifier_hash: finalPayload.nullifier_hash,
-            merkle_root: finalPayload.merkle_root,
-            verification_level: finalPayload.verification_level,
+            payload: {
+              proof: finalPayload.proof,
+              nullifier_hash: finalPayload.nullifier_hash,
+              merkle_root: finalPayload.merkle_root,
+              verification_level: finalPayload.verification_level,
+            }
           }),
         });
 
