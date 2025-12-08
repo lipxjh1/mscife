@@ -22,8 +22,10 @@ export const MiniKitProvider = ({ children }: { children: React.ReactNode }) => 
         const initMiniKit = () => {
             try {
                 // ✅ BƯỚC 1: Install TRƯỚC - BẮT BUỘC!
-                MiniKit.install();
-                console.log('✅ MiniKit.install() called');
+                MiniKit.install({
+                    appId: import.meta.env.VITE_WORLD_APP_ID || 'app_c1f666c83bbbc687bde452e4acb51b40'
+                });
+                console.log('✅ MiniKit.install() called with appId');
 
                 // ✅ BƯỚC 2: Check SAU khi đã install
                 const installed = MiniKit.isInstalled();
