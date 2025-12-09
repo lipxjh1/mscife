@@ -36,11 +36,21 @@ const apiClient = axios.create({
     },
 });
 
+// ✅ DEBUG: Log base URL và token
+console.log('🔗 APIBase initialized:');
+console.log('- Base URL:', API_BASE_URL);
+console.log('- App ID:', ENV.VORLD_APP_ID);
+console.log('- Access Token:', accessToken ? 'PRESENT' : 'MISSING');
+
 // Interceptor cho Request: Thêm token vào header trước khi gửi
 apiClient.interceptors.request.use(
     (config) => {
         if (accessToken) {
             config.headers["Authorization"] = `Bearer ${accessToken}`;
+            console.log(`🔑 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+            console.log(`📝 Token sent: Bearer ${accessToken.substring(0, 20)}...`);
+        } else {
+            console.log(`❌ NO TOKEN for request: ${config.method?.toUpperCase()} ${config.url}`);
         }
         return config;
     },
@@ -121,6 +131,15 @@ apiClient.interceptors.response.use(
             });
         }
 
+        // ✅ DEBUG: Log lỗi 401
+        if (error.response?.status === 401) {
+            console.error('❌ 401 Unauthorized Details:');
+            console.error('- URL:', error.config?.baseURL + error.config?.url);
+            console.error('- Method:', error.config?.method?.toUpperCase());
+            console.error('- Had Token:', !!accessToken);
+            console.error('- Response:', error.response.data);
+        }
+
         return Promise.reject(error);
     }
 );
@@ -129,17 +148,18 @@ apiClient.interceptors.response.use(
 const setTokens = (newAccessToken, newRefreshToken) => {
     accessToken = newAccessToken;
     refreshToken = newRefreshToken;
-    // Lưu token vào sessionStorage để duy trì trạng thái đăng nhập
-    sessionStorage.setItem("accessToken", newAccessToken);
-    sessionStorage.setItem("refreshToken", newRefreshToken);
+    // Lưu token vào localStorage để duy trì trạng thái đăng nhập (giống Login.js)
+    localStorage.setItem("accessToken", newAccessToken);
+    localStorage.setItem("refreshToken", newRefreshToken);
 };
 
 // Hàm xóa token
 const clearTokens = () => {
     accessToken = null;
     refreshToken = null;
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("refreshToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userData");
 
     // ✅ NEW: Also clear Vorld tokens from localStorage
     try {
@@ -151,11 +171,13 @@ const clearTokens = () => {
     }
 };
 
-// Load token từ sessionStorage khi khởi động
+// Load token từ localStorage khi khởi động
 const loadTokens = () => {
-    accessToken = sessionStorage.getItem("accessToken");
-    refreshToken = sessionStorage.getItem("refreshToken");
-    console.log('🔄 APIBase: Tokens reloaded -', accessToken ? 'HAS TOKEN' : 'NO TOKEN');
+    accessToken = localStorage.getItem("accessToken");
+    refreshToken = localStorage.getItem("refreshToken");
+    console.log('🔄 APIBase: Tokens reloaded from localStorage');
+    console.log('- Access Token:', accessToken ? `PRESENT (${accessToken.substring(0, 20)}...)` : 'MISSING');
+    console.log('- Refresh Token:', refreshToken ? 'PRESENT' : 'MISSING');
 };
 
 // ✅ FIX: Export loadTokens để Login.js có thể gọi

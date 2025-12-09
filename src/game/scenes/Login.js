@@ -1279,6 +1279,12 @@ export class Login extends Scene {
                     EventBus.once('vorld:otp-success', (data) => {
                         console.log('✅ Vorld OTP success:', data);
 
+                        // ✅ CRITICAL: Reload tokens vào APIBase memory after OTP
+                        if (typeof window.loadTokens === 'function') {
+                            window.loadTokens();
+                            console.log('🔄 Tokens reloaded into APIBase memory (after OTP)');
+                        }
+
                         // ✅ NEW: Extract and save Vorld tokens from OTP response
                         const hasVorldTokens = extractAndSaveVorldTokens(data);
                         console.log('[Vorld OTP] Vorld tokens saved:', hasVorldTokens ? 'YES' : 'NO');
@@ -1303,6 +1309,12 @@ export class Login extends Scene {
                     } else if (result.data.accessToken) {
                         setTokens(result.data.accessToken, result.data.refreshToken);
                         console.log('✅ Tokens synced to memory and storage (direct)');
+                    }
+
+                    // ✅ CRITICAL: Reload tokens vào APIBase memory
+                    if (typeof window.loadTokens === 'function') {
+                        window.loadTokens();
+                        console.log('🔄 Tokens reloaded into APIBase memory');
                     }
 
                     // ✅ NEW: Extract and save Vorld tokens from login response
