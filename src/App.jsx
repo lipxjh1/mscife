@@ -57,6 +57,11 @@ import AuthWrapper from "./components/Auth/AuthWrapper.jsx";
 // NEW: WORLD ID MINIKIT
 // ========================================
 import { useMiniKit } from "./minikit/MiniKitProvider";
+
+// ========================================
+// WORLD PAY INTEGRATION
+// ========================================
+import { useWorldPayHandler } from "./hooks/useWorldPayHandler";
 import WorldIdLogin from "./minikit/WorldIdLogin";
 import WorldIDLoginManager from "./components/WorldIDLoginManager";
 
@@ -68,6 +73,9 @@ function AppContent() {
 
     // Use MiniKit hook
     const { isReady, isInstalled } = useMiniKit();
+
+    // World Pay Handler - Listen for payment requests from Phaser
+    useWorldPayHandler();
 
     //  References to the PhaserGame component (game and scene are exposed)
     const phaserRef = useRef();
