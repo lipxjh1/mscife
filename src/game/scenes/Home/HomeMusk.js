@@ -8,6 +8,7 @@ import {
 import { SendTransaction } from "../../wallet/Wallet.js";
 import cdLocalization from "../../Data/CenterDataLocalization.js";
 import { AssetLoadingManager } from "../AssetLoadingManager.js";
+import { WorldPayBridge } from "../../worldpay/WorldPayBridge.js";
 
 let container_main = null;
 
@@ -19,16 +20,16 @@ let container_0;
 let container_item_list = null;
 
 const packs = {
-    basic: { name: "Basic Pack", musk: 50, tonPrice: 0.5 },
-    genesis: { name: "Genesis Pack", musk: 200, tonPrice: 2 },
-    glory_pack: { name: "Glory Pack", musk: 500, tonPrice: 5 },
-    divine_pack: { name: "Divine Pack", musk: 1000, tonPrice: 10 },
-    immortal_pack: { name: "Immortal Pack", musk: 2000, tonPrice: 20 },
-    emperor_pack: { name: "Emperor Pack", musk: 5000, tonPrice: 50 },
-    golden_pack: { name: "Golden Pack", musk: 10000, tonPrice: 100 },
-    celestial_pack: { name: "Celestial Pack", musk: 20000, tonPrice: 200 },
-    god_king_pack: { name: "God King Pack", musk: 50000, tonPrice: 500 },
-    legendary_pack: { name: "Legendary Pack", musk: 100000, tonPrice: 1000 },
+    basic: { name: "Basic Pack", musk: 50, wldPrice: 0.5 },
+    genesis: { name: "Genesis Pack", musk: 200, wldPrice: 2 },
+    glory_pack: { name: "Glory Pack", musk: 500, wldPrice: 5 },
+    divine_pack: { name: "Divine Pack", musk: 1000, wldPrice: 10 },
+    immortal_pack: { name: "Immortal Pack", musk: 2000, wldPrice: 20 },
+    emperor_pack: { name: "Emperor Pack", musk: 5000, wldPrice: 50 },
+    golden_pack: { name: "Golden Pack", musk: 10000, wldPrice: 100 },
+    celestial_pack: { name: "Celestial Pack", musk: 20000, wldPrice: 200 },
+    god_king_pack: { name: "God King Pack", musk: 50000, wldPrice: 500 },
+    legendary_pack: { name: "Legendary Pack", musk: 100000, wldPrice: 1000 },
 };
 
 export function OpenMuskContainer(scene) {
@@ -315,7 +316,7 @@ function card_item(scene, i, item) {
     container_card_inner.add(item_text_buy);
 
     const item_text_price = scene.add
-        .text(322 + 30, 443, item.tonPrice + " TON", {
+        .text(322 + 30, 443, item.wldPrice + " WLD", {
             fontFamily: "Russo One",
             fontSize: "40px",
             color: "#00FF7B",
@@ -329,77 +330,81 @@ function card_item(scene, i, item) {
 
 function ClickItem(scene, item) {
     // ═══════════════════════════════════════════════════════
-    // WALLET CONNECTION VALIDATION - Enhanced logging
+    // WORLD PAY PAYMENT FLOW
     // ═══════════════════════════════════════════════════════
-    console.log("🔍 Checking wallet connection before purchase...");
-    console.log("Item details:", { musk: item.musk, tonPrice: item.tonPrice });
+    console.log("🔍 Initiating World Pay purchase...");
+    console.log("Item details:", { musk: item.musk, wldPrice: item.wldPrice });
 
-    let wallet_address = centerData.GetWalletAddress();
-    console.log("Wallet validation:", {
-        wallet_address,
-        walletType: centerData.walletType,
-        walletTypeKeys: centerData.WalletType,
-        isNull: wallet_address == null,
-        isEmpty: wallet_address === "",
-        isValid: wallet_address != null && wallet_address !== ""
-    });
+    // Show confirmation popup
+    CreateAlertPopup(
+        scene,
+        cdLocalization.getLocalization(
+            cdLocalization.GROUP_KEYS.HomeMusk.KEY,
+            `Do you want to buy {i} M-Coin with {i} WLD`,
+            [item.musk, item.wldPrice]
+        ),
+        () => {
+            // Setup listeners for this purchase
+            WorldPayBridge.onPaymentResult(
+                (data) => {
+                    // Success callback
+                    console.log('✅ Payment successful:', data);
+                    CreateAlertPopup(
+                        scene,
+                        cdLocalization.getLocalization(
+                            cdLocalization.GROUP_KEYS.HomeMusk.KEY,
+                            "Transaction successful\nthe process may take up to 8 hours."
+                        )
+                    );
+                    // Refresh balance or update UI
+                    WorldPayBridge.cleanup();
+                },
+                (data) => {
+                    // Error callback
+                    console.log('❌ Payment failed:', data);
+                    const message = data?.error || "Transaction failed";
+                    CreateAlertPopup(scene, message);
+                    WorldPayBridge.cleanup();
+                }
+            );
 
-    if (centerData.walletType === centerData.WalletType.SUI.KEY) {
-        console.log("❌ SUI wallet detected - showing development message");
-        CreateAlertPopup(scene, "Sui Wallet is currently under development");
-    } else if (wallet_address == null || wallet_address === "") {
-        console.error("❌ Wallet not connected - showing connection warning");
-        CreateAlertPopup(
-            scene,
-            cdLocalization.getLocalization(
-                cdLocalization.GROUP_KEYS.HomeMusk.KEY,
-                "Wallet is not connected"
-            )
-        );
-    } else {
-        console.log("✅ Wallet connected successfully - proceeding with purchase");
-        // ═══════════════════════════════════════════════════════
-        CreateAlertPopup(
-            scene,
-            cdLocalization.getLocalization(
-                cdLocalization.GROUP_KEYS.HomeMusk.KEY,
-                `Do you want to buy {i} M-Coin with {i} TON`,
-                [item.musk, item.tonPrice]
-            ),
+            // Request payment
+            WorldPayBridge.requestPayment(item.musk, 'WLD');
+        },
             () => {
-                RequestBuyMusk(scene, item);
-            },
-            () => {}
-        );
-    }
-}
-
-function RequestBuyMusk(scene, item) {
-    let receiver = centerData.GetReceiverAddress();
-
-    if (receiver && receiver !== "") {
-        SendTransaction(
-            item.tonPrice,
-            receiver,
-            () => {
-                CreateAlertPopup(
-                    scene,
-                    cdLocalization.getLocalization(
-                        cdLocalization.GROUP_KEYS.HomeMusk.KEY,
-                        "Transaction successful\nthe process may take up to 8 hours."
-                    )
-                );
-            },
-            (error) => { // ✅ ADD ERROR PARAMETER
-                const message = error?.message || "Transaction failed";
-                console.log("Transaction error in HomeMusk:", message);
-                CreateAlertPopup(scene, message); // ✅ USE SPECIFIC ERROR MESSAGE
+                // Cancel callback - cleanup if needed
+                WorldPayBridge.cleanup();
             }
         );
-    } else {
-        CreateAlertPopup(scene, "No receiver found");
-    }
 }
+
+// DEPRECATED: TON Connect function - replaced with World Pay
+// function RequestBuyMusk(scene, item) {
+//     let receiver = centerData.GetReceiverAddress();
+//
+//     if (receiver && receiver !== "") {
+//         SendTransaction(
+//             item.tonPrice,
+//             receiver,
+//             () => {
+//                 CreateAlertPopup(
+//                     scene,
+//                     cdLocalization.getLocalization(
+//                         cdLocalization.GROUP_KEYS.HomeMusk.KEY,
+//                         "Transaction successful\nthe process may take up to 8 hours."
+//                     )
+//                 );
+//             },
+//             (error) => { // ✅ ADD ERROR PARAMETER
+//                 const message = error?.message || "Transaction failed";
+//                 console.log("Transaction error in HomeMusk:", message);
+//                 CreateAlertPopup(scene, message); // ✅ USE SPECIFIC ERROR MESSAGE
+//             }
+//         );
+//     } else {
+//         CreateAlertPopup(scene, "No receiver found");
+//     }
+// }
 
 function Open(scene) {
     container_popup.setPosition(
@@ -431,6 +436,9 @@ function Close(scene) {
 }
 
 function Destroy() {
+    // Cleanup WorldPay listeners
+    WorldPayBridge.cleanup();
+
     container_main.destroy();
 
     container_main = null;
