@@ -177,6 +177,23 @@ export class Preloader extends Scene {
         const startGameWithCheck = async () => {
             //this.LoginTelegram(this);
 
+            // Check World App FIRST
+            if (typeof window !== 'undefined' && window.MiniKit && window.MiniKit.isInstalled()) {
+                console.log("🚀 World App detected, checking tokens...");
+                const hasAccessToken = localStorage.getItem('accessToken');
+                const hasUserData = localStorage.getItem('userData');
+
+                if (hasAccessToken && hasUserData) {
+                    console.log("✅ World App user has tokens, going to game...");
+                    this.loadHomeSceneDirectly();
+                    return;
+                } else {
+                    console.log("⚠️ World App user needs verification, loading Login...");
+                    this.loadLoginScene();
+                    return;
+                }
+            }
+
             if (await isTelegramMiniApp()) {
                 console.log("Running in Telegram Mini App.");
                 this.LoginTelegram(this);
@@ -257,6 +274,45 @@ export class Preloader extends Scene {
                     });
             },
             (error) => console.log("Get user info failed:", error)
+        );
+    }
+
+    loadHomeSceneDirectly() {
+        console.log("Loading Home scene directly for World App user...");
+
+        // Initialize socket connections first
+        InitSocket();
+
+        // Update wallet
+        centerData.RequestUpdateWallet(
+            centerData.GetWalletAddress(),
+            () => {
+                // Load Home scene
+                import("./Home.js")
+                    .then((module) => {
+                        const HomeScene = module.default || module.Home;
+
+                        if (HomeScene && typeof HomeScene === "function") {
+                            console.log("Home scene loaded successfully");
+                            this.scene.add("Home", HomeScene);
+                            this.scene.start("Home");
+                        } else {
+                            throw new Error(
+                                "Invalid Home scene module structure"
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Failed to load Home scene:", error);
+                        // Fallback to Login scene if Home fails
+                        this.loadLoginScene();
+                    });
+            },
+            (error) => {
+                console.error("Failed to update wallet:", error);
+                // Still try to load Home scene even if wallet update fails
+                this.GetPlayerInfo(this);
+            }
         );
     }
 }

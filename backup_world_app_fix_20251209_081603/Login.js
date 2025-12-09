@@ -192,15 +192,23 @@ export class Login extends Scene {
 // NEW: WORLD ID INTEGRATION
 // ========================================
 
-        // Check if running in World App (MiniKit)
+        // Check if running in World App
         if (typeof window !== 'undefined' && window.MiniKit && window.MiniKit.isInstalled()) {
-            console.log("✅ World App detected - MiniKit installed");
+            console.log("🚀 World App detected in Login scene!");
 
-            // LUÔN trigger walletAuth để hiện popup "Sign In"
-            // Token cũ sẽ được thay bằng token mới sau khi user confirm
-            console.log("🔐 Triggering Wallet Auth popup for World App user...");
-            this.triggerWorldAppWalletAuth();
-            return;
+            const hasAccessToken = localStorage.getItem('accessToken');
+            const hasUserData = localStorage.getItem('userData');
+
+            if (hasAccessToken && hasUserData) {
+                console.log("✅ World App user authenticated, proceeding to game...");
+                this.InitSocket();
+                this.GetPlayerInfo(this);
+                return;
+            } else {
+                console.log("⚠️ World App user needs verification, auto-triggering...");
+                this.AutoTriggerWorldID();
+                return;
+            }
         }
 
         // Check if user has World ID token (for non-World App users)
@@ -1658,87 +1666,6 @@ export class Login extends Scene {
         };
 
         return btn_container;
-    }
-
-    // ========================================
-    // NEW: WORLD APP WALLET AUTH METHOD
-    // ========================================
-    async triggerWorldAppWalletAuth() {
-        try {
-            console.log("🔐 Starting World App Wallet Auth...");
-
-            // 1. Get nonce từ backend
-            console.log("📝 Getting nonce from backend...");
-            const nonceRes = await fetch('https://wld.m-sci.net/api/nonce');
-            const { nonce } = await nonceRes.json();
-            console.log("📝 Got nonce:", nonce);
-
-            // 2. Gọi walletAuth (ĐÚNG theo tài liệu World App)
-            console.log("📱 Opening Wallet Auth popup... (Sign In popup will appear)");
-            const { finalPayload } = await window.MiniKit.commandsAsync.walletAuth({
-                nonce: nonce,
-                expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
-                statement: 'Sign in to M-SCI Game',
-            });
-
-            if (finalPayload.status === 'error') {
-                console.error("❌ Wallet auth failed:", finalPayload);
-                this.showLoginForm();
-                return;
-            }
-
-            console.log("✅ Wallet auth success, verifying with backend...");
-
-            // 3. Verify với backend
-            const verifyRes = await fetch('https://wld.m-sci.net/api/world-id/wallet-auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    payload: finalPayload,
-                    nonce: nonce
-                }),
-            });
-
-            const data = await verifyRes.json();
-
-            if (data.success && data.accessToken) {
-                console.log("✅ Backend verification success!");
-
-                // 4. Lưu tokens
-                localStorage.setItem('accessToken', data.accessToken);
-                if (data.refreshToken) {
-                    localStorage.setItem('refreshToken', data.refreshToken);
-                }
-                if (data.data) {
-                    localStorage.setItem('userData', JSON.stringify(data.data));
-                }
-
-                // 5. Kết nối socket và vào game
-                this.InitSocket();
-                this.GetPlayerInfo(this);
-
-            } else {
-                console.error("❌ Backend verification failed:", data);
-                this.showLoginForm();
-            }
-
-        } catch (error) {
-            console.error("❌ World App Wallet Auth error:", error);
-            this.showLoginForm();
-        }
-    }
-
-    // Helper function để hiển thị login form
-    showLoginForm() {
-        // Hiển thị các elements của login form
-        if (input_referer_id) input_referer_id.setVisible(false); // Ẩn referer field theo default
-        if (btn_register) btn_register.setVisible(true);
-        if (btn_login) btn_login.setVisible(true);
-        if (btn_forgot_password) btn_forgot_password.setVisible(true);
-        if (btn_vorld_login) btn_vorld_login.setVisible(true);
-        if (input_mail) input_mail.setVisible(true);
-        if (input_password) input_password.setVisible(true);
     }
 
     // ========================================

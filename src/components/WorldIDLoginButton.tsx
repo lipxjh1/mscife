@@ -41,7 +41,21 @@ export const WorldIDLoginButton: React.FC<WorldIDLoginButtonProps> = ({
       };
 
       window.addEventListener('keydown', handleKeyPress);
-      return () => window.removeEventListener('keydown', handleKeyPress);
+
+      // Listen for auto-trigger event
+      const handleAutoTrigger = () => {
+        console.log('🎯 Auto-triggering World ID verification...');
+        if (MiniKit.isInstalled() && !isLoading) {
+          handleVerify();
+        }
+      };
+
+      EventBus.on('auto-trigger-worldid-verify', handleAutoTrigger);
+
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+        EventBus.off('auto-trigger-worldid-verify', handleAutoTrigger);
+      };
     }
   }, [isLoading, MiniKit]);
 
