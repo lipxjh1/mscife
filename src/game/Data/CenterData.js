@@ -1354,16 +1354,14 @@ export class CenterData {
     //request user info
     RequestUserInfo(onSuccess, onError) {
         const url = this.endpoints.USER.GET_PROFILE;
+        console.log("🌐 RequestUserInfo calling API:", url);
 
         // Sử dụng apiclient từ APIBase.js với then() và catch()
         apiClient
             .get(url)
             .then((response) => {
                 const result = response.data;
-                // console.log(
-                //     "RequestUserInfo Response result:",
-                //     JSON.stringify(result, null, 2)
-                // );
+                console.log("✅ RequestUserInfo API response:", result);
 
                 if (result) {
                     if (result.data) {
@@ -1375,6 +1373,7 @@ export class CenterData {
                     }
 
                     // Gọi hàm callback thành công nếu có
+                    console.log("📦 Calling RequestUserInfo success callback...");
                     if (onSuccess && typeof onSuccess === "function") {
                         onSuccess(result);
                     }

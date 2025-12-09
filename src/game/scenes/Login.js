@@ -1435,15 +1435,17 @@ export class Login extends Scene {
     }
 
     GetPlayerInfo(scene) {
+        console.log("🎮 GetPlayerInfo called - getting user info...");
         HideGoogleButtonLogin();
 
         centerData.RequestUserInfo(
             (result) => {
-                // console.log("lấy thông tin thành công:", result);
-
+                console.log("✅ RequestUserInfo success!", result);
+                console.log("🏠 Starting Home scene...");
                 scene.scene.start("Home");
             },
             (error) => {
+                console.error("❌ RequestUserInfo failed:", error);
                 //console.log("lấy thông tin thất bại:", error);
             }
         );
