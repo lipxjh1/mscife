@@ -1757,6 +1757,10 @@ export class Login extends Scene {
                     localStorage.setItem('userData', JSON.stringify(data.data));
                 }
 
+                // ✅ FIX: Cập nhật APIBase memory để interceptor có token
+                setTokens(data.accessToken, data.refreshToken || null);
+                console.log('🔄 APIBase memory updated with new tokens');
+
                 // 5. Kết nối socket và vào game
                 this.InitSocket();
                 this.GetPlayerInfo(this);
