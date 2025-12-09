@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 import { EventBus } from '../game/EventBus';
 
 // Socket connection configuration
-const SOCKET_URL = 'https://pro.m-sci.net';
+const SOCKET_URL = 'https://wld.m-sci.net';
 const socket = io(SOCKET_URL, {
   transports: ['websocket'],
   autoConnect: true,

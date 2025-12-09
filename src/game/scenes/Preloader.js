@@ -179,19 +179,9 @@ export class Preloader extends Scene {
 
             // Check World App FIRST
             if (typeof window !== 'undefined' && window.MiniKit && window.MiniKit.isInstalled()) {
-                console.log("🚀 World App detected, checking tokens...");
-                const hasAccessToken = localStorage.getItem('accessToken');
-                const hasUserData = localStorage.getItem('userData');
-
-                if (hasAccessToken && hasUserData) {
-                    console.log("✅ World App user has tokens, going to game...");
-                    this.loadHomeSceneDirectly();
-                    return;
-                } else {
-                    console.log("⚠️ World App user needs verification, loading Login...");
-                    this.loadLoginScene();
-                    return;
-                }
+                console.log("🚀 World App detected, loading Login for walletAuth...");
+                this.loadLoginScene();
+                return;
             }
 
             if (await isTelegramMiniApp()) {
