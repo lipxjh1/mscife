@@ -51,8 +51,8 @@ class SocketServiceMultiplayerBoss {
 
             this.socket = io(`${API_BASE_URL}/mpboss`, {
                 transports: ["websocket"],
-                auth: {
-                    token: sessionStorage.getItem("accessToken"),
+                auth: (cb) => {
+                    cb({ token: localStorage.getItem("accessToken") });
                 },
                 reconnection: true,
                 reconnectionAttempts: Infinity,

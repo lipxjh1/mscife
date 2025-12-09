@@ -42,8 +42,8 @@ class SocketServiceBoss {
 
             this.socket = io(`${API_BASE_URL}/boss-battle`, {
                 transports: ["websocket"],
-                auth: (cb) => {
-                    cb({ token: localStorage.getItem("accessToken") });
+                auth: {
+                    token: sessionStorage.getItem("accessToken"),
                 },
                 reconnection: true,
                 reconnectionAttempts: Infinity,

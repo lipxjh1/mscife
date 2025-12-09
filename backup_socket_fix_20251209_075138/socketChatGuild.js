@@ -8,7 +8,7 @@ export const SOCKET_EVENTS = {
     DISCONNECT: "disconnect",
 };
 
-class SocketServiceBoss {
+class SocketServiceChatGuild {
     constructor() {
         this.socketEvent = new BehaviorSubject(null);
         this.socket = null;
@@ -17,33 +17,33 @@ class SocketServiceBoss {
 
     setLoggingEnabled(enabled) {
         this.isLoggingEnabled = enabled;
-        this.log(`Boss socket logging ${enabled ? "enabled" : "disabled"}`);
+        this.log(`Chat socket logging ${enabled ? "enabled" : "disabled"}`);
     }
 
     log(message, data = null) {
         if (this.isLoggingEnabled) {
             const timestamp = new Date().toISOString();
             if (data) {
-                console.log(`[BossSocket ${timestamp}] ${message}`, data);
+                console.log(`[ChatSocket ${timestamp}] ${message}`, data);
             } else {
-                console.log(`[BossSocket ${timestamp}] ${message}`);
+                console.log(`[ChatSocket ${timestamp}] ${message}`);
             }
         }
     }
 
     connectSocket() {
-        this.log("connectSocket:", `${API_BASE_URL}/boss-battle`);
+        this.log("connectSocket:", `${API_BASE_URL}/chat`);
 
         if (!this.socket || !this.socket.connected) {
             this.log(
-                "Attempting to connect to Boss socket:",
-                `${API_BASE_URL}/boss-battle`
+                "Attempting to connect to Chat socket:",
+                `${API_BASE_URL}/chat`
             );
 
-            this.socket = io(`${API_BASE_URL}/boss-battle`, {
+            this.socket = io(`${API_BASE_URL}/chat`, {
                 transports: ["websocket"],
-                auth: (cb) => {
-                    cb({ token: localStorage.getItem("accessToken") });
+                auth: {
+                    token: sessionStorage.getItem("accessToken"),
                 },
                 reconnection: true,
                 reconnectionAttempts: Infinity,
@@ -72,7 +72,7 @@ class SocketServiceBoss {
                 return;
             }
 
-            this.log(`📥 INCOMING BOSS EVENT: ${eventName}`, {
+            this.log(`📥 INCOMING Chat EVENT: ${eventName}`, {
                 event: eventName,
                 data: data,
                 timestamp: new Date().toISOString(),
@@ -90,7 +90,7 @@ class SocketServiceBoss {
         if (!this.socket) return;
 
         this.socket.on("connect", () => {
-            this.log("✅ Boss socket connected successfully", {
+            this.log("✅ Chat socket connected successfully", {
                 socketId: this.socket.id,
                 timestamp: new Date().toISOString(),
             });
@@ -100,7 +100,7 @@ class SocketServiceBoss {
         });
 
         this.socket.on("disconnect", (reason) => {
-            this.log("❌ Boss socket disconnected", {
+            this.log("❌ Chat socket disconnected", {
                 reason: reason,
                 timestamp: new Date().toISOString(),
                 socketId: this.socket.id,
@@ -112,14 +112,14 @@ class SocketServiceBoss {
         });
 
         this.socket.on("connect_error", (error) => {
-            this.log("🚨 Boss connection error", {
+            this.log("🚨 Chat connection error", {
                 error: error.message || error,
                 timestamp: new Date().toISOString(),
             });
         });
 
         this.socket.on("reconnect", (attemptNumber) => {
-            this.log("🔄 Boss socket reconnected", {
+            this.log("🔄 Chat socket reconnected", {
                 attemptNumber: attemptNumber,
                 timestamp: new Date().toISOString(),
                 socketId: this.socket.id,
@@ -127,37 +127,37 @@ class SocketServiceBoss {
         });
 
         this.socket.on("reconnect_attempt", (attemptNumber) => {
-            this.log("🔄 Boss attempting to reconnect", {
+            this.log("🔄 Chat attempting to reconnect", {
                 attemptNumber: attemptNumber,
                 timestamp: new Date().toISOString(),
             });
         });
 
         this.socket.on("reconnect_error", (error) => {
-            this.log("🚨 Boss reconnection error", {
+            this.log("🚨 Chat reconnection error", {
                 error: error.message || error,
                 timestamp: new Date().toISOString(),
             });
         });
 
         this.socket.on("reconnect_failed", () => {
-            this.log("💥 Boss reconnection failed - max attempts reached", {
+            this.log("💥 Chat reconnection failed - max attempts reached", {
                 timestamp: new Date().toISOString(),
             });
         });
     }
 
-    emit(event, data) {
+    emit(event, data, responseCallback) {
         if (this.socket && this.socket.connected) {
-            this.log(`📤 EMITTING BOSS EVENT: ${event}`, {
+            this.log(`📤 EMITTING Chat EVENT: ${event}`, {
                 event: event,
                 data: data,
                 timestamp: new Date().toISOString(),
                 socketId: this.socket.id,
             });
-            this.socket.emit(event, data);
+            this.socket.emit(event, data, responseCallback);
         } else {
-            this.log("⚠️ Cannot emit boss event: socket is not connected", {
+            this.log("⚠️ Cannot emit Chat event: socket is not connected", {
                 event: event,
                 data: data,
                 socketConnected: this.socket?.connected,
@@ -168,7 +168,7 @@ class SocketServiceBoss {
 
     on(event, callback) {
         if (this.socket) {
-            this.log(`👂 Registering boss listener for event: ${event}`, {
+            this.log(`👂 Registering Chat listener for event: ${event}`, {
                 event: event,
                 callbackName: callback.name || "anonymous",
                 timestamp: new Date().toISOString(),
@@ -176,7 +176,7 @@ class SocketServiceBoss {
             this.socket.on(event, callback);
         } else {
             this.log(
-                "⚠️ Cannot register boss event listener: socket is not initialized",
+                "⚠️ Cannot register Chat event listener: socket is not initialized",
                 {
                     event: event,
                     timestamp: new Date().toISOString(),
@@ -187,7 +187,7 @@ class SocketServiceBoss {
 
     off(event, callback) {
         if (this.socket) {
-            this.log(`🔇 Removing boss listener for event: ${event}`, {
+            this.log(`🔇 Removing Chat listener for event: ${event}`, {
                 event: event,
                 callbackName: callback?.name || "anonymous",
                 timestamp: new Date().toISOString(),
@@ -198,7 +198,7 @@ class SocketServiceBoss {
 
     removeAllListeners(event) {
         if (this.socket) {
-            this.log(`🔇 Removing all boss listeners for event: ${event}`, {
+            this.log(`🔇 Removing all Chat listeners for event: ${event}`, {
                 event: event,
                 timestamp: new Date().toISOString(),
             });
@@ -226,7 +226,7 @@ class SocketServiceBoss {
 
     disconnect() {
         if (this.socket) {
-            this.log("🔌 Manually disconnecting boss socket", {
+            this.log("🔌 Manually disconnecting Chat socket", {
                 socketId: this.socket.id,
                 timestamp: new Date().toISOString(),
             });
@@ -235,4 +235,4 @@ class SocketServiceBoss {
     }
 }
 
-export const socketServiceBoss = new SocketServiceBoss();
+export const socketServiceChatGuild = new SocketServiceChatGuild();

@@ -47,8 +47,8 @@ class SocketService {
 
             this.socket = io(`${API_BASE_URL}/`, {
                 transports: ["websocket"],
-                auth: (cb) => {
-                    cb({ token: localStorage.getItem("accessToken") });
+                auth: {
+                    token: sessionStorage.getItem("accessToken"),
                 },
                 reconnection: true,
                 reconnectionAttempts: 10,
