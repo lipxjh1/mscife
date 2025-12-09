@@ -64,6 +64,14 @@ export const useWorldID = () => {
 
       console.log('📦 Wallet Auth response:', finalPayload);
 
+      // DEBUG: Log payload structure
+      console.log('=== MINIKIT RESPONSE DEBUG ===');
+      console.log('Full finalPayload:', JSON.stringify(finalPayload, null, 2));
+      console.log('Has message:', !!finalPayload.message);
+      console.log('Has signature:', !!finalPayload.signature);
+      console.log('Has address:', !!finalPayload.address);
+      console.log('=== END MINIKIT RESPONSE DEBUG ===');
+
       // ✅ Handle error status
       if (finalPayload.status === "error") {
         const errorMsg = finalPayload.error_code || 'Wallet Auth thất bại';
@@ -76,6 +84,35 @@ export const useWorldID = () => {
         console.log('✅ World ID Wallet Auth successful!');
         console.log('📤 Sending proof to backend:', `${BACKEND_URL}/api/world-id/wallet-auth`);
 
+        // ✅ MAP PAYLOAD TO CORRECT FORMAT
+        // Backend expects: { message, signature, address, status }
+        const backendPayload = {
+          status: finalPayload.status,
+          address: finalPayload.address,
+          message: finalPayload.message || finalPayload.siweMessage, // Ensure message exists, fallback to siweMessage
+          signature: finalPayload.signature,  // Ensure this field exists
+          // Preserve additional fields just in case
+          ...((!finalPayload.message && !finalPayload.siweMessage) && {
+            message: finalPayload.finalPayload?.message || finalPayload.finalPayload?.siweMessage
+          })
+        };
+
+        // Validate required fields before sending
+        if (!backendPayload.message) {
+          console.error('❌ Missing message field in payload');
+          console.log('Available fields:', Object.keys(finalPayload));
+          throw new Error('Invalid payload: missing message field');
+        }
+
+        if (!backendPayload.signature) {
+          console.error('❌ Missing signature field in payload');
+          throw new Error('Invalid payload: missing signature field');
+        }
+
+        console.log('=== MAPPED PAYLOAD FOR BACKEND ===');
+        console.log(JSON.stringify(backendPayload, null, 2));
+        console.log('=== END MAPPED PAYLOAD ===');
+
         // ✅ ĐÚNG: Response structure với finalPayload cho walletAuth
         const response = await fetch(`${BACKEND_URL}/api/world-id/wallet-auth`, {
           method: "POST",
@@ -83,7 +120,7 @@ export const useWorldID = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            payload: finalPayload,
+            payload: backendPayload,
             nonce: nonce
           }),
         });

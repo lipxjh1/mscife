@@ -1704,12 +1704,52 @@ export class Login extends Scene {
 
             console.log("✅ Wallet auth success, verifying with backend...");
 
+            // DEBUG: Log payload structure
+            console.log("=== MINIKIT RESPONSE ===");
+            console.log("Full finalPayload:", JSON.stringify(finalPayload, null, 2));
+            console.log("Has message:", !!finalPayload.message);
+            console.log("Has signature:", !!finalPayload.signature);
+            console.log("Has address:", !!finalPayload.address);
+            console.log("finalPayload.message type:", typeof finalPayload.message);
+            console.log("finalPayload.signature type:", typeof finalPayload.signature);
+            console.log("=== END MINIKIT RESPONSE ===");
+
+            // ✅ MAP PAYLOAD TO CORRECT FORMAT
+            // Backend expects: { message, signature, address, status }
+            const backendPayload = {
+                status: finalPayload.status,
+                address: finalPayload.address,
+                message: finalPayload.message || finalPayload.siweMessage, // Ensure message exists, fallback to siweMessage
+                signature: finalPayload.signature,  // Ensure this field exists
+                // Preserve additional fields just in case
+                ...((!finalPayload.message && !finalPayload.siweMessage) && {
+                    message: finalPayload.finalPayload?.message || finalPayload.finalPayload?.siweMessage
+                })
+            };
+
+            // Validate required fields before sending
+            if (!backendPayload.message) {
+                console.error('❌ Missing message field in payload');
+                console.log('Available fields:', Object.keys(finalPayload));
+                throw new Error('Invalid payload: missing message field');
+            }
+
+            if (!backendPayload.signature) {
+                console.error('❌ Missing signature field in payload');
+                throw new Error('Invalid payload: missing signature field');
+            }
+
+            // Log the mapped payload
+            console.log("=== MAPPED PAYLOAD FOR BACKEND ===");
+            console.log(JSON.stringify(backendPayload, null, 2));
+            console.log("=== END MAPPED PAYLOAD ===");
+
             // 3. Verify với backend
             const verifyRes = await fetch('https://wld.m-sci.net/api/world-id/wallet-auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    payload: finalPayload,
+                    payload: backendPayload,
                     nonce: nonce
                 }),
             });
