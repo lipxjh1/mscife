@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { MiniKit, VerificationLevel, VerifyCommandInput } from '@worldcoin/minikit-js';
+import { MiniKit, VerificationLevel, VerifyCommandInput, WalletAuthInput, MiniAppWalletAuthSuccessPayload } from '@worldcoin/minikit-js';
 
 // ✅ Dùng env variables
 const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "https://wld.m-sci.net";
@@ -46,43 +46,45 @@ export const useWorldID = () => {
         throw new Error('Vui lòng mở trong World App');
       }
 
-      console.log('📱 MiniKit detected, starting verification...');
-      console.log('📝 Action:', ACTION);
+      console.log('📱 MiniKit detected, starting Wallet Auth...');
 
-      // ✅ ĐÚNG: Dùng commandsAsync thay vì commands
-      const { finalPayload } = await MiniKit.commandsAsync.verify({
-        action: ACTION,  // ✅ Dùng env variable
-        verification_level: VerificationLevel.Device,
-        signal: "",
+      // 1. Get nonce từ backend
+      const nonceRes = await fetch(`${BACKEND_URL}/api/nonce`);
+      const { nonce } = await nonceRes.json();
+
+      console.log('📝 Nonce:', nonce);
+
+      // ✅ ĐÚNG: Dùng walletAuth thay vì verify()
+      const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
+        nonce: nonce,
+        expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        statement: 'Sign in to M-SCI Game',
       });
 
-      console.log('📦 Verify response:', finalPayload);
+      console.log('📦 Wallet Auth response:', finalPayload);
 
       // ✅ Handle error status
       if (finalPayload.status === "error") {
-        const errorMsg = finalPayload.error_code || 'Xác thực thất bại';
-        console.error('❌ Verification error:', errorMsg);
+        const errorMsg = finalPayload.error_code || 'Wallet Auth thất bại';
+        console.error('❌ Wallet Auth error:', errorMsg);
         throw new Error(errorMsg);
       }
 
       // ✅ Handle success
       if (finalPayload.status === "success") {
-        console.log('✅ World ID verification successful!');
-        console.log('📤 Sending proof to backend:', `${BACKEND_URL}/api/world-id/login`);
+        console.log('✅ World ID Wallet Auth successful!');
+        console.log('📤 Sending proof to backend:', `${BACKEND_URL}/api/world-id/wallet-auth`);
 
-        // ✅ ĐÚNG: Response structure với finalPayload
-        const response = await fetch(`${BACKEND_URL}/api/world-id/login`, {
+        // ✅ ĐÚNG: Response structure với finalPayload cho walletAuth
+        const response = await fetch(`${BACKEND_URL}/api/world-id/wallet-auth`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            payload: {
-              proof: finalPayload.proof,
-              nullifier_hash: finalPayload.nullifier_hash,
-              merkle_root: finalPayload.merkle_root,
-              verification_level: finalPayload.verification_level,
-            }
+            payload: finalPayload,
+            nonce: nonce
           }),
         });
 
@@ -112,14 +114,14 @@ export const useWorldID = () => {
 
       // Handle cancelled
       if (finalPayload.status === "cancelled") {
-        throw new Error('Người dùng đã hủy xác thực');
+        throw new Error('Người dùng đã hủy Wallet Auth');
       }
 
-      throw new Error('Unexpected verification status');
+      throw new Error('Unexpected Wallet Auth status');
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Lỗi không xác định';
-      console.error('❌ Verification failed:', errorMessage);
+      console.error('❌ Wallet Auth failed:', errorMessage);
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

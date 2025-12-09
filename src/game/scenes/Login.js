@@ -167,6 +167,12 @@ export class Login extends Scene {
                 this.worldIDElement = null;
             }
 
+            // Clean up auto-trigger World ID element if exists
+            if (this.worldIDAutoElement) {
+                document.body.removeChild(this.worldIDAutoElement);
+                this.worldIDAutoElement = null;
+            }
+
             // Remove event listeners
             if (this.worldIDVerifiedHandler) {
                 EventBus.off('world-id-verified', this.worldIDVerifiedHandler);
@@ -174,12 +180,41 @@ export class Login extends Scene {
             if (this.worldIDErrorHandler) {
                 EventBus.off('world-id-error', this.worldIDErrorHandler);
             }
+            if (this.worldIDAutoVerifiedHandler) {
+                EventBus.off('world-id-verified', this.worldIDAutoVerifiedHandler);
+            }
+            if (this.worldIDAutoErrorHandler) {
+                EventBus.off('world-id-error', this.worldIDAutoErrorHandler);
+            }
         });
 
         // ========================================
 // NEW: WORLD ID INTEGRATION
 // ========================================
-        // Check if user has World ID token
+
+        // Check if running in World App (MiniKit)
+        if (typeof window !== 'undefined' && window.MiniKit && window.MiniKit.isInstalled()) {
+            console.log("✅ World App detected - MiniKit installed");
+
+            const accessToken = localStorage.getItem('accessToken');
+            const userData = localStorage.getItem('userData');
+
+            if (accessToken && userData) {
+                console.log("✅ World ID token found, auto login to game...");
+                // Kết nối socket
+                this.InitSocket();
+                // Lấy player info và vào game
+                this.GetPlayerInfo(this);
+                return; // SKIP LOGIN FORM - VÀO GAME LUÔN
+            } else {
+                console.log("⚠️ World App but no token, triggering Wallet Auth...");
+                // Trigger wallet auth
+                this.triggerWorldAppWalletAuth();
+                return;
+            }
+        }
+
+        // Check if user has World ID token (for non-World App users)
         const hasAccessToken = localStorage.getItem('accessToken');
         const hasUserData = localStorage.getItem('userData');
 
@@ -1634,6 +1669,161 @@ export class Login extends Scene {
         };
 
         return btn_container;
+    }
+
+    // ========================================
+    // NEW: WORLD APP WALLET AUTH METHOD
+    // ========================================
+    async triggerWorldAppWalletAuth() {
+        try {
+            console.log("🔐 Starting World App Wallet Auth...");
+
+            // 1. Get nonce từ backend
+            const nonceRes = await fetch('https://wld.m-sci.net/api/nonce');
+            const { nonce } = await nonceRes.json();
+
+            // 2. Gọi walletAuth (ĐÚNG theo tài liệu World App)
+            const { finalPayload } = await window.MiniKit.commandsAsync.walletAuth({
+                nonce: nonce,
+                expirationTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                notBefore: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                statement: 'Sign in to M-SCI Game',
+            });
+
+            if (finalPayload.status === 'error') {
+                console.error("❌ Wallet auth failed:", finalPayload);
+                this.showLoginForm();
+                return;
+            }
+
+            console.log("✅ Wallet auth success, verifying with backend...");
+
+            // 3. Verify với backend
+            const verifyRes = await fetch('https://wld.m-sci.net/api/world-id/wallet-auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    payload: finalPayload,
+                    nonce: nonce
+                }),
+            });
+
+            const data = await verifyRes.json();
+
+            if (data.success && data.accessToken) {
+                console.log("✅ Backend verification success!");
+
+                // 4. Lưu tokens
+                localStorage.setItem('accessToken', data.accessToken);
+                if (data.refreshToken) {
+                    localStorage.setItem('refreshToken', data.refreshToken);
+                }
+                if (data.data) {
+                    localStorage.setItem('userData', JSON.stringify(data.data));
+                }
+
+                // 5. Kết nối socket và vào game
+                this.InitSocket();
+                this.GetPlayerInfo(this);
+
+            } else {
+                console.error("❌ Backend verification failed:", data);
+                this.showLoginForm();
+            }
+
+        } catch (error) {
+            console.error("❌ World App Wallet Auth error:", error);
+            this.showLoginForm();
+        }
+    }
+
+    // Helper function để hiển thị login form
+    showLoginForm() {
+        // Hiển thị các elements của login form
+        if (input_referer_id) input_referer_id.setVisible(false); // Ẩn referer field theo default
+        if (btn_register) btn_register.setVisible(true);
+        if (btn_login) btn_login.setVisible(true);
+        if (btn_forgot_password) btn_forgot_password.setVisible(true);
+        if (btn_vorld_login) btn_vorld_login.setVisible(true);
+        if (input_mail) input_mail.setVisible(true);
+        if (input_password) input_password.setVisible(true);
+    }
+
+    // ========================================
+    // NEW: WORLD ID AUTO-TRIGGER METHOD
+    // ========================================
+    AutoTriggerWorldID() {
+        console.log("🔄 Auto-triggering World ID verification...");
+
+        // Create container for auto-trigger loading
+        const autoTriggerContainer = this.add.container(540, 540);
+        autoTriggerContainer.setDepth(1000);
+
+        // Add dark background
+        const bgOverlay = this.add.rectangle(0, 0, 1080, 1920, 0x000000, 0.9);
+        bgOverlay.setOrigin(0.5);
+        autoTriggerContainer.add(bgOverlay);
+
+        // Add loading text
+        const loadingText = this.add.text(0, -50, 'Connecting to World ID...', {
+            fontFamily: 'Arial',
+            fontSize: '32px',
+            color: '#ffffff',
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+        autoTriggerContainer.add(loadingText);
+
+        // Create HTML element for React World ID button (hidden)
+        const worldIDElement = document.createElement('div');
+        worldIDElement.id = 'worldid-auto-container';
+        worldIDElement.style.position = 'absolute';
+        worldIDElement.style.top = '-9999px';
+        worldIDElement.style.left = '-9999px';
+        worldIDElement.style.zIndex = '-1';
+        document.body.appendChild(worldIDElement);
+
+        // Trigger React to render in this container
+        EventBus.emit('render-worldid-login', 'worldid-auto-container');
+
+        // Store reference for cleanup
+        this.worldIDAutoElement = worldIDElement;
+
+        // Store event handlers for cleanup
+        this.worldIDAutoVerifiedHandler = () => {
+            console.log('✅ Auto World ID verification successful!');
+            // Clean up
+            if (this.worldIDAutoElement) {
+                document.body.removeChild(this.worldIDAutoElement);
+                this.worldIDAutoElement = null;
+            }
+            autoTriggerContainer.destroy();
+            this.GetPlayerInfo(this);
+        };
+
+        this.worldIDAutoErrorHandler = (error) => {
+            console.error('❌ Auto World ID verification error:', error);
+            // Clean up
+            if (this.worldIDAutoElement) {
+                document.body.removeChild(this.worldIDAutoElement);
+                this.worldIDAutoElement = null;
+            }
+            autoTriggerContainer.destroy();
+            // Fall back to showing manual verification
+            this.ShowWorldIDVerification(this);
+        };
+
+        // Listen for verification success
+        EventBus.on('world-id-verified', this.worldIDAutoVerifiedHandler);
+
+        // Listen for verification error
+        EventBus.on('world-id-error', this.worldIDAutoErrorHandler);
+
+        // Auto-emit verification trigger after a short delay
+        this.time.delayedCall(100, () => {
+            EventBus.emit('auto-trigger-worldid-verify');
+        });
     }
 
     // ========================================
