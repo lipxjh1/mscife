@@ -95,21 +95,62 @@ export class WorldPayService {
         body: JSON.stringify(requestBody as CreateDepositRequest),
       });
 
-      const data: CreateDepositResponse = await response.json();
+      const result = await response.json();
       console.log('🔍 [WorldPay Debug] Backend response status:', response.status);
-      console.log('🔍 [WorldPay Debug] Backend response:', JSON.stringify(data, null, 2));
+      console.log('🔍 [WorldPay Debug] Backend response:', JSON.stringify(result, null, 2));
       console.log('🔍 [WorldPay Debug] ========== CREATE DEPOSIT END ==========');
 
       if (!response.ok) {
-        logError('Create deposit failed', data);
+        logError('Create deposit failed', result);
         return {
           success: false,
-          error: data.error || data.message || `HTTP ${response.status}`,
+          error: result.error || result.message || `HTTP ${response.status}`,
+        };
+      }
+
+      // ✅ Check success và extract từ data
+      if (!result.success) {
+        logError('Create deposit failed', result);
+        return {
+          success: false,
+          error: result.error || result.message || 'Failed to create deposit',
+        };
+      }
+
+      // ✅ Extract từ result.data (không phải result trực tiếp!)
+      const data = result.data;
+
+      if (!data || !data.depositId) {
+        logError('Invalid response: missing depositId', result);
+        return {
+          success: false,
+          error: 'Invalid response: missing depositId',
         };
       }
 
       log('Deposit created successfully', data);
-      return data;
+
+      // Return the expected format
+      return {
+        success: true,
+        depositId: data.depositId,
+        orderId: data.orderId || data.depositId,
+        payment: data.payment || {
+          reference: data.depositId,
+          amount: data.expectedAmount || data.muskAmount,
+          token: currency,
+          description: `Buy ${muskAmount} MUSK`,
+        },
+        deposit: data.deposit || {
+          depositId: data.depositId,
+          muskAmount: data.muskAmount,
+          expectedAmount: data.expectedAmount,
+          currency: data.currency,
+          exchangeRate: data.exchangeRate,
+          status: 'pending',
+          expiresAt: data.expiresAt,
+        },
+      };
 
     } catch (error) {
       logError('Create deposit error', error);
@@ -282,18 +323,43 @@ export class WorldPayService {
         } as ConfirmDepositRequest),
       });
 
-      const data: ConfirmDepositResponse = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
-        logError('Confirm deposit failed', data);
+        logError('Confirm deposit failed', result);
         return {
           success: false,
-          error: data.error || data.message || `HTTP ${response.status}`,
+          error: result.error || result.message || `HTTP ${response.status}`,
         };
       }
 
+      // ✅ Check success và extract từ data
+      if (!result.success) {
+        logError('Confirm deposit failed', result);
+        return {
+          success: false,
+          error: result.error || result.message || 'Failed to confirm deposit',
+        };
+      }
+
+      // ✅ Extract từ result.data
+      const data = result.data || {};
+
       log('Deposit confirmed successfully!', data);
-      return data;
+
+      // Return the expected format
+      return {
+        success: true,
+        message: data.message || result.message,
+        muskCredited: data.muskCredited,
+        newBalance: data.newBalance,
+        transactionHash: data.transactionHash,
+        deposit: data.deposit || {
+          depositId,
+          status: 'completed',
+          completedAt: new Date().toISOString(),
+        },
+      };
 
     } catch (error) {
       logError('Confirm deposit error', error);
