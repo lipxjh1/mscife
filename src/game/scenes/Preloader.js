@@ -175,6 +175,16 @@ export class Preloader extends Scene {
 
     initializeGame() {
         const startGameWithCheck = async () => {
+            console.log("🚀 Starting game directly - skipping Login scene...");
+
+            // Initialize socket connections first
+            InitSocket();
+
+            // Skip Login scene and go directly to Home
+            this.loadHomeSceneDirectly();
+            return;
+
+            // ========== DISABLED LOGIN FLOW ==========
             //this.LoginTelegram(this);
 
             // Check World App FIRST
