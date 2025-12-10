@@ -65,10 +65,14 @@ export class WorldPayService {
     try {
       const url = `${WORLD_PAY_CONFIG.API_BASE_URL}${WORLD_PAY_CONFIG.ENDPOINTS.CREATE_DEPOSIT}`;
 
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem('accessToken');
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           muskAmount,
@@ -198,10 +202,14 @@ export class WorldPayService {
     try {
       const url = `${WORLD_PAY_CONFIG.API_BASE_URL}${WORLD_PAY_CONFIG.ENDPOINTS.CONFIRM_DEPOSIT}`;
 
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem('accessToken');
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           depositId,
