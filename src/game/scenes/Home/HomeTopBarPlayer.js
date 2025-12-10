@@ -31,7 +31,7 @@ let avatar = null;
 let currentBanner = null;
 let text_title = null;
 
-let default_banner_text = `80th Anniversary: August Revolution & Vietnam National Day`;
+let default_banner_text = import.meta.env.VITE_BANNER_DEFAULT_TEXT || "M-SCI Game";
 
 export function CreateTopBarNotice(scene) {
     top_bar_notice_container = scene.add.container(
