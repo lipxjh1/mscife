@@ -21,7 +21,7 @@ export const WORLD_PAY_CONFIG = {
 
   // Deposit Limits (phải khớp với backend)
   LIMITS: {
-    MIN_MUSK: 100,
+    MIN_MUSK: 50,
     MAX_MUSK: 1000000,
     EXPIRY_MINUTES: 30,
   },
