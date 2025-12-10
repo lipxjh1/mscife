@@ -356,30 +356,14 @@ function ClickItem(scene, item) {
                     console.log('✅ Payment successful:', data);
 
                     // Show celebration screen
-                    if (celebrationScreen && data.muskCredited) {
-                        celebrationScreen.show(data.muskCredited, data.newBalance || 0);
-
-                        // Listen for celebration close
-                        scene.events.once('CELEBRATION_CLOSED', () => {
-                            // Show success popup after celebration closes
-                            CreateAlertPopup(
-                                scene,
-                                cdLocalization.getLocalization(
-                                    cdLocalization.GROUP_KEYS.HomeMusk.KEY,
-                                    "Transaction successful\nthe process may take up to 8 hours."
-                                )
-                            );
-                        });
-                    } else {
-                        // Fallback to normal popup
-                        CreateAlertPopup(
-                            scene,
-                            cdLocalization.getLocalization(
-                                cdLocalization.GROUP_KEYS.HomeMusk.KEY,
-                                "Transaction successful\nthe process may take up to 8 hours."
-                            )
+                    if (celebrationScreen) {
+                        celebrationScreen.show(
+                            data.muskCredited || data.muskAmount || 0,
+                            data.newBalance || 0
                         );
+                        // Celebration screen đã đủ thông báo, không cần popup thêm
                     }
+                    // Removed: redundant popup "8 hours" - no longer needed
 
                     // Refresh balance or update UI
                     WorldPayBridge.cleanup();
