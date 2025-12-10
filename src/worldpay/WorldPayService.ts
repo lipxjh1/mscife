@@ -47,6 +47,17 @@ export class WorldPayService {
 
     log('Creating deposit...', { muskAmount, currency });
 
+    // ========== DEBUG LOGS START ==========
+    console.log('🔍 [WorldPay Debug] ========== CREATE DEPOSIT START ==========');
+    console.log('🔍 [WorldPay Debug] muskAmount:', muskAmount);
+    console.log('🔍 [WorldPay Debug] currency:', currency);
+
+    const accessToken = localStorage.getItem('accessToken');
+    console.log('🔍 [WorldPay Debug] accessToken exists:', !!accessToken);
+    console.log('🔍 [WorldPay Debug] accessToken length:', accessToken?.length);
+    console.log('🔍 [WorldPay Debug] accessToken prefix:', accessToken?.substring(0, 10) + '...');
+    // ========== DEBUG LOGS END ==========
+
     // Validate input
     if (muskAmount < WORLD_PAY_CONFIG.LIMITS.MIN_MUSK) {
       return {
@@ -64,9 +75,16 @@ export class WorldPayService {
 
     try {
       const url = `${WORLD_PAY_CONFIG.API_BASE_URL}${WORLD_PAY_CONFIG.ENDPOINTS.CREATE_DEPOSIT}`;
+      console.log('🔍 [WorldPay Debug] API URL:', url);
 
       // Get access token from localStorage
       const accessToken = localStorage.getItem('accessToken');
+
+      const requestBody = {
+        muskAmount,
+        currency,
+      };
+      console.log('🔍 [WorldPay Debug] Request body:', JSON.stringify(requestBody, null, 2));
 
       const response = await fetch(url, {
         method: 'POST',
@@ -74,13 +92,13 @@ export class WorldPayService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          muskAmount,
-          currency,
-        } as CreateDepositRequest),
+        body: JSON.stringify(requestBody as CreateDepositRequest),
       });
 
       const data: CreateDepositResponse = await response.json();
+      console.log('🔍 [WorldPay Debug] Backend response status:', response.status);
+      console.log('🔍 [WorldPay Debug] Backend response:', JSON.stringify(data, null, 2));
+      console.log('🔍 [WorldPay Debug] ========== CREATE DEPOSIT END ==========');
 
       if (!response.ok) {
         logError('Create deposit failed', data);
@@ -120,6 +138,14 @@ export class WorldPayService {
     log('Executing MiniKit payment...', { depositId, amount, currency });
 
     // Check MiniKit available
+    console.log('🔍 [WorldPay Debug] ========== MINIKIT CHECK ==========');
+    console.log('🔍 [WorldPay Debug] MiniKit object:', typeof MiniKit);
+    console.log('🔍 [WorldPay Debug] MiniKit.isInstalled:', typeof MiniKit?.isInstalled);
+    console.log('🔍 [WorldPay Debug] MiniKit.isInstalled():', MiniKit?.isInstalled?.());
+    console.log('🔍 [WorldPay Debug] MiniKit.commandsAsync:', typeof MiniKit?.commandsAsync);
+    console.log('🔍 [WorldPay Debug] MiniKit.commandsAsync.pay:', typeof MiniKit?.commandsAsync?.pay);
+    console.log('🔍 [WorldPay Debug] ========================================');
+
     if (!MiniKit.isInstalled()) {
       logError('MiniKit not installed');
       return {
@@ -136,6 +162,25 @@ export class WorldPayService {
       // WLD = 18 decimals, USDC = 6 decimals
       const tokenAmount = tokenToDecimals(amount, token).toString();
 
+      // ========== DEBUG LOGS START ==========
+      const payload = {
+        reference: depositId,
+        to: WORLD_PAY_CONFIG.WALLET_ADDRESS,
+        tokens: [{
+          symbol: token,
+          token_amount: tokenAmount,
+        }],
+        description,
+      };
+
+      console.log('🔍 [WorldPay Debug] ========== PAYMENT START ==========');
+      console.log('🔍 [WorldPay Debug] MiniKit.isInstalled():', MiniKit.isInstalled());
+      console.log('🔍 [WorldPay Debug] Payload:', JSON.stringify(payload, null, 2));
+      console.log('🔍 [WorldPay Debug] Wallet Address:', WORLD_PAY_CONFIG.WALLET_ADDRESS);
+      console.log('🔍 [WorldPay Debug] Token:', token);
+      console.log('🔍 [WorldPay Debug] Token Amount (raw):', tokenAmount);
+      console.log('🔍 [WorldPay Debug] DepositId/Reference:', depositId);
+
       log('Payment payload', {
         reference: depositId,
         to: WORLD_PAY_CONFIG.WALLET_ADDRESS,
@@ -145,15 +190,35 @@ export class WorldPayService {
       });
 
       // Execute payment via MiniKit
-      const { finalPayload } = await MiniKit.commandsAsync.pay({
-        reference: depositId,
-        to: WORLD_PAY_CONFIG.WALLET_ADDRESS,
-        tokens: [{
-          symbol: token,
-          token_amount: tokenAmount,
-        }],
-        description,
-      });
+      let response;
+      try {
+        console.log('🔍 [WorldPay Debug] Calling MiniKit.commandsAsync.pay()...');
+        response = await MiniKit.commandsAsync.pay(payload);
+        console.log('🔍 [WorldPay Debug] FULL Response:', JSON.stringify(response, null, 2));
+        console.log('🔍 [WorldPay Debug] Response type:', typeof response);
+        console.log('🔍 [WorldPay Debug] Response keys:', Object.keys(response || {}));
+      } catch (miniKitError) {
+        console.error('❌ [WorldPay Debug] MiniKit.pay() threw error:', miniKitError);
+        console.error('❌ [WorldPay Debug] Error message:', miniKitError?.message);
+        console.error('❌ [WorldPay Debug] Error stack:', miniKitError?.stack);
+        throw miniKitError;
+      }
+
+      // Check response validity
+      if (!response) {
+        console.error('❌ [WorldPay Debug] Response is null/undefined!');
+      }
+
+      if (!response?.finalPayload) {
+        console.error('❌ [WorldPay Debug] finalPayload is missing!');
+        console.error('❌ [WorldPay Debug] Available keys:', Object.keys(response || {}));
+      }
+
+      const { finalPayload } = response || {};
+      console.log('🔍 [WorldPay Debug] finalPayload:', JSON.stringify(finalPayload, null, 2));
+      console.log('🔍 [WorldPay Debug] finalPayload.status:', finalPayload?.status);
+      console.log('🔍 [WorldPay Debug] ========== PAYMENT END ==========');
+      // ========== DEBUG LOGS END ==========
 
       log('MiniKit response', finalPayload);
 

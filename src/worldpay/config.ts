@@ -55,13 +55,36 @@ export type WorldPayCurrency = typeof WORLD_PAY_CONFIG.CURRENCIES[number];
 // Type for package
 export type WorldPayPackage = typeof WORLD_PAY_CONFIG.PACKAGES[number];
 
+// ========== DEBUG CONFIG START ==========
+console.log('🔍 [WorldPay Config] ========== ENV CHECK ==========');
+console.log('🔍 [WorldPay Config] VITE_WORLD_APP_ID:', import.meta.env.VITE_WORLD_APP_ID);
+console.log('🔍 [WorldPay Config] VITE_WHITELIST_ADDRESS:', import.meta.env.VITE_WHITELIST_ADDRESS);
+console.log('🔍 [WorldPay Config] VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+console.log('🔍 [WorldPay Config] WALLET_ADDRESS from config:', WORLD_PAY_CONFIG.WALLET_ADDRESS);
+console.log('🔍 [WorldPay Config] APP_ID from config:', WORLD_PAY_CONFIG.APP_ID);
+console.log('🔍 [WorldPay Config] API_BASE_URL from config:', WORLD_PAY_CONFIG.API_BASE_URL);
+console.log('🔍 [WorldPay Config] DEV mode:', import.meta.env.DEV);
+console.log('🔍 [WorldPay Config] DEBUG mode:', WORLD_PAY_CONFIG.DEBUG);
+console.log('🔍 [WorldPay Config] ================================');
+// ========== DEBUG CONFIG END ==========
+
 // Validate config on load
 if (!WORLD_PAY_CONFIG.WALLET_ADDRESS) {
-  console.warn('[WorldPay] VITE_WHITELIST_ADDRESS not set!');
+  console.error('❌ [WorldPay Config] VITE_WHITELIST_ADDRESS not set!');
+} else {
+  console.log('✅ [WorldPay Config] WALLET_ADDRESS is set:', WORLD_PAY_CONFIG.WALLET_ADDRESS);
 }
 
 if (!WORLD_PAY_CONFIG.APP_ID) {
-  console.warn('[WorldPay] VITE_WORLD_APP_ID not set!');
+  console.error('❌ [WorldPay Config] VITE_WORLD_APP_ID not set!');
+} else {
+  console.log('✅ [WorldPay Config] APP_ID is set:', WORLD_PAY_CONFIG.APP_ID);
+}
+
+if (!WORLD_PAY_CONFIG.API_BASE_URL) {
+  console.error('❌ [WorldPay Config] VITE_API_BASE_URL not set!');
+} else {
+  console.log('✅ [WorldPay Config] API_BASE_URL is set:', WORLD_PAY_CONFIG.API_BASE_URL);
 }
 
 export default WORLD_PAY_CONFIG;

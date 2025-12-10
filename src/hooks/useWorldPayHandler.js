@@ -38,10 +38,14 @@ export function useWorldPayHandler() {
    * Handle payment request from Phaser
    */
   const handleWorldPayRequest = useCallback(async (data) => {
+    console.log('🔍 [WorldPayHandler] ========== HANDLER START ==========');
+    console.log('🔍 [WorldPayHandler] Received request:', { muskAmount: data?.muskAmount, currency: data?.currency, packageId: data?.packageId });
+    console.log('🔍 [WorldPayHandler] Full data:', JSON.stringify(data, null, 2));
     log('📥 Received payment request:', data);
 
     // Prevent double processing
     if (isProcessingRef.current) {
+      console.log('🔍 [WorldPayHandler] ⚠️ Payment already in progress, ignoring request');
       log('⚠️ Payment already in progress, ignoring request');
       return;
     }
@@ -51,6 +55,7 @@ export function useWorldPayHandler() {
 
     // Validate
     if (!muskAmount || muskAmount <= 0) {
+      console.log('🔍 [WorldPayHandler] ❌ Invalid muskAmount:', muskAmount);
       log('❌ Invalid muskAmount:', muskAmount);
       WorldPayBridge.emitError({
         error: 'Invalid amount. Please specify a valid MUSK amount.',
@@ -61,6 +66,8 @@ export function useWorldPayHandler() {
 
     // Check availability
     if (!isAvailable) {
+      console.log('🔍 [WorldPayHandler] ❌ World Pay not available (not in World App)');
+      console.log('🔍 [WorldPayHandler] isAvailable:', isAvailable);
       log('❌ World Pay not available (not in World App)');
       WorldPayBridge.emitError({
         error: 'Please open this app in World App to make payments.',
@@ -71,18 +78,24 @@ export function useWorldPayHandler() {
 
     // Start processing
     isProcessingRef.current = true;
+    console.log('🔍 [WorldPayHandler] 🚀 Starting payment flow...', { muskAmount, currency });
+    console.log('🔍 [WorldPayHandler] isProcessingRef set to true');
     log('🚀 Starting payment flow...', { muskAmount, currency });
 
     try {
       // Emit status update
+      console.log('🔍 [WorldPayHandler] Emitting status: creating');
       WorldPayBridge.emitStatus('creating', 'Đang tạo giao dịch...');
 
       // Execute payment
+      console.log('🔍 [WorldPayHandler] Calling pay() with:', { muskAmount, currency });
       const result = await pay(muskAmount, currency);
+      console.log('🔍 [WorldPayHandler] Service result:', JSON.stringify(result, null, 2));
 
       log('📤 Payment result:', result);
 
       if (result.success) {
+        console.log('✅ [WorldPayHandler] Payment SUCCESS');
         // Success - emit to Phaser
         WorldPayBridge.emitSuccess({
           muskCredited: result.muskCredited,
@@ -93,6 +106,7 @@ export function useWorldPayHandler() {
 
         log('✅ Payment successful! MUSK credited:', result.muskCredited);
       } else {
+        console.error('❌ [WorldPayHandler] Payment FAILED:', result.error);
         // Error - emit to Phaser
         WorldPayBridge.emitError({
           error: result.error || 'Payment failed',
@@ -104,6 +118,9 @@ export function useWorldPayHandler() {
       }
 
     } catch (error) {
+      console.error('🔍 [WorldPayHandler] ❌ Exception caught:', error);
+      console.error('🔍 [WorldPayHandler] Error message:', error?.message);
+      console.error('🔍 [WorldPayHandler] Error stack:', error?.stack);
       log('❌ Payment error:', error);
 
       WorldPayBridge.emitError({
@@ -113,8 +130,11 @@ export function useWorldPayHandler() {
 
     } finally {
       // Reset processing flag
+      console.log('🔍 [WorldPayHandler] Finally block - resetting flags');
       isProcessingRef.current = false;
+      console.log('🔍 [WorldPayHandler] isProcessingRef:', isProcessingRef.current);
       reset(); // Reset hook state
+      console.log('🔍 [WorldPayHandler] ========== HANDLER END ==========');
     }
 
   }, [pay, isAvailable, reset]);
