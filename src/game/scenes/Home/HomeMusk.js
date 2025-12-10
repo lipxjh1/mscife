@@ -9,10 +9,12 @@ import { SendTransaction } from "../../wallet/Wallet.js";
 import cdLocalization from "../../Data/CenterDataLocalization.js";
 import { AssetLoadingManager } from "../AssetLoadingManager.js";
 import { WorldPayBridge } from "../../worldpay/WorldPayBridge.js";
+import { CelebrationScreen } from "../Share/CelebrationScreen.js";
 
 let container_main = null;
 
 let container_popup = null;
+let celebrationScreen = null;
 const container_popup_openPosition = { x: 0, y: 0 };
 const container_popup_closePosition = { x: 0, y: 4000 };
 
@@ -48,6 +50,9 @@ export function OpenMuskContainer(scene) {
     function loadAssetDone() {
         container_main = scene.add.container(0, 0);
         container_main.setDepth(300);
+
+        // Initialize celebration screen
+        celebrationScreen = new CelebrationScreen(scene);
 
         const lock_bg = scene.rexUI.add.roundRectangle(
             originWidth / 2,
@@ -349,13 +354,33 @@ function ClickItem(scene, item) {
                 (data) => {
                     // Success callback
                     console.log('✅ Payment successful:', data);
-                    CreateAlertPopup(
-                        scene,
-                        cdLocalization.getLocalization(
-                            cdLocalization.GROUP_KEYS.HomeMusk.KEY,
-                            "Transaction successful\nthe process may take up to 8 hours."
-                        )
-                    );
+
+                    // Show celebration screen
+                    if (celebrationScreen && data.muskCredited) {
+                        celebrationScreen.show(data.muskCredited, data.newBalance || 0);
+
+                        // Listen for celebration close
+                        scene.events.once('CELEBRATION_CLOSED', () => {
+                            // Show success popup after celebration closes
+                            CreateAlertPopup(
+                                scene,
+                                cdLocalization.getLocalization(
+                                    cdLocalization.GROUP_KEYS.HomeMusk.KEY,
+                                    "Transaction successful\nthe process may take up to 8 hours."
+                                )
+                            );
+                        });
+                    } else {
+                        // Fallback to normal popup
+                        CreateAlertPopup(
+                            scene,
+                            cdLocalization.getLocalization(
+                                cdLocalization.GROUP_KEYS.HomeMusk.KEY,
+                                "Transaction successful\nthe process may take up to 8 hours."
+                            )
+                        );
+                    }
+
                     // Refresh balance or update UI
                     WorldPayBridge.cleanup();
                 },
@@ -438,6 +463,12 @@ function Close(scene) {
 function Destroy() {
     // Cleanup WorldPay listeners
     WorldPayBridge.cleanup();
+
+    // Cleanup celebration screen
+    if (celebrationScreen) {
+        celebrationScreen.destroy();
+        celebrationScreen = null;
+    }
 
     container_main.destroy();
 

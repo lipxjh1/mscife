@@ -373,6 +373,22 @@ export function LoadPreloader(scene) {
         "player_0_voice",
         url_r2 + "assets/audio/audio_player/audio_player_0/player_0_voice.mp3"
     );
+
+    //load UI/celebration sounds
+    scene.load.audio(
+        "success_sound",
+        url_r2 + "assets/audio/audio_ui/success_sound.mp3"
+    );
+
+    scene.load.audio(
+        "celebration_sound",
+        url_r2 + "assets/audio/audio_ui/celebration_sound.mp3"
+    );
+
+    scene.load.audio(
+        "coin_sound",
+        url_r2 + "assets/audio/audio_ui/coin_sound.mp3"
+    );
 }
 
 export function LoadShare(scene) {
