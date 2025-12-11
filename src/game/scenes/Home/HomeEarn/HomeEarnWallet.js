@@ -678,7 +678,7 @@ function CreateButtons(scene) {
             .setOrigin(0.5, 0.5);
         label_inner.add(icon);
         btn_change_wallet.setConnected = function () {
-            //btn_change_wallet.setVisible(true);
+            btn_change_wallet.setVisible(true);
             text_titile.setText(
                 cdLocalization.getLocalization(
                     cdLocalization.GROUP_KEYS.HomeWallet.KEY,
@@ -687,13 +687,13 @@ function CreateButtons(scene) {
             );
         };
         btn_change_wallet.setDisconnected = function () {
-            //btn_change_wallet.setVisible(false);
-            text_titile.setText(
-                cdLocalization.getLocalization(
-                    cdLocalization.GROUP_KEYS.HomeWallet.KEY,
-                    "Connect Wallet"
-                )
-            );
+            btn_change_wallet.setVisible(false);
+            // text_titile.setText(
+            //     cdLocalization.getLocalization(
+            //         cdLocalization.GROUP_KEYS.HomeWallet.KEY,
+            //         "Connect Wallet"
+            //     )
+            // );
         };
         btn_change_wallet.checkStats = function () {
             let walletAddress = centerData.GetWalletAddress();
