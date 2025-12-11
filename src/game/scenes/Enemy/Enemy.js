@@ -632,6 +632,15 @@ class Enemy {
 
             // Step 4: Play death animation then destroy spine properly
             if (this.spine) {
+                // Clean up event listeners (Fix #3 - Memory Leak)
+                if (this.sprite) {
+                    this.sprite.off('pointerdown');
+                    console.log(`[Enemy] Removed sprite event listeners`);
+                }
+
+                this.spine.off('pointerdown');
+                console.log(`[Enemy] Removed spine event listeners`);
+
                 this.spine.removeAllListeners();
 
                 const animName = "die";

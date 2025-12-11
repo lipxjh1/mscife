@@ -665,6 +665,16 @@ class EnemyGhost {
     destroy() {
         //console.log(`Drone ${this.id} destroy`);
 
+        // Clean up event listeners (Fix #3 - Memory Leak)
+        if (this.droneSprite) {
+            this.droneSprite.off('pointerdown');
+            console.log(`[EnemyGhost] Removed droneSprite event listeners`);
+        }
+        if (this.droneSpine) {
+            this.droneSpine.off('pointerdown');
+            console.log(`[EnemyGhost] Removed droneSpine event listeners`);
+        }
+
         this.scene.RemoveUpdateEvent((time, delta) =>
             this.handleUpdate(time, delta)
         );

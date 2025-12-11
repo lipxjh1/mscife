@@ -514,10 +514,86 @@ export class Gameplay extends Scene {
         this.customEvents = {};
     }
 
+    /**
+     * Clean up all event listeners to prevent memory leak
+     * Called during shutdown to remove all registered event handlers
+     */
+    cleanupEventListeners() {
+        console.log('[Gameplay] Cleaning up event listeners');
+        let removedCount = 0;
+
+        // Remove input events (audio unlock events around lines 436-452)
+        if (this.input) {
+            // Remove any global input listeners
+            this.input.off('pointerdown');
+            this.input.off('pointerup');
+            this.input.off('pointermove');
+            removedCount++;
+
+            // Remove touch events
+            this.input.off('touchstart');
+            this.input.off('touchend');
+            this.input.off('touchmove');
+            removedCount++;
+
+            if (this.input.keyboard) {
+                this.input.keyboard.off('keydown');
+                this.input.keyboard.off('keyup');
+                removedCount++;
+            }
+
+            if (this.input.gamepad) {
+                this.input.gamepad.off('down');
+                this.input.gamepad.off('up');
+                removedCount++;
+            }
+        }
+
+        // Remove scene events
+        if (this.events) {
+            this.events.off('wake');
+            this.events.off('resume');
+            removedCount++;
+        }
+
+        // Remove UI interactive element events
+        if (this.shieldItem) {
+            this.shieldItem.off('pointerdown');
+            this.shieldItem.disableInteractive();
+            removedCount++;
+            console.log('[Gameplay] Removed shieldItem events');
+        }
+
+        // Store reference to shieldItem for cleanup
+        this._shieldItemRef = this.shieldItem;
+
+        // Remove any other interactive UI elements
+        // Search for other elements with setInteractive()
+        const interactiveElements = [
+            this._shieldItemRef,
+            // Add other UI elements here if found
+        ];
+
+        interactiveElements.forEach(element => {
+            if (element && element.removeAllListeners) {
+                try {
+                    element.removeAllListeners();
+                    removedCount++;
+                } catch (error) {
+                    console.warn('[Gameplay] Error removing listeners:', error.message);
+                }
+            }
+        });
+
+        console.log(`[Gameplay] Cleaned up ${removedCount} event listener groups`);
+    }
+
     shutdown() {
         console.log("Scene gameplay shutdown triggered");
 
         try {
+            // Clean up event listeners (Fix #3 - Memory Leak)
+            this.cleanupEventListeners();
             // Step 1: Destroy all enemies
             if (this.enemies && Array.isArray(this.enemies)) {
                 console.log(`[Gameplay] Destroying ${this.enemies.length} enemies`);
@@ -2074,6 +2150,9 @@ export class Gameplay extends Scene {
         shieldItem.setScale(1.0);
         shieldItem.setInteractive();
 
+        // Store reference for cleanup (Fix #3)
+        this.shieldItem = shieldItem;
+
         // Store item data
         shieldItem.setData('itemData', data);
         shieldItem.setData('itemId', 'DOGE_SHIELD');
@@ -2105,6 +2184,10 @@ export class Gameplay extends Scene {
             if (shieldItem.active) {
                 console.log('[Gameplay] Shield expired, destroying');
                 this.tweens.killTweensOf(shieldItem);
+                // Clear reference before destroy (Fix #3)
+                if (this.shieldItem === shieldItem) {
+                    this.shieldItem = null;
+                }
                 shieldItem.destroy();
             }
         });
@@ -2164,6 +2247,10 @@ export class Gameplay extends Scene {
             duration: 300,
             ease: 'Back.easeIn',
             onComplete: () => {
+                // Clear reference before destroy (Fix #3)
+                if (this.shieldItem === shieldItem) {
+                    this.shieldItem = null;
+                }
                 shieldItem.destroy();
                 console.log('[Gameplay] Shield item collected and destroyed');
             }
