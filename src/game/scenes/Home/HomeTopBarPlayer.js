@@ -511,7 +511,7 @@ export function CreatePlayerBar(scene) {
     player_bar_Container.add(text_user_name);
 
     let text_user_id = scene.add
-        .text(228, 172, "ID: " + centerData.userInfo.UserId, {
+        .text(228, 172, "ID: " + (centerData.userInfo?.UserId || "No ID"), {
             fontFamily: "Russo One",
             fontSize: "24px",
             color: "#D2D2D2",

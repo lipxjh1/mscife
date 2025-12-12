@@ -263,7 +263,7 @@ export class Gameplay extends Scene {
             startTime: "2025-01-25T02:44:05.142Z",
         };
 
-        this.CurrentStage = centerData.userInfo.CurrentStage;
+        this.CurrentStage = centerData.userInfo?.CurrentStage || 1;
 
         if (centerData.replayStage > 0) {
             this.CurrentStage = centerData.replayStage;

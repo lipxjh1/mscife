@@ -52,7 +52,7 @@ export class Home extends Scene {
         CreateCurrencyBar(this);
         CreateLobby(this);
 
-        if (centerData.userInfo.CurrentStage === 6) {
+        if (centerData.userInfo?.CurrentStage === 6) {
             //CreateFirstMissions(this);
         }
 

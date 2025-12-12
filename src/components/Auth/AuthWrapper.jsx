@@ -11,7 +11,7 @@ const AuthWrapper = ({ children }) => {
         const checkAuthentication = () => {
             // Check if user is already authenticated
             // This is a simplified check - in real implementation, you'd check tokens, etc.
-            const hasValidTokens = localStorage.getItem('accessToken') || centerData.userInfo.UserId;
+            const hasValidTokens = localStorage.getItem('accessToken') || centerData.userInfo?.UserId;
 
             if (hasValidTokens) {
                 console.log('User is already authenticated');

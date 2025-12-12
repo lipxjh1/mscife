@@ -17,9 +17,29 @@ export class CenterData {
         this.isGoogleLogin = false;
 
         // ============================================
-        // USER INFO - Khởi tạo null, sync từ localStorage
+        // USER INFO - Default object, sync từ localStorage
         // ============================================
-        this.userInfo = null;
+        this.userInfo = {
+            _id: null,
+            UserId: "Guest",
+            Username: "Guest",
+            Email: "",
+            CurrentStage: 1,
+            Chip: 0,
+            Musk: 0,
+            Msci: 0,
+            Power: 0,
+            IsVip: false,
+            VipExpiryDate: null,
+            HasDeposited: false,
+            CheckedinDay: 0,
+            LastCheckinDate: null,
+            DailyPointReward: null,
+            Avatar: "avatar_free_1",
+            InviteCount: 0,
+            InviteBy: null,
+            InviteRewardLevel: 0
+        };
         this.syncFromStorage();
 
         this.baseCharacterInfo = {};
@@ -445,11 +465,33 @@ export class CenterData {
                         Chip: data.chip || data.Chip || 0,
                         Musk: data.musk || data.Musk || 0,
                         MSCI: data.msci || data.MSCI || 0,
+
+                        // ⭐ CurrentStage - QUAN TRỌNG: Fix màn hình đen
+                        CurrentStage: data.currentStage || data.CurrentStage || 1,
+
+                        // Power field
+                        Power: data.power || data.Power || 0,
+
+                        // VIP Status
+                        IsVip: data.isVip || data.IsVip || false,
+                        VipExpiryDate: data.vipExpiryDate || data.VipExpiryDate || null,
+                        HasDeposited: data.hasDeposited || data.HasDeposited || false,
+
+                        // Daily Checkin
+                        CheckedinDay: data.checkedinDay || data.CheckedinDay || 0,
+                        LastCheckinDate: data.lastCheckinDate || data.LastCheckinDate || null,
+                        DailyPointReward: data.dailyPointReward || data.DailyPointReward || null,
+
+                        // Invite System
+                        InviteCount: data.inviteCount || data.InviteCount || 0,
+                        InviteBy: data.inviteBy || data.InviteBy || null,
+                        InviteRewardLevel: data.inviteRewardLevel || data.InviteRewardLevel || 0,
                     };
 
                     console.log('[CenterData] ✅ Synced from localStorage:');
                     console.log('  → Username:', this.userInfo.Username);
                     console.log('  → UserId:', this.userInfo.UserId);
+                    console.log('  → CurrentStage:', this.userInfo.CurrentStage);
                 }
             } catch (e) {
                 console.error('[CenterData] ❌ Failed to parse userData:', e);
