@@ -38,13 +38,20 @@ const AuthWrapper = ({ children }) => {
             setIsAuthenticated(true);
         };
 
+        const handleWorldIdLoginSuccess = (data) => {
+            console.log('✅ World ID login detected in AuthWrapper', data);
+            setIsAuthenticated(true);
+        };
+
         // Listen for successful logins
         EventBus.on('react-google-button-login', handleGoogleLoginSuccess);
         EventBus.on('vorld:otp-success', handleVorldLoginSuccess);
+        EventBus.on('world-id-login-success', handleWorldIdLoginSuccess);
 
         return () => {
             EventBus.off('react-google-button-login', handleGoogleLoginSuccess);
             EventBus.off('vorld:otp-success', handleVorldLoginSuccess);
+            EventBus.off('world-id-login-success', handleWorldIdLoginSuccess);
         };
     }, []);
 
