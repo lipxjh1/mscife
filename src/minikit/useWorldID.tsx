@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { MiniKit, VerificationLevel, VerifyCommandInput, WalletAuthInput, MiniAppWalletAuthSuccessPayload } from '@worldcoin/minikit-js';
+import { setTokens, clearTokens } from '../game/Data/APIBase.js';
 
 // ✅ Dùng env variables
 const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "https://wld.m-sci.net";
@@ -131,6 +132,11 @@ export const useWorldID = () => {
             localStorage.setItem('userData', JSON.stringify(data.data));
           }
 
+          // ⭐ Sync tokens to APIBase memory
+          console.log('🔄 Syncing tokens to APIBase memory...');
+          setTokens(data.accessToken, data.refreshToken || '');
+          console.log('✅ Tokens synced to memory');
+
           console.log('✅ Login successful! Tokens stored.');
           return { success: true, data: data.data };
         } else {
@@ -159,6 +165,10 @@ export const useWorldID = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userData');
+
+    // ⭐ Clear tokens from APIBase memory
+    clearTokens();
+
     setError(null);
     console.log('👋 Logged out');
   }, []);
@@ -201,6 +211,11 @@ export const useWorldID = () => {
         if (data.data) {
           localStorage.setItem('userData', JSON.stringify(data.data));
         }
+
+        // ⭐ Sync new tokens to APIBase memory
+        setTokens(data.accessToken, data.refreshToken || '');
+        console.log('✅ Refreshed tokens synced to memory');
+
         return data;
       } else {
         throw new Error(data.message || 'Token refresh failed');
