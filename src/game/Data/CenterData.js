@@ -16,82 +16,11 @@ export class CenterData {
 
         this.isGoogleLogin = false;
 
-        this.userInfo = {
-            _id: "67a1cde795124152b6d4170a",
-            UserId: "A00002825",
-            Username: "melochenhkb",
-            Avatar: "avatar_free_3",
-            Email: "eliteforcevn@gmail.com",
-            TelegramId: 5085548116,
-            linkedAccounts: {
-                email: true,
-                google: true,
-                telegram: true,
-                wallet: false,
-            },
-            Chip: 420746.6280004628,
-            Musk: 83,
-            MSCI: 10.231090898671535,
-            reservedMusk: 0,
-            reservedMSCI: 0,
-            CurrentStage: 21,
-            Power: 270,
-            chipPerSecond: 0.05790000000000001,
-            AutoRemainingTime: "1970-01-01T00:00:00.000Z",
-            CheckedinDay: [
-                "2025-08-31",
-                "2025-09-01",
-                "2025-09-11",
-                "2025-09-12",
-            ],
-            LastCheckinDate: "2025-09-12T02:18:14.909Z",
-            Quests: [],
-            DailyPointReward: 800,
-            chipRewardSchedule: {
-                active: false,
-                dailyAmount: 10000,
-            },
-            isVip: false,
-            teamEquipment: {
-                _id: "68660e54d728f3e408268577",
-            },
-            teamStats: {
-                sniper: {
-                    ATK: 0,
-                },
-                gunner: {
-                    ATK: 0,
-                },
-                rocket: {
-                    ATK: 0,
-                },
-            },
-            battleCharacters: [
-                "67c5819210905ec70715eee7",
-                "67c5819210905ec70715eeeb",
-                "67ca258010905ec7072fedd2",
-            ],
-            assets: {},
-            reservedAssets: {},
-            dailyConversionInfo: {
-                date: "2025-07-31T00:00:00.000Z",
-                maxConvertibleChip: 99132,
-                convertedChip: 99132,
-                remainingConvertibleChip: 0,
-            },
-            hasDeposited: true,
-            inviteRewardLevel: 0,
-            OldUser: 2,
-            InviteCount: 0,
-            SpentMusk: 3,
-            InviteBy: "A00002476",
-            Parent1: "679272427327af47678ea2f6",
-            Parent2: "67810d6204fdfafa48bba99b",
-            F1SpentMusk: 2520,
-            F2SpentMusk: 0,
-            OtherGameCode: "",
-            OtherGameId: "",
-        };
+        // ============================================
+        // USER INFO - Khởi tạo null, sync từ localStorage
+        // ============================================
+        this.userInfo = null;
+        this.syncFromStorage();
 
         this.baseCharacterInfo = {};
 
@@ -472,6 +401,62 @@ export class CenterData {
 
     emitEvent(eventName, detail = null) {
         this.eventTarget.dispatchEvent(new CustomEvent(eventName, { detail }));
+    }
+
+    // ============================================
+    // SYNC FROM LOCALSTORAGE - Fix race condition
+    // ============================================
+    syncFromStorage() {
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+            try {
+                const parsed = JSON.parse(userData);
+
+                // Backend có thể trả về data trực tiếp hoặc trong parsed.data
+                const data = parsed.data || parsed;
+
+                if (data && (data.username || data.Username || data.odlUserId)) {
+                    this.userInfo = {
+                        // Giữ nguyên tất cả fields gốc
+                        ...data,
+
+                        // ============================================
+                        // MAP FIELDS: lowercase/camelCase → PascalCase
+                        // ============================================
+
+                        // Username: ưu tiên lowercase từ backend
+                        Username: data.username || data.Username || "No user",
+                        username: data.username || data.Username || "No user",
+
+                        // UserId: ƯU TIÊN odlUserId (World ID: W...)
+                        // KHÔNG PHẢI userId (đó là MongoDB _id)
+                        UserId: data.odlUserId || data.UserId || data.userId || "No ID",
+                        userId: data.odlUserId || data.UserId || data.userId || "No ID",
+
+                        // Avatar
+                        Avatar: data.avatar || data.Avatar || "avatar_default",
+                        avatar: data.avatar || data.Avatar || "avatar_default",
+
+                        // Email
+                        Email: data.email || data.Email || "",
+                        email: data.email || data.Email || "",
+
+                        // Chip, Musk, MSCI - giữ nguyên từ data
+                        Chip: data.chip || data.Chip || 0,
+                        Musk: data.musk || data.Musk || 0,
+                        MSCI: data.msci || data.MSCI || 0,
+                    };
+
+                    console.log('[CenterData] ✅ Synced from localStorage:');
+                    console.log('  → Username:', this.userInfo.Username);
+                    console.log('  → UserId:', this.userInfo.UserId);
+                }
+            } catch (e) {
+                console.error('[CenterData] ❌ Failed to parse userData:', e);
+            }
+        } else {
+            console.log('[CenterData] ⚠️ No userData in localStorage');
+        }
     }
 
     AddPlayerInfoChange(callback) {
