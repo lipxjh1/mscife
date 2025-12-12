@@ -45,7 +45,10 @@ const WorldIdLogin = ({ onLoginSuccess }) => {
             justifyContent: 'center',
             minHeight: '100vh',
             padding: '20px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            backgroundImage: 'url(/assets/login/login_bg.webp)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
         }}>
             {/* Logo/Title */}
             <div className="login-header" style={{ textAlign: 'center', marginBottom: '40px' }}>
