@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect } from "react";
+﻿import { useRef, useState, useEffect, useCallback } from "react";
 
 import Phaser from "phaser";
 import { PhaserGame } from "./game/PhaserGame";
@@ -90,6 +90,9 @@ function AppContent() {
     const [vorldEmail, setVorldEmail] = useState('');
     const [showVorldLoginPopup, setShowVorldLoginPopup] = useState(false);  // NEW: Login popup state
 
+    // World ID authentication state
+    const [isWorldIdAuthenticated, setIsWorldIdAuthenticated] = useState(false);
+
     const [isPopupOpen, setPopupOpen] = useState(false);
     const [popupConfig, setPopupConfig] = useState(null);
     const [showGoogleLogin, setShowGoogleLogin] = useState(false);
@@ -112,6 +115,23 @@ function AppContent() {
             EventBus.off("hide-loading", hideLoadingListener);
         };
     }, []);
+
+    // Check existing token on mount and sync with auth state
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            console.log('📱 Found existing token, setting authenticated');
+            setIsWorldIdAuthenticated(true);
+        }
+    }, []);
+
+    // Debug: Log khi auth state thay đổi
+    useEffect(() => {
+        console.log('🔄 isWorldIdAuthenticated changed:', isWorldIdAuthenticated);
+        if (isWorldIdAuthenticated) {
+            console.log('✅ User authenticated, rendering game...');
+        }
+    }, [isWorldIdAuthenticated]);
 
     // Lắng nghe yêu cầu hiển thị popup từ Phaser
     useEffect(() => {
@@ -320,28 +340,31 @@ function AppContent() {
         }
     }, []);
 
+    // World ID login success handler (defined outside useEffect to use as prop)
+    const handleWorldIdLoginSuccess = useCallback((data) => {
+        console.log('🎉 World ID login successful in App!', data);
+
+        // ⭐ QUAN TRỌNG: Update state để trigger re-render
+        setIsWorldIdAuthenticated(true);
+
+        // Emit event cho các component khác
+        EventBus.emit('auth-success', {
+            type: 'world-id',
+            user: data.user,
+            tokens: data.tokens
+        });
+
+        console.log('🎮 Auth state updated, component will re-render');
+    }, []);
+
     // World ID login success listener
     useEffect(() => {
-        const handleWorldIdLoginSuccess = (data) => {
-            console.log('🎉 World ID login successful in App!', data);
-
-            // Get current scene and notify it
-            const currentScene = phaserRef.current?.scene;
-            if (currentScene) {
-                EventBus.emit('auth-success', {
-                    type: 'world-id',
-                    user: data.user,
-                    tokens: data.tokens
-                });
-            }
-        };
-
         EventBus.on('world-id-login-success', handleWorldIdLoginSuccess);
 
         return () => {
             EventBus.off('world-id-login-success', handleWorldIdLoginSuccess);
         };
-    }, []);
+    }, [handleWorldIdLoginSuccess]);
 
     // Google auth: chỉ mount One Tap khi người dùng yêu cầu
     const [showOneTapGoogleSigin, setShowOneTapGoogleSigin] = useState(false);
@@ -799,13 +822,17 @@ function AppContent() {
         );
     }
 
-    // If in World App and not logged in, show World ID login
-    if (isInstalled && !localStorage.getItem('accessToken')) {
-        return <WorldIdLogin />;
+    // Render WorldIdLogin nếu chưa authenticated
+    if (isInstalled && !isWorldIdAuthenticated) {
+        return (
+            <WorldIdLogin
+                onLoginSuccess={handleWorldIdLoginSuccess}
+            />
+        );
     }
 
     // If not in World App and not logged in, show regular login or fallback
-    if (!isInstalled && !localStorage.getItem('accessToken')) {
+    if (!isInstalled && !isWorldIdAuthenticated) {
         // In production, show NotInWorldApp
         if (process.env.NODE_ENV === 'production') {
             return <NotInWorldApp />;
