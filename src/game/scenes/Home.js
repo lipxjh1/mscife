@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import BaseScene from "./BaseScene.js";
 
 import { CreateTopBarNotice } from "./Home/HomeTopBarPlayer.js";
 
@@ -13,9 +13,9 @@ import { CreateFirstMissions } from "./Home/HomeFirstMissions.js";
 import { CreateAudioBackground } from "./Manager/ManagerAudio.js";
 import { CreateGuidePlay } from "./Guide/GuidePlay.js";
 
-export class Home extends Scene {
+export class Home extends BaseScene {
     constructor() {
-        super("Home");
+        super({ key: "Home" });
 
         this.socketInited = false;
 
@@ -70,13 +70,11 @@ export class Home extends Scene {
 
         //centerData.RequestGetNFTCharacterIds();
 
-        this.time.addEvent({
-            delay: 10000, // 1 giây (1000ms)
-            callback: () => {
-                this.UpdateUserInfo();
-            }, // Hàm được gọi mỗi lần lặp
+        this.addTimer({
+            delay: 10000, // 10 giây
+            callback: this.UpdateUserInfo,
             callbackScope: this,
-            loop: true, // Đặt thành true để vòng lặp liên tục
+            loop: true,
         });
 
         //Tạo mask cho ảnh và di chuyển
@@ -134,15 +132,13 @@ export class Home extends Scene {
         //     });
         // });
 
-        this.game.events.addListener(
+        this.addEventBusEvent(
             Phaser.Core.Events.FOCUS,
-            this._onFocus,
-            this
+            this._onFocus
         );
-        this.game.events.addListener(
+        this.addEventBusEvent(
             Phaser.Core.Events.BLUR,
-            this._onBlur,
-            this
+            this._onBlur
         );
 
         CreateGuidePlay(this);
@@ -274,37 +270,37 @@ export class Home extends Scene {
         };
 
         // Thêm nhiều event listeners để đảm bảo audio được unlock
-        this.input.on("pointerdown", unlockAudio, this);
-        this.input.on("pointerup", unlockAudio, this);
-        this.input.on("pointermove", unlockAudio, this);
+        this.addInputEvent("pointerdown", unlockAudio);
+        this.addInputEvent("pointerup", unlockAudio);
+        this.addInputEvent("pointermove", unlockAudio);
 
         // Thêm touch events cho mobile
-        this.input.on("touchstart", unlockAudio, this);
-        this.input.on("touchend", unlockAudio, this);
-        this.input.on("touchmove", unlockAudio, this);
+        this.addInputEvent("touchstart", unlockAudio);
+        this.addInputEvent("touchend", unlockAudio);
+        this.addInputEvent("touchmove", unlockAudio);
 
         // Thêm keyboard events
-        this.input.keyboard.on("keydown", unlockAudio, this);
-        this.input.keyboard.on("keyup", unlockAudio, this);
+        this.addInputEvent("keydown", unlockAudio, this.input.keyboard);
+        this.addInputEvent("keyup", unlockAudio, this.input.keyboard);
 
         // Thêm gamepad events (kiểm tra trước khi sử dụng)
         if (this.input.gamepad) {
-            this.input.gamepad.on("down", unlockAudio, this);
-            this.input.gamepad.on("up", unlockAudio, this);
+            this.addInputEvent("down", unlockAudio, this.input.gamepad);
+            this.addInputEvent("up", unlockAudio, this.input.gamepad);
         }
 
         // Thêm window events
-        this.events.on("wake", unlockAudio, this);
-        this.events.on("resume", unlockAudio, this);
+        this.addEventBusEvent("wake", unlockAudio);
+        this.addEventBusEvent("resume", unlockAudio);
 
         // Thử unlock audio ngay lập tức nếu có thể
-        this.time.delayedCall(100, unlockAudio, [], this);
+        this.addDelayedCall(100, unlockAudio);
 
         // Retry sau 1 giây
-        this.time.delayedCall(1000, unlockAudio, [], this);
+        this.addDelayedCall(1000, unlockAudio);
 
         // Retry sau 3 giây
-        this.time.delayedCall(3000, unlockAudio, [], this);
+        this.addDelayedCall(3000, unlockAudio);
     }
 
     redrawMask() {
@@ -326,12 +322,8 @@ export class Home extends Scene {
 
     // Gọi khi scene tạm thời bị shutdown (ví dụ khi chuyển scene)
     shutdown() {
-        // Dọn dẹp resources, unsubscribe events...
-    }
-
-    // Gọi khi scene bị destroy hoàn toàn
-    destroy() {
-        // Dọn dẹp hoàn toàn, destroy objects...
+        // BaseScene sẽ tự động cleanup tất cả resources
+        super.shutdown();
     }
 
     UpdateUserInfo() {

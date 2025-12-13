@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import BaseScene from "./BaseScene.js";
 
 import { CreatePlayerSelector } from "./Gameplay/GameplayPlayerSelector.js";
 
@@ -153,9 +153,9 @@ import centerDataPlayer from "../Data/CenterDataPlayer.js";
 import { isTelegramMiniApp } from "../utils.js";
 import { CreateGuideGameplay } from "./Guide/GuideGameplay.js";
 
-export class Gameplay extends Scene {
+export class Gameplay extends BaseScene {
     constructor() {
-        super("Gameplay");
+        super({ key: "Gameplay" });
         this.SOCKET_EVENTS = ["started", "update", "game_complete", "error"];
         this.customEvents = {}; // Lưu trữ các event custom
     }
@@ -433,37 +433,37 @@ export class Gameplay extends Scene {
         };
 
         // Thêm nhiều event listeners để đảm bảo audio được unlock
-        this.input.on("pointerdown", unlockAudio, this);
-        this.input.on("pointerup", unlockAudio, this);
-        this.input.on("pointermove", unlockAudio, this);
+        this.addInputEvent("pointerdown", unlockAudio);
+        this.addInputEvent("pointerup", unlockAudio);
+        this.addInputEvent("pointermove", unlockAudio);
 
         // Thêm touch events cho mobile
-        this.input.on("touchstart", unlockAudio, this);
-        this.input.on("touchend", unlockAudio, this);
-        this.input.on("touchmove", unlockAudio, this);
+        this.addInputEvent("touchstart", unlockAudio);
+        this.addInputEvent("touchend", unlockAudio);
+        this.addInputEvent("touchmove", unlockAudio);
 
         // Thêm keyboard events
-        this.input.keyboard.on("keydown", unlockAudio, this);
-        this.input.keyboard.on("keyup", unlockAudio, this);
+        this.addInputEvent("keydown", unlockAudio, this.input.keyboard);
+        this.addInputEvent("keyup", unlockAudio, this.input.keyboard);
 
         // Thêm gamepad events (kiểm tra trước khi sử dụng)
         if (this.input.gamepad) {
-            this.input.gamepad.on("down", unlockAudio, this);
-            this.input.gamepad.on("up", unlockAudio, this);
+            this.addInputEvent("down", unlockAudio, this.input.gamepad);
+            this.addInputEvent("up", unlockAudio, this.input.gamepad);
         }
 
         // Thêm window events
-        this.events.on("wake", unlockAudio, this);
-        this.events.on("resume", unlockAudio, this);
+        this.addEventBusEvent("wake", unlockAudio);
+        this.addEventBusEvent("resume", unlockAudio);
 
         // Thử unlock audio ngay lập tức nếu có thể
-        this.time.delayedCall(100, unlockAudio, [], this);
+        this.addDelayedCall(100, unlockAudio);
 
         // Retry sau 1 giây
-        this.time.delayedCall(1000, unlockAudio, [], this);
+        this.addDelayedCall(1000, unlockAudio);
 
         // Retry sau 3 giây
-        this.time.delayedCall(3000, unlockAudio, [], this);
+        this.addDelayedCall(3000, unlockAudio);
     }
 
     GetPoolSpriteSheet() {
@@ -731,6 +731,9 @@ export class Gameplay extends Scene {
             }
 
             console.log('[Gameplay] Scene shutdown completed');
+
+            // Gọi super.shutdown() để cleanup BaseScene resources
+            super.shutdown();
 
         } catch (error) {
             console.error('[Gameplay] Error during shutdown:', error);
@@ -1212,7 +1215,7 @@ export class Gameplay extends Scene {
         }
 
         // Tạo Timer Event để đếm ngược
-        this.stageTimeEvent = this.time.addEvent({
+        this.stageTimeEvent = this.addTimer({
             delay: 1000, // 1 giây
             callback: this.updateCountdown.bind(this, scene),
             callbackScope: this,
@@ -1890,7 +1893,7 @@ export class Gameplay extends Scene {
 
         //console.log("Initializing socket events...");
 
-        socketService.socket.on("started", (data) => {
+        this.addSocketEvent("started", (data) => {
             //console.log("started: ", data);
             if (this.stageEnemiesCount == 0) {
                 this.battleData = data;
@@ -1899,7 +1902,7 @@ export class Gameplay extends Scene {
             return data;
         });
 
-        socketService.socket.on("update", (data) => {
+        this.addSocketEvent("update", (data) => {
             //console.log("update: ", data);
             if (this.startGameId === data.gameId) {
                 this.battleData = data;
@@ -1908,7 +1911,7 @@ export class Gameplay extends Scene {
             return data;
         });
 
-        socketService.socket.on("game_complete", (data) => {
+        this.addSocketEvent("game_complete", (data) => {
             //console.log("game_complete: ", data);
 
             if (this.startGameId === data.gameData.gameId) {
@@ -1919,7 +1922,7 @@ export class Gameplay extends Scene {
             this.CreateGameOverUI(scene, true, data);
         });
 
-        socketService.socket.on("error", (data) => {
+        this.addSocketEvent("error", (data) => {
             //console.log("error: ", data);
             if (data.message === "Game time is over") {
                 this.CreateGameOverUI(scene, false);
@@ -2117,7 +2120,7 @@ export class Gameplay extends Scene {
 
         this.map.AddToContainerObstacles(img);
 
-        let tween = scene.tweens.add({
+        let tween = this.addTween({
             targets: img, // Đối tượng mà tween sẽ tác động
             alpha: 0.25, // Giá trị alpha cuối cùng (to)
             duration: 1000, // Thời gian chạy (2 giây = 2000ms)
@@ -2126,7 +2129,7 @@ export class Gameplay extends Scene {
             repeat: -1, // Lặp lại vô hạn
         });
 
-        scene.time.delayedCall(shieldSeconds * 1000, () => {
+        this.addDelayedCall(shieldSeconds * 1000, () => {
             this.usingShield = false;
 
             tween.stop();
@@ -2164,7 +2167,7 @@ export class Gameplay extends Scene {
         shieldItem.setTint(0x88DDFF);
 
         // Pulsing animation
-        this.tweens.add({
+        this.addTween({
             targets: shieldItem,
             scale: 1.2,
             duration: 800,
@@ -2174,13 +2177,13 @@ export class Gameplay extends Scene {
         });
 
         // Click/tap to collect
-        shieldItem.on('pointerdown', () => {
+        this.addPointerEvent(shieldItem, 'pointerdown', () => {
             console.log('[Gameplay] Shield clicked, collecting...');
             this.collectShieldItem(shieldItem);
         });
 
         // Auto destroy after 30 seconds
-        this.time.delayedCall(30000, () => {
+        this.addDelayedCall(30000, () => {
             if (shieldItem.active) {
                 console.log('[Gameplay] Shield expired, destroying');
                 this.tweens.killTweensOf(shieldItem);

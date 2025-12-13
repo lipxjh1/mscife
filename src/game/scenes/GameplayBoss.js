@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import BaseScene from "./BaseScene.js";
 
 import { CreatePlayerSelector } from "./GameplayBoss/GameplayBossPlayerSelector.js";
 
@@ -43,9 +43,9 @@ import {
     StopRequestTopDamageLoop,
 } from "./GameplayBoss/GameplayBossTopDamage.js";
 
-export class GameplayBoss extends Scene {
+export class GameplayBoss extends BaseScene {
     constructor() {
-        super("GameplayBoss");
+        super({ key: "GameplayBoss" });
         this.SOCKET_EVENTS = [
             "joinBossBattleResult",
             "attackBossResult",
@@ -278,37 +278,37 @@ export class GameplayBoss extends Scene {
         };
 
         // Thêm nhiều event listeners để đảm bảo audio được unlock
-        this.input.on("pointerdown", unlockAudio, this);
-        this.input.on("pointerup", unlockAudio, this);
-        this.input.on("pointermove", unlockAudio, this);
+        this.addInputEvent("pointerdown", unlockAudio);
+        this.addInputEvent("pointerup", unlockAudio);
+        this.addInputEvent("pointermove", unlockAudio);
 
         // Thêm touch events cho mobile
-        this.input.on("touchstart", unlockAudio, this);
-        this.input.on("touchend", unlockAudio, this);
-        this.input.on("touchmove", unlockAudio, this);
+        this.addInputEvent("touchstart", unlockAudio);
+        this.addInputEvent("touchend", unlockAudio);
+        this.addInputEvent("touchmove", unlockAudio);
 
         // Thêm keyboard events
-        this.input.keyboard.on("keydown", unlockAudio, this);
-        this.input.keyboard.on("keyup", unlockAudio, this);
+        this.addInputEvent("keydown", unlockAudio, this.input.keyboard);
+        this.addInputEvent("keyup", unlockAudio, this.input.keyboard);
 
         // Thêm gamepad events (kiểm tra trước khi sử dụng)
         if (this.input.gamepad) {
-            this.input.gamepad.on("down", unlockAudio, this);
-            this.input.gamepad.on("up", unlockAudio, this);
+            this.addInputEvent("down", unlockAudio, this.input.gamepad);
+            this.addInputEvent("up", unlockAudio, this.input.gamepad);
         }
 
         // Thêm window events
-        this.events.on("wake", unlockAudio, this);
-        this.events.on("resume", unlockAudio, this);
+        this.addEventBusEvent("wake", unlockAudio);
+        this.addEventBusEvent("resume", unlockAudio);
 
         // Thử unlock audio ngay lập tức nếu có thể
-        this.time.delayedCall(100, unlockAudio, [], this);
+        this.addDelayedCall(100, unlockAudio);
 
         // Retry sau 1 giây
-        this.time.delayedCall(1000, unlockAudio, [], this);
+        this.addDelayedCall(1000, unlockAudio);
 
         // Retry sau 3 giây
-        this.time.delayedCall(3000, unlockAudio, [], this);
+        this.addDelayedCall(3000, unlockAudio);
     }
 
     GetPoolSpriteSheet() {
@@ -877,7 +877,7 @@ export class GameplayBoss extends Scene {
         }
 
         // Tạo Timer Event để đếm ngược
-        this.stageTimeEvent = this.time.addEvent({
+        this.stageTimeEvent = this.addTimer({
             delay: 1000, // 1 giây
             callback: this.updateCountdown.bind(this, scene),
             callbackScope: this,
@@ -906,13 +906,11 @@ export class GameplayBoss extends Scene {
         CheckBattle();
 
         // Gọi định kỳ sau mỗi 10 giây
-        this.time.addEvent({
+        this.addTimer({
             delay: 10000, // 10 giây (10000ms)
-            callback: () => {
-                CheckBattle();
-            }, // Hàm được gọi mỗi lần lặp
+            callback: CheckBattle,
             callbackScope: this,
-            loop: true, // Đặt thành true để vòng lặp liên tục
+            loop: true,
         });
     }
 
@@ -994,7 +992,7 @@ export class GameplayBoss extends Scene {
                 this.img_warning.setAlpha(1);
 
                 // Hủy sprite sau 1 giây
-                this.warningDesstroyDelay = this.time.delayedCall(250, () => {
+                this.warningDesstroyDelay = this.addDelayedCall(250, () => {
                     this.img_warning.setVisible(false);
                 });
             },
@@ -1585,7 +1583,7 @@ export class GameplayBoss extends Scene {
     UseEnergy(scene, energySeconds) {
         this.usingEnergy = true;
 
-        this.time.delayedCall(energySeconds * 1000, () => {
+        this.addDelayedCall(energySeconds * 1000, () => {
             this.usingEnergy = false;
         });
     }
@@ -1597,7 +1595,7 @@ export class GameplayBoss extends Scene {
 
         this.map.AddToContainerObstacles(img);
 
-        let tween = this.tweens.add({
+        let tween = this.addTween({
             targets: img, // Đối tượng mà tween sẽ tác động
             alpha: 0.25, // Giá trị alpha cuối cùng (to)
             duration: 1000, // Thời gian chạy (2 giây = 2000ms)
@@ -1606,7 +1604,7 @@ export class GameplayBoss extends Scene {
             repeat: -1, // Lặp lại vô hạn
         });
 
-        this.time.delayedCall(shieldSeconds * 1000, () => {
+        this.addDelayedCall(shieldSeconds * 1000, () => {
             this.usingShield = false;
 
             tween.stop();
