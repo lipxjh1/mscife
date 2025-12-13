@@ -1,7 +1,7 @@
 
 import centerData from "../../Data/CenterData.js";
 import ProgressBar from "../Gameplay/ProgressBar.js";
-import { playIdleAnimation, playAttackAnimation, playCustomAnimation } from "../../utils/spineUtils.js";
+import { playIdleAnimation, playAttackAnimation, playCustomAnimation, destroySpine } from "../../utils/spineUtils.js";
 
 export function EnemyDroneIdToKeyImage(enemyId) {
     let imgKey = "";
@@ -383,7 +383,7 @@ class BossDrones {
 
             scene.time.delayedCall(animTime * 1000, () => {
                 if (this.droneSpine) {
-                    this.droneSpine.destroy();
+                    destroySpine(this.droneSpine, scene);
                 }
 
                 this.droneSpine = null;
