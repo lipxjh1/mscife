@@ -162,28 +162,7 @@ function Create(scene) {
         .setOrigin(0, 0);
     container_account_1.add(text_invite);
 
-    const invite_by = (centerData.userInfo.InviteBy && centerData.userInfo.InviteBy.trim() !== "")
-        ? centerData.userInfo.InviteBy
-        : "Admin";
-
-    const text_sponsor = scene.add
-        .text(
-            56,
-            821,
-            cdLocalization.getLocalization(
-                cdLocalization.GROUP_KEYS.HomeAccount.KEY,
-                "Sponsor: "
-            ) + invite_by,
-            {
-                fontFamily: cdLocalization.getCurrentFont(),
-                fontSize: "36px",
-                color: "#ffffff",
-                align: "left",
-            }
-        )
-        .setOrigin(0, 0);
-    container_account_1.add(text_sponsor);
-
+  
     let vipDays = 0;
 
     if (centerData.vipStatus.data.remainingDays) {
