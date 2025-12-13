@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import BaseScene from "./BaseScene.js";
 import { CreateAudioBackground } from "./Manager/ManagerAudio.js";
 import centerData from "../Data/CenterData.js";
 import { socketService } from "../socket.js";
@@ -13,9 +13,9 @@ const url_r2 = import.meta.env.VITE_ASSETS_BASE_URL || "https://cdn.m-sci.net/";
 
 //const url_r2 = "";
 
-export class Preloader extends Scene {
+export class Preloader extends BaseScene {
     constructor() {
-        super("Preloader");
+        super({ key: "Preloader" });
         this.container_main = null;
         this.container_bg = null;
         this.container_info = null;
@@ -68,8 +68,8 @@ export class Preloader extends Scene {
         const loadingStates = [`${loadStr}.`, `${loadStr}..`, `${loadStr}...`];
         let currentState = 0;
 
-        // Tạo sự kiện lặp lại mỗi 250ms để thay đổi văn bản
-        this.time.addEvent({
+        // ✅ Tạo sự kiện lặp lại mỗi 250ms để thay đổi văn bản - dùng BaseScene helper
+        this.addTimer({
             delay: 250,
             loop: true,
             callback: () => {

@@ -117,6 +117,21 @@ export class Preloader extends Scene {
         CreateAudioBackground(this);
         CreatePlayerDictionary();
 
+        // Preload character card images để tránh race condition khi render cards
+        // Fix: Cards render trước khi lazy load assets → missing images
+        console.log('[Preloader] Loading character card images...');
+        let cardCount = 0;
+        Object.entries(playerSpineDictionary).forEach(([charName, charData]) => {
+            if (charData.UICardInventory && charData.UICardInventory.key) {
+                this.load.image(
+                    charData.UICardInventory.key,
+                    charData.UICardInventory.url
+                );
+                cardCount++;
+            }
+        });
+        console.log(`[Preloader] Queued ${cardCount} character card images for preload`);
+
         this.load.on("progress", (value) => {
             const percent = Math.floor(value * 100);
             if (this.loadingPercentText) {
@@ -160,7 +175,24 @@ export class Preloader extends Scene {
 
     initializeGame() {
         const startGameWithCheck = async () => {
+            console.log("🚀 Starting game directly - skipping Login scene...");
+
+            // Initialize socket connections first
+            InitSocket();
+
+            // Skip Login scene and go directly to Home
+            this.loadHomeSceneDirectly();
+            return;
+
+            // ========== DISABLED LOGIN FLOW ==========
             //this.LoginTelegram(this);
+
+            // Check World App FIRST
+            if (typeof window !== 'undefined' && window.MiniKit && window.MiniKit.isInstalled()) {
+                console.log("🚀 World App detected, loading Login for walletAuth...");
+                this.loadLoginScene();
+                return;
+            }
 
             if (await isTelegramMiniApp()) {
                 console.log("Running in Telegram Mini App.");
@@ -190,7 +222,7 @@ export class Preloader extends Scene {
                 if (LoginScene && typeof LoginScene === "function") {
                     console.log("Login scene loaded successfully");
                     this.scene.add("Login", LoginScene);
-                    this.scene.start("Login");
+                    this.scene.stop(); this.scene.start("Login");
                 } else {
                     throw new Error("Invalid Login scene module structure");
                 }
@@ -230,7 +262,7 @@ export class Preloader extends Scene {
                         if (HomeScene && typeof HomeScene === "function") {
                             console.log("Home scene loaded successfully");
                             this.scene.add("Home", HomeScene);
-                            this.scene.start("Home");
+                            this.scene.stop(); this.scene.start("Home");
                         } else {
                             throw new Error(
                                 "Invalid Home scene module structure"
@@ -242,6 +274,45 @@ export class Preloader extends Scene {
                     });
             },
             (error) => console.log("Get user info failed:", error)
+        );
+    }
+
+    loadHomeSceneDirectly() {
+        console.log("Loading Home scene directly for World App user...");
+
+        // Initialize socket connections first
+        InitSocket();
+
+        // Update wallet
+        centerData.RequestUpdateWallet(
+            centerData.GetWalletAddress(),
+            () => {
+                // Load Home scene
+                import("./Home.js")
+                    .then((module) => {
+                        const HomeScene = module.default || module.Home;
+
+                        if (HomeScene && typeof HomeScene === "function") {
+                            console.log("Home scene loaded successfully");
+                            this.scene.add("Home", HomeScene);
+                            this.scene.stop(); this.scene.start("Home");
+                        } else {
+                            throw new Error(
+                                "Invalid Home scene module structure"
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Failed to load Home scene:", error);
+                        // Fallback to Login scene if Home fails
+                        this.loadLoginScene();
+                    });
+            },
+            (error) => {
+                console.error("Failed to update wallet:", error);
+                // Still try to load Home scene even if wallet update fails
+                this.GetPlayerInfo(this);
+            }
         );
     }
 }
@@ -311,6 +382,22 @@ export function LoadPreloader(scene) {
     scene.load.audio(
         "player_0_voice",
         url_r2 + "assets/audio/audio_player/audio_player_0/player_0_voice.mp3"
+    );
+
+    //load UI/celebration sounds
+    scene.load.audio(
+        "success_sound",
+        url_r2 + "assets/audio/audio_ui/success_sound.mp3"
+    );
+
+    scene.load.audio(
+        "celebration_sound",
+        url_r2 + "assets/audio/audio_ui/celebration_sound.mp3"
+    );
+
+    scene.load.audio(
+        "coin_sound",
+        url_r2 + "assets/audio/audio_ui/coin_sound.mp3"
     );
 }
 

@@ -1,8 +1,8 @@
-import { Scene } from "phaser";
+import BaseScene from "./BaseScene.js";
 
-export class Login extends Scene {
+export class Login extends BaseScene {
     constructor() {
-        super("Login");
+        super({ key: "Login" });
     }
 
     preload() {}
@@ -101,6 +101,9 @@ export class Login extends Scene {
         if (this.input) {
             this.input.removeAllListeners();
         }
+
+        // ✅ Gọi parent cleanup để cleanup BaseScene resources
+        super.shutdown();
 
         console.log(`[${this.scene?.key || 'Login'}] Scene shutdown complete`);
     }
