@@ -314,8 +314,24 @@ class Player {
             this.shakeTween = null; // Xóa tham chiếu sau khi hủy
         }
 
-        if (this.spine) {
-            this.spine.removeAllListeners();
+        // Fix: Cleanup player_spine object properly
+        if (this.player_spine) {
+            try {
+                // Stop all animations
+                if (this.player_spine.state) {
+                    this.player_spine.state.clearTracks();
+                }
+                // Remove listeners
+                this.player_spine.removeAllListeners();
+                // Destroy to release GPU memory
+                this.player_spine.destroy();
+                // Release JS reference
+                this.player_spine = null;
+                console.log('[Player] Spine destroyed successfully');
+            } catch (error) {
+                console.warn('[Player] Error destroying spine:', error);
+                this.player_spine = null;
+            }
         }
 
         if (this.container_delay_bar) {

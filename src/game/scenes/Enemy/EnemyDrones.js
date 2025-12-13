@@ -5,6 +5,7 @@ import {
     playIdleAnimation,
     playAttackAnimation,
     playCustomAnimation,
+    destroySpine,
 } from "../../utils/spineUtils.js";
 
 export function EnemyDroneIdToKeyImage(enemyId, stage) {
@@ -581,6 +582,11 @@ class EnemyDrones {
         if (this.droneSpine) {
             this.droneSpine.off('pointerdown');
             console.log(`[EnemyDrones] Removed droneSpine event listeners`);
+
+            // Fix: Full cleanup spine object
+            destroySpine(this.droneSpine, this.scene);
+            this.droneSpine = null;
+            console.log(`[EnemyDrones] Drone spine destroyed`);
         }
 
         this.scene.RemoveUpdateEvent((time, delta) =>
