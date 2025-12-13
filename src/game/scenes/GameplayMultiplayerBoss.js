@@ -1055,7 +1055,7 @@ export class GameplayMultiplayerBoss extends Scene {
             //console.log("Cleaning up socket events...");
             // Xóa tất cả các event đã đăng ký
             this.SOCKET_EVENTS.forEach((event) => {
-                socketServiceMultiplayerBoss.removeAllListeners(event);
+                socketServiceMultiplayerBoss.socket.removeAllListeners(event);
                 //console.log(`Removed all listeners for event: ${event}`);
             });
         }
