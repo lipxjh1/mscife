@@ -222,7 +222,7 @@ export class Preloader extends Scene {
                 if (LoginScene && typeof LoginScene === "function") {
                     console.log("Login scene loaded successfully");
                     this.scene.add("Login", LoginScene);
-                    this.scene.start("Login");
+                    this.scene.stop(); this.scene.start("Login");
                 } else {
                     throw new Error("Invalid Login scene module structure");
                 }
@@ -262,7 +262,7 @@ export class Preloader extends Scene {
                         if (HomeScene && typeof HomeScene === "function") {
                             console.log("Home scene loaded successfully");
                             this.scene.add("Home", HomeScene);
-                            this.scene.start("Home");
+                            this.scene.stop(); this.scene.start("Home");
                         } else {
                             throw new Error(
                                 "Invalid Home scene module structure"
@@ -295,7 +295,7 @@ export class Preloader extends Scene {
                         if (HomeScene && typeof HomeScene === "function") {
                             console.log("Home scene loaded successfully");
                             this.scene.add("Home", HomeScene);
-                            this.scene.start("Home");
+                            this.scene.stop(); this.scene.start("Home");
                         } else {
                             throw new Error(
                                 "Invalid Home scene module structure"

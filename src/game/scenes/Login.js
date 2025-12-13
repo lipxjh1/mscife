@@ -64,6 +64,46 @@ export class Login extends Scene {
             });
         });
     }
+
+    /**
+     * Cleanup resources khi scene shutdown
+     */
+    shutdown() {
+        console.log(`[${this.scene?.key || 'Login'}] Scene shutting down...`);
+
+        // 1. Cleanup DOM elements
+        this.cleanupDOMElements();
+
+        // 2. Cleanup timers
+        if (this.timers) {
+            this.timers.forEach(timer => {
+                if (timer && timer.remove) {
+                    timer.remove();
+                }
+            });
+            this.timers = null;
+        }
+
+        // 3. Cleanup tweens
+        if (this.tweens) {
+            this.tweens.killAll();
+        }
+
+        // 4. Cleanup socket events
+        if (this.socketEvents && socketService?.socket) {
+            this.socketEvents.forEach(({event, handler}) => {
+                socketService.socket.off(event, handler);
+            });
+            this.socketEvents = null;
+        }
+
+        // 5. Cleanup input events
+        if (this.input) {
+            this.input.removeAllListeners();
+        }
+
+        console.log(`[${this.scene?.key || 'Login'}] Scene shutdown complete`);
+    }
 }
 
 export default Login;

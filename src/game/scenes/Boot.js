@@ -1,9 +1,10 @@
 import { Scene } from "phaser";
 import { LoadPreloader } from "./Preloader.js";
+import BaseScene from "./BaseScene.js";
 
-export class Boot extends Scene {
+export class Boot extends BaseScene {
     constructor() {
-        super("Boot");
+        super({ key: "Boot" });
     }
 
     preload() {
@@ -12,7 +13,8 @@ export class Boot extends Scene {
     }
 
     async create() {
-        this.scene.start("Preloader");
+        // ✅ Safe scene transition with stop
+        this.safeStartScene("Preloader");
     }
 }
 
