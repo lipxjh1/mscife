@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS Test - M-SCI Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .fps-display {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,255,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>Device Info</h3>
+        <div id="device-info"></div>
+        <h3>FPS Settings</h3>
+        <div id="fps-info"></div>
+    </div>
+
+    <div class="fps-display">
+        <div>FPS: <span id="fps-value">--</span></div>
+        <div>Target: <span id="fps-target">--</span></div>
+        <div>Device: <span id="device-type">--</span></div>
+    </div>
+
+    <h1>🎮 FPS Optimization Test</h1>
+    <p>Mở Console (F12) để xem log chi tiết</p>
+
+    <button onclick="toggleMobileSim()">Toggle Mobile Simulation</button>
+    <button onclick="startFPSTest()">Start FPS Test</button>
+    <button onclick="stopFPSTest()">Stop FPS Test</button>
+
+    <script>
+        // Display device info
+        function displayDeviceInfo() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const isLowEnd = isMobile && (navigator.hardwareConcurrency || 2) <= 4;
+            const isTablet = isMobile && window.innerWidth >= 768;
+
+            let deviceType = 'desktop';
+            let targetFPS = 60;
+
+            if (isLowEnd) {
+                deviceType = 'low-end mobile';
+                targetFPS = 24;
+            } else if (isTablet) {
+                deviceType = 'tablet';
+                targetFPS = 30;
+            } else if (isMobile) {
+                deviceType = 'mobile';
+                targetFPS = 30;
+            }
+
+            document.getElementById('device-info').innerHTML = `
+                User Agent: ${navigator.userAgent}<br>
+                Screen: ${window.innerWidth}x${window.innerHeight}<br>
+                Touch: ${'ontouchstart' in window ? 'Yes' : 'No'}<br>
+                CPU Cores: ${navigator.hardwareConcurrency || 'Unknown'}<br>
+                Device Memory: ${navigator.deviceMemory || 'Unknown'}GB
+            `;
+
+            document.getElementById('fps-info').innerHTML = `
+                Mobile: ${isMobile}<br>
+                Low-end: ${isLowEnd}<br>
+                Tablet: ${isTablet}<br>
+                Type: ${deviceType}<br>
+                Target FPS: ${targetFPS}
+            `;
+
+            document.getElementById('fps-target').textContent = targetFPS;
+            document.getElementById('device-type').textContent = deviceType;
+        }
+
+        let fpsInterval;
+        let frameCount = 0;
+        let lastTime = performance.now();
+
+        function updateFPS() {
+            frameCount++;
+            const currentTime = performance.now();
+            const elapsed = currentTime - lastTime;
+
+            if (elapsed >= 1000) {
+                const fps = Math.round((frameCount * 1000) / elapsed);
+                document.getElementById('fps-value').textContent = fps;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            requestAnimationFrame(updateFPS);
+        }
+
+        function startFPSTest() {
+            stopFPSTest();
+            frameCount = 0;
+            lastTime = performance.now();
+            updateFPS();
+            console.log('✅ FPS Test Started');
+        }
+
+        function stopFPSTest() {
+            if (fpsInterval) {
+                cancelAnimationFrame(fpsInterval);
+                console.log('⏹️ FPS Test Stopped');
+            }
+        }
+
+        function toggleMobileSim() {
+            // This won't actually change Phaser FPS, just for display
+            const currentUA = navigator.userAgent;
+            const isMobileNow = /iPhone|Android/i.test(currentUA);
+            alert(`Current device is ${isMobileNow ? 'MOBILE' : 'DESKTOP'}\nTo test mobile, use Chrome DevTools: F12 → Toggle device toolbar`);
+        }
+
+        // Initialize
+        displayDeviceInfo();
+        console.log('🔧 Device Detection:', {
+            device: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+            type: document.getElementById('device-type').textContent,
+            cores: navigator.hardwareConcurrency || 'unknown',
+            screen: `${window.innerWidth}x${window.innerHeight}`
+        });
+
+        // Auto start FPS test
+        startFPSTest();
+    </script>
+</body>
+</html>
