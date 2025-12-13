@@ -38,7 +38,9 @@ export class CenterData {
             Avatar: "avatar_free_1",
             InviteCount: 0,
             InviteBy: null,
-            InviteRewardLevel: 0
+            InviteRewardLevel: 0,
+            canChangeUsername: true,
+            remainingNameChanges: 1
         };
         this.syncFromStorage();
 
@@ -1421,6 +1423,83 @@ export class CenterData {
                         error.message || error.response.data || "Request failed"
                     );
                 }
+            });
+    }
+
+    /**
+     * Get user's name change status
+     * @param {Function} onSuccess - Success callback
+     * @param {Function} onError - Error callback
+     */
+    GetNameChangeInfo(onSuccess, onError) {
+        const url = this.endpoints.USER.GET_NAME_CHANGE_INFO;
+
+        console.log("🌐 GetNameChangeInfo calling API:", url);
+
+        apiClient.get(url)
+            .then(response => {
+                const result = response.data;
+                console.log("✅ GetNameChangeInfo API response:", result);
+
+                if (result.success) {
+                    // Store name change info
+                    this.userInfo.canChangeUsername = result.data.canChange;
+                    this.userInfo.remainingNameChanges = result.data.remainingChanges;
+
+                    if (onSuccess) onSuccess(result.data);
+                } else {
+                    if (onError) onError(result.message || 'Failed to get name change info');
+                }
+            })
+            .catch(error => {
+                console.error('GetNameChangeInfo error:', error);
+                if (onError) onError(error.message || 'Network error');
+            });
+    }
+
+    /**
+     * Change user's display name
+     * @param {string} newUsername - New username (3-20 chars, alphanumeric + _ -)
+     * @param {Function} onSuccess - Success callback
+     * @param {Function} onError - Error callback
+     */
+    ChangeUsername(newUsername, onSuccess, onError) {
+        const url = this.endpoints.USER.CHANGE_USERNAME;
+
+        console.log("🌐 ChangeUsername calling API:", url);
+
+        // Client-side validation
+        const trimmedName = newUsername.trim();
+        const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+
+        if (!usernameRegex.test(trimmedName)) {
+            if (onError) onError('Invalid username (3-20 chars, only letters, numbers, _ and -)');
+            return;
+        }
+
+        apiClient.put(url, { newUsername: trimmedName })
+            .then(response => {
+                const result = response.data;
+                console.log("✅ ChangeUsername API response:", result);
+
+                if (result.success) {
+                    // Update local userInfo
+                    this.userInfo.Username = result.newUsername;
+                    this.userInfo.canChangeUsername = result.remainingChanges > 0;
+                    this.userInfo.remainingNameChanges = result.remainingChanges;
+
+                    // Emit event to refresh UI
+                    this.EmitPlayerInfoChange();
+
+                    if (onSuccess) onSuccess(result);
+                } else {
+                    if (onError) onError(result.message || 'Failed to change username');
+                }
+            })
+            .catch(error => {
+                console.error('ChangeUsername error:', error);
+                const errorMsg = error.response?.data?.message || error.message || 'Network error';
+                if (onError) onError(errorMsg);
             });
     }
 

@@ -21,6 +21,7 @@ import {
 } from "./HomeAvatarSelector.js";
 import cdLocalization from "../../Data/CenterDataLocalization.js";
 import { socketService } from "../../socket.js";
+import { ShowInputTextDialog } from "../Share/PopupInputText.js";
 
 //tạo top bar bg
 let top_bar_notice_container = null;
@@ -28,6 +29,7 @@ const top_bar_notice_defaultPosition = { x: 0, y: 19 };
 const top_bar_notice_hidePosition = { x: 0, y: -250 };
 
 let avatar = null;
+let editUsernameBtn = null;
 let currentBanner = null;
 let text_title = null;
 
@@ -510,6 +512,83 @@ export function CreatePlayerBar(scene) {
 
     player_bar_Container.add(text_user_name);
 
+    // Edit username button (pencil icon)
+    editUsernameBtn = scene.add.text(
+        text_user_name.x + text_user_name.width + 20,  // Position after username
+        text_user_name.y,
+        "✏️",
+        {
+            fontFamily: 'Arial',
+            fontSize: '28px'
+        }
+    )
+    .setOrigin(0, 0.5)
+    .setInteractive({ useHandCursor: true })
+    .on('pointerover', function() {
+        this.setScale(1.2);
+    })
+    .on('pointerout', function() {
+        this.setScale(1.0);
+    })
+    .on('pointerdown', function() {
+        // Check if user can change username
+        centerData.GetNameChangeInfo(
+            (data) => {
+                if (data.canChange) {
+                    // Show input dialog
+                    ShowInputTextDialog(scene, {
+                        title: "Change Username",
+                        placeholder: "Enter new username",
+                        currentValue: centerData.userInfo.Username,
+                        maxLength: 20,
+                        minLength: 3,
+                        validation: /^[a-zA-Z0-9_-]+$/,
+                        validationMessage: "Only letters, numbers, _ and - allowed",
+                        onConfirm: (newUsername) => {
+                            // Call API to change username
+                            centerData.ChangeUsername(
+                                newUsername,
+                                (result) => {
+                                    // Success - UI will auto-refresh via EmitPlayerInfoChange
+                                    console.log('Username changed to:', result.newUsername);
+
+                                    // Hide edit button if no changes remaining
+                                    if (result.remainingChanges <= 0) {
+                                        editUsernameBtn.setVisible(false);
+                                    }
+                                },
+                                (error) => {
+                                    // Error - show message
+                                    console.error('Change username error:', error);
+                                    // Show error using existing popup system
+                                    CreateAlertPopup(scene, error, 'Error');
+                                }
+                            );
+                        },
+                        onCancel: () => {
+                            console.log('Username change cancelled');
+                        }
+                    });
+                } else {
+                    // User has no changes remaining
+                    CreateAlertPopup(scene, 'No name changes remaining. Purchase a Name Change Card to change again.', 'Cannot Change');
+                }
+            },
+            (error) => {
+                console.error('Get name change info error:', error);
+                CreateAlertPopup(scene, 'Failed to check name change status', 'Error');
+            }
+        );
+    });
+
+    // Add to container
+    player_bar_Container.add(editUsernameBtn);
+
+    // Initially check if user can change username
+    if (centerData.userInfo && centerData.userInfo.canChangeUsername === false) {
+        editUsernameBtn.setVisible(false);
+    }
+
     let text_user_id = scene.add
         .text(228, 172, "ID: " + (centerData.userInfo?.UserId || "No ID"), {
             fontFamily: "Russo One",
@@ -528,10 +607,22 @@ export function CreatePlayerBar(scene) {
 
         if (text_user_name && text_user_name.setText) {
             text_user_name.setText(username);
+
+            // Update edit button position after username changes
+            if (editUsernameBtn) {
+                editUsernameBtn.x = text_user_name.x + text_user_name.width + 20;
+            }
         }
         if (text_user_id && text_user_id.setText) {
             text_user_id.setText("ID: " + userId);
         }
+
+        // Update edit button visibility based on canChangeUsername
+        if (editUsernameBtn) {
+            const canChange = centerData.userInfo?.canChangeUsername !== false;
+            editUsernameBtn.setVisible(canChange);
+        }
+
         console.log('✅ User display updated:', username, userId);
     };
 

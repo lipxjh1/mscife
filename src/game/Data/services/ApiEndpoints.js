@@ -17,7 +17,7 @@ export const API_ENDPOINTS = {
         SIGNIN_GOOGLE_LINK_TELEGRAM: '/auth/login-google'
     },
 
-    // 👤 USER & PROFILE (19 endpoints)
+    // 👤 USER & PROFILE (21 endpoints)
     USER: {
         UPDATE_BATTLE_CHARACTERS: '/api/me/update-battle-characters',
         UPDATE_WALLET: '/api/me/update-wallet',
@@ -37,7 +37,9 @@ export const API_ENDPOINTS = {
         CLAIM_MAIL: '/api/mail/mails',
         UPDATE_AVATAR: '/api/me/update-avatar',
         SEARCH_USER: '/api/users/search',
-        GET_CHIP_REWARDS: '/api/me/chip-rewards'
+        GET_CHIP_REWARDS: '/api/me/chip-rewards',
+        GET_NAME_CHANGE_INFO: '/api/me/name-change-info',
+        CHANGE_USERNAME: '/api/me/change-username'
     },
 
     // 💰 MARKET & ECONOMY (47 endpoints)
