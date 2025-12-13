@@ -20,7 +20,7 @@ const isTablet = isMobile && window.innerWidth >= 768;
 // Log device detection for debugging
 console.log('🔧 Device Detection:', {
     device: isMobile ? 'mobile' : 'desktop',
-    type: isLowEnd ? 'low-end' : isTablet ? 'tablet' : isMobile ? 'mid-range' : 'desktop',
+    type: isLowEnd ? 'low-end (24 FPS)' : isTablet ? 'tablet (30 FPS)' : isMobile ? 'mobile (30 FPS)' : 'desktop (60 FPS)',
     cores: navigator.hardwareConcurrency || 'unknown',
     screen: `${window.innerWidth}x${window.innerHeight}`,
     userAgent: navigator.userAgent.substring(0, 50) + '...'
@@ -70,7 +70,7 @@ const config = {
         crossOrigin: "anonymous",
     },
     fps: {
-        target: isLowEnd ? 30 : isTablet ? 45 : isMobile ? 45 : 60, // Adaptive FPS based on device capability
+        target: isLowEnd ? 24 : isTablet ? 30 : isMobile ? 30 : 60, // Optimized FPS: 30 for mobile to save battery
         forceSetTimeOut: isMobile, // Use setTimeout on mobile for better battery life
         min: isLowEnd ? 15 : isMobile ? 20 : 30, // Adaptive minimum FPS
         smoothStep: true, // Keep smooth FPS transitions
