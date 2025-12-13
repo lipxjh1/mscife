@@ -162,10 +162,9 @@ function Create(scene) {
         .setOrigin(0, 0);
     container_account_1.add(text_invite);
 
-    let invite_by = "Admin";
-    if (centerData.userInfo.InviteBy) {
-        invite_by = centerData.userInfo.InviteBy;
-    }
+    const invite_by = (centerData.userInfo.InviteBy && centerData.userInfo.InviteBy.trim() !== "")
+        ? centerData.userInfo.InviteBy
+        : "Admin";
 
     const text_sponsor = scene.add
         .text(
