@@ -448,10 +448,10 @@ export class CenterData {
                         Username: data.username || data.Username || "No user",
                         username: data.username || data.Username || "No user",
 
-                        // UserId: ƯU TIÊN odlUserId (World ID: W...)
+                        // UserId: Ưu tiên data.id, sau đó odlUserId (World ID: W...)
                         // KHÔNG PHẢI userId (đó là MongoDB _id)
-                        UserId: data.odlUserId || data.UserId || data.userId || "No ID",
-                        userId: data.odlUserId || data.UserId || data.userId || "No ID",
+                        UserId: data.id || data.odlUserId || data.UserId || data.userId || "No ID",
+                        userId: data.id || data.odlUserId || data.UserId || data.userId || "No ID",
 
                         // Avatar
                         Avatar: data.avatar || data.Avatar || "avatar_default",

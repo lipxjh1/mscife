@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { MiniKit, VerificationLevel, VerifyCommandInput, WalletAuthInput, MiniAppWalletAuthSuccessPayload } from '@worldcoin/minikit-js';
 import { setTokens, clearTokens } from '../game/Data/APIBase.js';
+import centerData from '../game/Data/CenterData.js';
 
 // ✅ Dùng env variables
 const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "https://wld.m-sci.net";
@@ -136,6 +137,15 @@ export const useWorldID = () => {
           console.log('🔄 Syncing tokens to APIBase memory...');
           setTokens(data.accessToken, data.refreshToken || '');
           console.log('✅ Tokens synced to memory');
+
+          // ⭐ THÊM: Sync vào CenterData và emit event update UI
+          console.log('🔄 Syncing user data to CenterData...');
+          centerData.syncFromStorage();
+          console.log('📢 Emitting player info change...');
+          if (typeof centerData.EmitPlayerInfoChange === 'function') {
+              centerData.EmitPlayerInfoChange();
+          }
+          console.log('✅ User data synced and UI notified');
 
           console.log('✅ Login successful! Tokens stored.');
           return { success: true, data: data.data };

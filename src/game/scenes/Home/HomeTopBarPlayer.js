@@ -520,6 +520,35 @@ export function CreatePlayerBar(scene) {
 
     player_bar_Container.add(text_user_id);
 
+    // ⭐ THÊM: Listener để update UI khi player info thay đổi
+    const updateUserDisplay = () => {
+        console.log('🔄 Updating user display...');
+        const username = centerData.userInfo?.Username || "No user";
+        const userId = centerData.userInfo?.UserId || "No ID";
+
+        if (text_user_name && text_user_name.setText) {
+            text_user_name.setText(username);
+        }
+        if (text_user_id && text_user_id.setText) {
+            text_user_id.setText("ID: " + userId);
+        }
+        console.log('✅ User display updated:', username, userId);
+    };
+
+    // Đăng ký listener
+    if (typeof centerData.AddPlayerInfoChange === 'function') {
+        centerData.AddPlayerInfoChange(updateUserDisplay);
+        console.log('✅ Registered player info change listener');
+    }
+
+    // Cleanup khi scene shutdown
+    scene.events.once("shutdown", () => {
+        if (typeof centerData.RemovePlayerInfoChange === 'function') {
+            centerData.RemovePlayerInfoChange(updateUserDisplay);
+            console.log('🧹 Cleaned up player info change listener');
+        }
+    });
+
     DefaultPlayerBar();
 }
 
