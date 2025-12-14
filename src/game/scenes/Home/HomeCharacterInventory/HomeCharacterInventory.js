@@ -84,27 +84,36 @@ function AssetsLoadDone(scene) {
         CreateCharacterTeam(scene);
         CloseFragment(scene);
     };
-    btn_team.on("pointerdown", onTeamClick);
-    characterInventoryResources.events.push({ target: btn_team, event: "pointerdown", handler: onTeamClick });
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: btn_team,
 
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: btn_team,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+    const onTeamOver = function () {
+        scene.tweens.add({
+            targets: btn_team,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+
+    const onTeamOut = function () {
+        scene.tweens.add({
+            targets: btn_team,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+
+    // Attach events
+    btn_team.on("pointerdown", onTeamClick);
+    btn_team.on("pointerover", onTeamOver);
+    btn_team.on("pointerout", onTeamOut);
+
+    // Track events for memory cleanup
+    characterInventoryResources.events.push({ target: btn_team, event: "pointerdown", handler: onTeamClick });
+    characterInventoryResources.events.push({ target: btn_team, event: "pointerover", handler: onTeamOver });
+    characterInventoryResources.events.push({ target: btn_team, event: "pointerout", handler: onTeamOut });
 
     container_main.add(btn_team);
 
@@ -170,30 +179,38 @@ function AssetsLoadDone(scene) {
         //console.log("btn_close clicked");
         Close(scene);
     };
-    btn_close.on("pointerdown", onCloseClick);
-    characterInventoryResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
-        .on("pointerover", function () {
-            //console.log("btn_close over");
 
-            scene.tweens.add({
-                targets: btn_close,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            //console.log("btn_close out");
-
-            scene.tweens.add({
-                targets: btn_close,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+    const onCloseOver = function () {
+        //console.log("btn_close over");
+        scene.tweens.add({
+            targets: btn_close,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+
+    const onCloseOut = function () {
+        //console.log("btn_close out");
+        scene.tweens.add({
+            targets: btn_close,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+
+    // Attach events
+    btn_close.on("pointerdown", onCloseClick);
+    btn_close.on("pointerover", onCloseOver);
+    btn_close.on("pointerout", onCloseOut);
+
+    // Track events for memory cleanup
+    characterInventoryResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
+    characterInventoryResources.events.push({ target: btn_close, event: "pointerover", handler: onCloseOver });
+    characterInventoryResources.events.push({ target: btn_close, event: "pointerout", handler: onCloseOut });
 
     container_main.add(btn_close);
 
