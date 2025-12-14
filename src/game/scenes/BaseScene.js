@@ -2,6 +2,9 @@
  * BaseScene - Scene base class với auto-cleanup
  * Tự động cleanup timers, events, tweens, và resources
  */
+import { socketService } from "../socket.js";
+import { EventBus } from "../EventBus.js";
+
 export default class BaseScene extends Phaser.Scene {
     constructor(config) {
         super(config);
@@ -76,15 +79,9 @@ export default class BaseScene extends Phaser.Scene {
      * @param {string} event - Event name
      * @param {Function} callback - Event handler
      * @param {Object} context - Event context
-     * @param {Object} socketService - Socket service instance
      * @returns {Function|null} Bound callback
      */
-    addSocketEvent(event, callback, context = this, socketService = null) {
-        // Try to get socket service globally if not provided
-        if (!socketService && typeof window !== 'undefined') {
-            socketService = window.socketService;
-        }
-
+    addSocketEvent(event, callback, context = this) {
         if (!socketService?.socket) {
             console.warn(`[BaseScene] Socket service not available for event: ${event}`);
             return null;
@@ -104,17 +101,9 @@ export default class BaseScene extends Phaser.Scene {
      * @returns {Function} Bound callback
      */
     addEventBusEvent(event, callback, context = this) {
-        // Try to get EventBus globally
-        let EventBus;
-        if (typeof window !== 'undefined' && window.EventBus) {
-            EventBus = window.EventBus;
-        } else {
-            try {
-                EventBus = require('../../eventBus').default;
-            } catch (e) {
-                console.warn(`[BaseScene] EventBus not available for event: ${event}`);
-                return null;
-            }
+        if (!EventBus) {
+            console.warn(`[BaseScene] EventBus not available for event: ${event}`);
+            return null;
         }
 
         const boundCallback = callback.bind(context);
