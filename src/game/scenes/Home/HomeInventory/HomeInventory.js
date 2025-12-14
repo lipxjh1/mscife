@@ -38,6 +38,13 @@ let container_item_list = null;
 
 let isOpen = false;
 
+// ✅ Resource tracking for proper cleanup
+const inventoryResources = {
+    events: [],
+    tweens: [],
+    timers: []
+};
+
 export function CreateInventory(scene) {
     CreateLoadingPopup();
 
@@ -88,34 +95,43 @@ function LoadAssetsDone(scene) {
     //create close btn
     const btn_close = scene.add
         .image(38 + 118 / 2, 248 + 90 / 2, "share_btn_home_2")
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {
-            //console.log("btn_close clicked");
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
 
-            Close(scene);
-        })
-        .on("pointerover", function () {
-            //console.log("btn_close over");
+    // ✅ Track close button events
+    const onCloseClick = function () {
+        //console.log("btn_close clicked");
+        Close(scene);
+    };
+    btn_close.on("pointerdown", onCloseClick);
+    inventoryResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
 
-            scene.tweens.add({
-                targets: btn_close,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            //console.log("btn_close out");
-
-            scene.tweens.add({
-                targets: btn_close,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+    const onCloseOver = function () {
+        //console.log("btn_close over");
+        const tween = scene.tweens.add({
+            targets: btn_close,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+        inventoryResources.tweens.push(tween);
+    };
+    btn_close.on("pointerover", onCloseOver);
+    inventoryResources.events.push({ target: btn_close, event: "pointerover", handler: onCloseOver });
+
+    const onCloseOut = function () {
+        //console.log("btn_close out");
+        const tween = scene.tweens.add({
+            targets: btn_close,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+        inventoryResources.tweens.push(tween);
+    };
+    btn_close.on("pointerout", onCloseOut);
+    inventoryResources.events.push({ target: btn_close, event: "pointerout", handler: onCloseOut });
 
     container_popup_1.add(btn_close);
 
@@ -247,16 +263,15 @@ function CreateItemList(scene) {
         })
         .layout();
 
-    gridTable.on(
-        "cell.click",
-        function (cellContainer, cellIndex) {
-            // Khi một cell được click, gọi hàm xử lý
-            if (cellContainer && cellContainer.itemData) {
-                ClickItem(scene, cellContainer.itemData);
-            }
-        },
-        scene
-    );
+    // ✅ Track gridTable click event
+    const onCellClick = function (cellContainer, cellIndex) {
+        // Khi một cell được click, gọi hàm xử lý
+        if (cellContainer && cellContainer.itemData) {
+            ClickItem(scene, cellContainer.itemData);
+        }
+    };
+    gridTable.on("cell.click", onCellClick, scene);
+    inventoryResources.events.push({ target: gridTable, event: "cell.click", handler: onCellClick });
 
     // gridTable.on("cell.over", function (cellContainer, cellIndex) {
     //     // Hiệu ứng khi hover vào
@@ -652,7 +667,7 @@ export function Open(scene) {
         container_popup_close_position.y
     );
 
-    scene.tweens.add({
+    const openTween = scene.tweens.add({
         targets: container_popup,
         x: container_popup_open_position.x,
         y: container_popup_open_position.y, // Vị trí kết thúc
@@ -672,7 +687,7 @@ export function Close(scene) {
         container_popup_open_position.y
     );
 
-    scene.tweens.add({
+    const closeTween = scene.tweens.add({
         targets: container_popup,
         x: container_popup_close_position.x,
         y: container_popup_close_position.y, // Vị trí kết thúc
@@ -685,6 +700,50 @@ export function Close(scene) {
     });
 }
 
+export function DestroyInventory(scene) {
+    // ✅ Clean up all tracked events
+    inventoryResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // ✅ Stop all tracked tweens
+    inventoryResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
+    // ✅ Remove all tracked timers
+    inventoryResources.timers.forEach(timer => {
+        if (timer && timer.remove) {
+            timer.remove();
+        }
+    });
+
+    // ✅ Reset resources
+    inventoryResources.events = [];
+    inventoryResources.tweens = [];
+    inventoryResources.timers = [];
+
+    // ✅ Destroy containers
+    if (container_main && container_main.destroy) {
+        container_main.destroy();
+        container_main = null;
+    }
+
+    // Reset state
+    isOpen = false;
+    container_popup = null;
+    container_popup_0 = null;
+    container_popup_1 = null;
+    container_item_list = null;
+
+    // ⚠️ IMPORTANT: NO localStorage, sessionStorage, or socket auth cleanup here!
+}
+
+// ✅ Backward compatibility
 function Destroy(scene) {
-    container_main.destroy();
+    DestroyInventory(scene);
 }

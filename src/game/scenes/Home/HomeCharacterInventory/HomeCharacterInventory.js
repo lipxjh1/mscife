@@ -45,6 +45,13 @@ let btn_fragment_open_position = { x: 635 + 385 / 2, y: 1710 };
 
 let isOpen = false;
 
+// ✅ Resource tracking for proper cleanup
+const characterInventoryResources = {
+    events: [],
+    tweens: [],
+    timers: []
+};
+
 export { container_main };
 
 export function CreateCharacterInventory(scene) {
@@ -69,17 +76,16 @@ function AssetsLoadDone(scene) {
         .image(367 + 330 / 2, 58 + 90 / 2, "home_character_btn_team")
         .setOrigin(0.5, 0.5)
         .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {
-            //console.log("btn_team clicked");
-
-            btn_team.setSelected();
-
-            btn_fragment.setUnselected();
-
-            CreateCharacterTeam(scene);
-
-            CloseFragment(scene);
-        })
+        // ✅ Track btn_team click event
+    const onTeamClick = function () {
+        //console.log("btn_team clicked");
+        btn_team.setSelected();
+        btn_fragment.setUnselected();
+        CreateCharacterTeam(scene);
+        CloseFragment(scene);
+    };
+    btn_team.on("pointerdown", onTeamClick);
+    characterInventoryResources.events.push({ target: btn_team, event: "pointerdown", handler: onTeamClick });
         .on("pointerover", function () {
             scene.tweens.add({
                 targets: btn_team,
@@ -159,11 +165,13 @@ function AssetsLoadDone(scene) {
     const btn_close = scene.add
         .image(38 + 118 / 2, 58 + 90 / 2, "share_btn_home_2")
         .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {
-            //console.log("btn_close clicked");
-
-            Close(scene);
-        })
+        // ✅ Track close button click
+    const onCloseClick = function () {
+        //console.log("btn_close clicked");
+        Close(scene);
+    };
+    btn_close.on("pointerdown", onCloseClick);
+    characterInventoryResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
         .on("pointerover", function () {
             //console.log("btn_close over");
 
@@ -238,6 +246,50 @@ export function Close(scene) {
     });
 }
 
+export function DestroyCharacterInventory(scene) {
+    // ✅ Clean up all tracked events
+    characterInventoryResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // ✅ Stop all tracked tweens
+    characterInventoryResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
+    // ✅ Remove all tracked timers
+    characterInventoryResources.timers.forEach(timer => {
+        if (timer && timer.remove) {
+            timer.remove();
+        }
+    });
+
+    // ✅ Reset resources
+    characterInventoryResources.events = [];
+    characterInventoryResources.tweens = [];
+    characterInventoryResources.timers = [];
+
+    // ✅ Destroy containers
+    if (container_main && container_main.destroy) {
+        container_main.destroy();
+        container_main = null;
+    }
+
+    // Reset button references
+    btn_team = null;
+    btn_fragment = null;
+
+    // Reset state
+    isOpen = false;
+
+    // ⚠️ IMPORTANT: NO localStorage, sessionStorage, or socket auth cleanup here!
+}
+
+// ✅ Backward compatibility
 function Destroy(scene) {
-    container_main.destroy();
+    DestroyCharacterInventory(scene);
 }
