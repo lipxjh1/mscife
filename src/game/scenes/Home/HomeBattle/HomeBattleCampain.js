@@ -25,6 +25,12 @@ let container_popup_buttons = null;
 
 let isOpen = false;
 
+// Track all resources for cleanup
+let campaignResources = {
+    events: [],
+    tweens: []
+};
+
 export function CreateCampain(scene) {
     centerData.replayStage = 0;
 
@@ -51,6 +57,12 @@ function AssetsLoadDone(scene) {
 
             HideHomeBattle(scene);
 
+            // Reset resources
+            campaignResources = {
+                events: [],
+                tweens: []
+            };
+
             container_main = scene.add.container(0, 0);
             container_main.setDepth(200);
 
@@ -73,30 +85,39 @@ function AssetsLoadDone(scene) {
                 //create close btn
                 const btn_close = scene.add
                     .image(38 + 32 / 2, 266 + 54 / 2, "share_btn_back")
-                    .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-                    .on("pointerdown", function () {
-                        CloseCampian(scene);
+                    .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
 
-                        ShowHomeBattle(scene);
-                    })
-                    .on("pointerover", function () {
-                        scene.tweens.add({
-                            targets: btn_close,
-                            scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                            scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                            duration: 100, // Thời gian hiệu ứng (ms)
-                            ease: "Power2",
-                        });
-                    })
-                    .on("pointerout", function () {
-                        scene.tweens.add({
-                            targets: btn_close,
-                            scaleX: 1, // Phóng to 20% theo chiều ngang
-                            scaleY: 1, // Phóng to 20% theo chiều dọc
-                            duration: 100, // Thời gian hiệu ứng (ms)
-                            ease: "Power2",
-                        });
+                // Track events
+                const onCloseClick = function () {
+                    CloseCampian(scene);
+                    ShowHomeBattle(scene);
+                };
+                btn_close.on("pointerdown", onCloseClick);
+                campaignResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
+
+                const onCloseOver = function () {
+                    scene.tweens.add({
+                        targets: btn_close,
+                        scaleX: 1.2, // Phóng to 20% theo chiều ngang
+                        scaleY: 1.2, // Phóng to 20% theo chiều dọc
+                        duration: 100, // Thời gian hiệu ứng (ms)
+                        ease: "Power2",
                     });
+                };
+                btn_close.on("pointerover", onCloseOver);
+                campaignResources.events.push({ target: btn_close, event: "pointerover", handler: onCloseOver });
+
+                const onCloseOut = function () {
+                    scene.tweens.add({
+                        targets: btn_close,
+                        scaleX: 1, // Phóng to 20% theo chiều ngang
+                        scaleY: 1, // Phóng to 20% theo chiều dọc
+                        duration: 100, // Thời gian hiệu ứng (ms)
+                        ease: "Power2",
+                    });
+                };
+                btn_close.on("pointerout", onCloseOut);
+                campaignResources.events.push({ target: btn_close, event: "pointerout", handler: onCloseOut });
 
                 container_popup_buttons.add(btn_close);
             }
@@ -183,6 +204,11 @@ function CreateList(scene) {
 
     scrollablePanel.layout();
 
+    // Auto-register with UIManager if available
+    if (scene.ui && scene.ui.register) {
+        scene.ui.register(container_main, 'HomeBattleCampain');
+    }
+
     let maskShape = scene.add
         .rectangle(posX, posY, scrollViewWidth, scrollViewHeight, 0x000000)
         .setVisible(false);
@@ -207,15 +233,19 @@ function CreateItemMapList(scene, scrollablePanel) {
     earth.setLevelStartEnd(1, 20);
     //earth.setReplay(0, 0);
 
-    earth.btn_play.button.on("pointerdown", function () {
+    const onEarthPlay = function () {
         PlayCampain(scene);
-    });
+    };
+    earth.btn_play.button.on("pointerdown", onEarthPlay);
+    campaignResources.events.push({ target: earth.btn_play.button, event: "pointerdown", handler: onEarthPlay });
 
-    earth.btn_replay.button.on("pointerdown", function () {
+    const onEarthReplay = function () {
         if (earth.btn_replay.button.input) {
             CreateReplayPopup(scene, 0); // startStage = 0 để lấy các milestone: 5, 10, 15, 20
         }
-    });
+    };
+    earth.btn_replay.button.on("pointerdown", onEarthReplay);
+    campaignResources.events.push({ target: earth.btn_replay.button, event: "pointerdown", handler: onEarthReplay });
 
     let space = CreateItemMap(scene, scrollablePanel);
     btnArr.push(space);
@@ -228,15 +258,19 @@ function CreateItemMapList(scene, scrollablePanel) {
     space.bg.setTexture("home_battle_item_bg_campain_space");
     space.setLevelStartEnd(21, 40);
     //space.setActive(false);
-    space.btn_play.button.on("pointerdown", function () {
+    const onSpacePlay = function () {
         PlayCampain(scene);
-    });
+    };
+    space.btn_play.button.on("pointerdown", onSpacePlay);
+    campaignResources.events.push({ target: space.btn_play.button, event: "pointerdown", handler: onSpacePlay });
 
-    space.btn_replay.button.on("pointerdown", function () {
+    const onSpaceReplay = function () {
         if (space.btn_replay.button.input) {
             CreateReplayPopup(scene, 20); // startStage = 20 để lấy các milestone: 25, 30, 35, 40
         }
-    });
+    };
+    space.btn_replay.button.on("pointerdown", onSpaceReplay);
+    campaignResources.events.push({ target: space.btn_replay.button, event: "pointerdown", handler: onSpaceReplay });
 
     let mars = CreateItemMap(scene, scrollablePanel);
     btnArr.push(mars);
@@ -249,15 +283,19 @@ function CreateItemMapList(scene, scrollablePanel) {
     mars.bg.setTexture("home_battle_item_bg_campain_mars");
     mars.setLevelStartEnd(41, 60);
     //mars.setActive(false);
-    mars.btn_play.button.on("pointerdown", function () {
+    const onMarsPlay = function () {
         PlayCampain(scene);
-    });
+    };
+    mars.btn_play.button.on("pointerdown", onMarsPlay);
+    campaignResources.events.push({ target: mars.btn_play.button, event: "pointerdown", handler: onMarsPlay });
 
-    mars.btn_replay.button.on("pointerdown", function () {
+    const onMarsReplay = function () {
         if (mars.btn_replay.button.input) {
             CreateReplayPopup(scene, 40); // startStage = 40 để lấy các milestone: 45, 50, 55, 60
         }
-    });
+    };
+    mars.btn_replay.button.on("pointerdown", onMarsReplay);
+    campaignResources.events.push({ target: mars.btn_replay.button, event: "pointerdown", handler: onMarsReplay });
 
     let return_earth = CreateItemMap(scene, scrollablePanel);
     btnArr.push(return_earth);
@@ -272,15 +310,19 @@ function CreateItemMapList(scene, scrollablePanel) {
     return_earth.setActive(false);
 
     // Thêm click handlers cho return_earth (sẽ được enable khi unlock từ API)
-    return_earth.btn_play.button.on("pointerdown", function () {
+    const onReturnEarthPlay = function () {
         PlayCampain(scene);
-    });
+    };
+    return_earth.btn_play.button.on("pointerdown", onReturnEarthPlay);
+    campaignResources.events.push({ target: return_earth.btn_play.button, event: "pointerdown", handler: onReturnEarthPlay });
 
-    return_earth.btn_replay.button.on("pointerdown", function () {
+    const onReturnEarthReplay = function () {
         if (return_earth.btn_replay.button.input) {
             CreateReplayPopup(scene, 60); // startStage = 60 để lấy các milestone: 65, 70, 75, 80
         }
-    });
+    };
+    return_earth.btn_replay.button.on("pointerdown", onReturnEarthReplay);
+    campaignResources.events.push({ target: return_earth.btn_replay.button, event: "pointerdown", handler: onReturnEarthReplay });
 
     let X_Corp = CreateItemMap(scene, scrollablePanel);
     btnArr.push(X_Corp);
@@ -295,15 +337,19 @@ function CreateItemMapList(scene, scrollablePanel) {
     X_Corp.setActive(false);
 
     // Thêm click handlers cho X_Corp (sẽ được enable khi unlock từ API)
-    X_Corp.btn_play.button.on("pointerdown", function () {
+    const onXCorpPlay = function () {
         PlayCampain(scene);
-    });
+    };
+    X_Corp.btn_play.button.on("pointerdown", onXCorpPlay);
+    campaignResources.events.push({ target: X_Corp.btn_play.button, event: "pointerdown", handler: onXCorpPlay });
 
-    X_Corp.btn_replay.button.on("pointerdown", function () {
+    const onXCorpReplay = function () {
         if (X_Corp.btn_replay.button.input) {
             CreateReplayPopup(scene, 80); // startStage = 80 để lấy các milestone: 85, 90, 95, 100
         }
-    });
+    };
+    X_Corp.btn_replay.button.on("pointerdown", onXCorpReplay);
+    campaignResources.events.push({ target: X_Corp.btn_replay.button, event: "pointerdown", handler: onXCorpReplay });
 
     centerData.RequestCheckPointStatus(
         (result) => {
@@ -434,26 +480,36 @@ function CreateFightButton(scene, container, x, y, imageKey, buttonName) {
     btn_container.button = scene.add
         .image(0, 0, imageKey)
         .setOrigin(0, 0)
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {})
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+    // Track events
+    const onPointerDown = function () {};
+    btn_container.button.on("pointerdown", onPointerDown);
+    campaignResources.events.push({ target: btn_container.button, event: "pointerdown", handler: onPointerDown });
+
+    const onPointerOver = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+    btn_container.button.on("pointerover", onPointerOver);
+    campaignResources.events.push({ target: btn_container.button, event: "pointerover", handler: onPointerOver });
+
+    const onPointerOut = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+    btn_container.button.on("pointerout", onPointerOut);
+    campaignResources.events.push({ target: btn_container.button, event: "pointerout", handler: onPointerOut });
     btn_inner_container.add(btn_container.button);
 
     const text = scene.add
@@ -494,26 +550,36 @@ function CreateReplayButton(scene, container, x, y, imageKey) {
     btn_container.button = scene.add
         .image(0, 0, imageKey)
         .setOrigin(0, 0)
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {})
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+    // Track events
+    const onPointerDown = function () {};
+    btn_container.button.on("pointerdown", onPointerDown);
+    campaignResources.events.push({ target: btn_container.button, event: "pointerdown", handler: onPointerDown });
+
+    const onPointerOver = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+    btn_container.button.on("pointerover", onPointerOver);
+    campaignResources.events.push({ target: btn_container.button, event: "pointerover", handler: onPointerOver });
+
+    const onPointerOut = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+    btn_container.button.on("pointerout", onPointerOut);
+    campaignResources.events.push({ target: btn_container.button, event: "pointerout", handler: onPointerOut });
     btn_inner_container.add(btn_container.button);
 
     btn_container.text = scene.add
@@ -1056,9 +1122,32 @@ function CloseCampian(scene) {
 }
 
 function Destroy() {
+    // Clean up all tracked events
+    campaignResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // Stop all tracked tweens
+    campaignResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
     if (container_main) {
         container_main.destroy();
     }
 
     container_main = null;
+    container_popup = null;
+    container_list = null;
+    container_popup_buttons = null;
+
+    // Reset resources
+    campaignResources = {
+        events: [],
+        tweens: []
+    };
 }

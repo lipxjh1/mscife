@@ -33,6 +33,9 @@ export function CreateCharacterRewardPopup(
     );
 
     function AssetsLoadDone() {
+        // Track resources for cleanup
+        const resources = { events: [], tweens: [] };
+
         let container_main = scene.add.container(0, 0);
         container_main.setDepth(300);
 
@@ -84,22 +87,54 @@ export function CreateCharacterRewardPopup(
             "share_popup_reward_btn_claim",
             "Claim"
         );
-        btn_claim.button.on("pointerdown", (pointer) => {
+
+        const onClaimClick = (pointer) => {
             scene.tweens.remove(tween);
 
-            tween = scene.tweens.add({
+            const closeTween = scene.tweens.add({
                 targets: container_popup,
                 x: 0,
                 y: 2000, // Vị trí kết thúc
                 duration: 500, // Thời gian tween
                 ease: "Power2", // Kiểu easing
                 onComplete: () => {
-                    scene.tweens.remove(tween);
-
-                    container_main.destroy();
+                    scene.tweens.remove(closeTween);
+                    Destroy();
                 },
             });
-        });
+        };
+        btn_claim.button.on("pointerdown", onClaimClick);
+        resources.events.push({ target: btn_claim.button, event: "pointerdown", handler: onClaimClick });
+
+        // Add cleanup function
+        function Destroy() {
+            // Clean up all tracked events
+            resources.events.forEach(({ target, event, handler }) => {
+                if (target && target.off) {
+                    target.off(event, handler);
+                }
+            });
+
+            // Stop all tracked tweens
+            resources.tweens.forEach(tween => {
+                if (tween && tween.isActive && tween.isActive()) {
+                    tween.stop();
+                }
+            });
+
+            if (container_main && container_main.destroy) {
+                container_main.destroy();
+            }
+        }
+
+        // Attach cleanup to container
+        container_main.cleanup = Destroy;
+        container_main.Destroy = Destroy;
+
+        // Auto-register with UIManager if available
+        if (scene.ui && scene.ui.register) {
+            scene.ui.register(container_main);
+        }
     }
 }
 
@@ -136,6 +171,9 @@ export function CreateMultiCharacterRewardPopup(scene, dataArr) {
     );
 
     function AssetsLoadDone() {
+        // Track resources for cleanup
+        const resources = { events: [], tweens: [] };
+
         let container_main = scene.add.container(0, 0);
         container_main.setDepth(300);
 
@@ -171,9 +209,11 @@ export function CreateMultiCharacterRewardPopup(scene, dataArr) {
             "share_popup_reward_btn_claim",
             "Claim"
         );
-        btn_claim.button.on("pointerdown", (pointer) => {
-            container_main.destroy();
-        });
+        const onClaimClick = (pointer) => {
+            Destroy();
+        };
+        btn_claim.button.on("pointerdown", onClaimClick);
+        resources.events.push({ target: btn_claim.button, event: "pointerdown", handler: onClaimClick });
 
         const scrollViewWidth = 867;
 
@@ -259,9 +299,11 @@ export function CreateMultiCharacterRewardPopup(scene, dataArr) {
 
         gridTable.isDragging = false;
 
-        scene.input.on("pointerup", (pointer) => {
+        const onPointerUp = (pointer) => {
             gridTable.isDragging = false;
-        });
+        };
+        scene.input.on("pointerup", onPointerUp);
+        resources.events.push({ target: scene.input, event: "pointerup", handler: onPointerUp });
 
         container_item_list.add(gridTable);
         container_item_list.gridTable = gridTable;
@@ -700,9 +742,11 @@ export function CreateMultiItemRewardPopup(scene, dataArr) {
             "share_popup_reward_btn_claim",
             "Claim"
         );
-        btn_claim.button.on("pointerdown", (pointer) => {
-            container_main.destroy();
-        });
+        const onClaimClick = (pointer) => {
+            Destroy();
+        };
+        btn_claim.button.on("pointerdown", onClaimClick);
+        resources.events.push({ target: btn_claim.button, event: "pointerdown", handler: onClaimClick });
 
         const scrollViewWidth = 867;
 
@@ -788,9 +832,11 @@ export function CreateMultiItemRewardPopup(scene, dataArr) {
 
         gridTable.isDragging = false;
 
-        scene.input.on("pointerup", (pointer) => {
+        const onPointerUp = (pointer) => {
             gridTable.isDragging = false;
-        });
+        };
+        scene.input.on("pointerup", onPointerUp);
+        resources.events.push({ target: scene.input, event: "pointerup", handler: onPointerUp });
 
         container_item_list.add(gridTable);
         container_item_list.gridTable = gridTable;

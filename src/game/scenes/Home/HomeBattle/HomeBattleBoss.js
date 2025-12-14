@@ -28,6 +28,13 @@ let bossActive = [];
 
 let bossSchedule = {};
 
+// Track all resources for cleanup
+let bossResources = {
+    events: [],
+    tweens: [],
+    timers: []
+};
+
 export function CreateBoss(scene) {
     centerData.selectedBossData = null;
 
@@ -46,6 +53,13 @@ function AssetsLoadDone(scene) {
     Destroy();
 
     HideHomeBattle(scene);
+
+    // Reset resources
+    bossResources = {
+        events: [],
+        tweens: [],
+        timers: []
+    };
 
     container_main = scene.add.container(0, 0);
     container_main.setDepth(200);
@@ -79,30 +93,39 @@ function AssetsLoadDone(scene) {
     //create close btn
     const btn_close = scene.add
         .image(38 + 32 / 2, 266 + 54 / 2, "share_btn_back")
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {
-            CloseCampian(scene);
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
 
-            ShowHomeBattle(scene);
-        })
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: btn_close,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: btn_close,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+    // Track events
+    const onCloseClick = function () {
+        CloseCampian(scene);
+        ShowHomeBattle(scene);
+    };
+    btn_close.on("pointerdown", onCloseClick);
+    bossResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
+
+    const onCloseOver = function () {
+        scene.tweens.add({
+            targets: btn_close,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+    btn_close.on("pointerover", onCloseOver);
+    bossResources.events.push({ target: btn_close, event: "pointerover", handler: onCloseOver });
+
+    const onCloseOut = function () {
+        scene.tweens.add({
+            targets: btn_close,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+    btn_close.on("pointerout", onCloseOut);
+    bossResources.events.push({ target: btn_close, event: "pointerout", handler: onCloseOut });
 
     container_popup_buttons.add(btn_close);
 
@@ -131,6 +154,11 @@ function RequestBossStatus(scene) {
             HideLoadingPopup();
 
             CreateList(scene);
+
+            // Auto-register with UIManager if available
+            if (scene.ui && scene.ui.register) {
+                scene.ui.register(container_main, 'HomeBattleBoss');
+            }
         }
     };
 
@@ -268,26 +296,36 @@ function CreateFightButton(scene, container, x, y, imageKey, buttonName) {
     btn_container.button = scene.add
         .image(0, 0, imageKey)
         .setOrigin(0, 0)
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {})
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+    // Track events
+    const onPointerDown = function () {};
+    btn_container.button.on("pointerdown", onPointerDown);
+    bossResources.events.push({ target: btn_container.button, event: "pointerdown", handler: onPointerDown });
+
+    const onPointerOver = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+    btn_container.button.on("pointerover", onPointerOver);
+    bossResources.events.push({ target: btn_container.button, event: "pointerover", handler: onPointerOver });
+
+    const onPointerOut = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+    btn_container.button.on("pointerout", onPointerOut);
+    bossResources.events.push({ target: btn_container.button, event: "pointerout", handler: onPointerOut });
     btn_inner_container.add(btn_container.button);
 
     const text = scene.add
@@ -408,6 +446,12 @@ function CreateItemMapSchedule(scene, scrollablePanel, bossData) {
 
                 timeEvent.remove();
 
+                // Remove from tracked timers
+                const index = bossResources.timers.indexOf(timeEvent);
+                if (index > -1) {
+                    bossResources.timers.splice(index, 1);
+                }
+
                 item.destroy();
 
                 scrollablePanel.layout();
@@ -424,6 +468,8 @@ function CreateItemMapSchedule(scene, scrollablePanel, bossData) {
     });
 
     timeCountEvents.push(timeEvent);
+    // Track timer for cleanup
+    bossResources.timers.push(timeEvent);
 
     if (bossData.health < 0) {
         bossData.health = 0;
@@ -634,6 +680,8 @@ function CreateItemMap(scene, scrollablePanel, bossData) {
     });
 
     timeCountEvents.push(timeEvent);
+    // Track timer for cleanup
+    bossResources.timers.push(timeEvent);
 
     item.text_participantCount = scene.add
         .text(
@@ -721,7 +769,7 @@ function CreateItemMap(scene, scrollablePanel, bossData) {
     );
     item.btn_play = btn_play;
 
-    btn_play.button.on("pointerdown", function () {
+    const onPlayBoss = function () {
         centerData.selectedBossData = bossData;
 
         if (lives > 0 && bossData.remainingTime > 0) {
@@ -745,7 +793,9 @@ function CreateItemMap(scene, scrollablePanel, bossData) {
                 );
             }
         }
-    });
+    };
+    btn_play.button.on("pointerdown", onPlayBoss);
+    bossResources.events.push({ target: btn_play.button, event: "pointerdown", handler: onPlayBoss });
 
     const btn_lock = CreateFightButton(
         scene,
@@ -899,6 +949,27 @@ function ClearTimeEvents() {
 }
 
 function Destroy() {
+    // Clean up all tracked events
+    bossResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // Stop all tracked tweens
+    bossResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
+    // Remove all tracked timers
+    bossResources.timers.forEach(timer => {
+        if (timer && timer.remove) {
+            timer.remove();
+        }
+    });
+
     if (container_main) {
         container_main.destroy();
     }
@@ -906,4 +977,14 @@ function Destroy() {
     ClearTimeEvents();
 
     container_main = null;
+    container_popup = null;
+    container_list = null;
+    container_popup_buttons = null;
+
+    // Reset resources
+    bossResources = {
+        events: [],
+        tweens: [],
+        timers: []
+    };
 }

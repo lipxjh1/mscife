@@ -9,33 +9,42 @@ import { EventBus } from "../../EventBus.js";
  * @param {string} [confirmText='Xác nhận'] - Text nút xác nhận
  * @param {string} [cancelText='Hủy'] - Text nút hủy
  * @param {boolean} [showBothButtons=true] - Hiển thị cả hai nút (true) hoặc chỉ nút xác nhận (false)
+ * @returns {Function} Function để cleanup popup thủ công nếu cần
  */
 export function showConfirmPopup(
   title,
   message,
   onConfirm = null,
   onCancel = null,
-  confirmText = 'Xác nhận', 
+  confirmText = 'Xác nhận',
   cancelText = 'Hủy',
   showBothButtons = true
 ) {
   // Tạo tên sự kiện động để tránh xung đột
   const confirmEventName = 'phaser:confirm-action-' + Date.now();
   const cancelEventName = 'phaser:cancel-action-' + Date.now();
-  
+
+  let isHandled = false;
+
   // Đăng ký listener cho sự kiện xác nhận
   if (onConfirm) {
     EventBus.once(confirmEventName, () => {
+      if (isHandled) return;
+      isHandled = true;
+
       // Hủy listener khác nếu có
       if (onCancel) EventBus.off(cancelEventName);
       // Gọi callback
       onConfirm();
     });
   }
-  
+
   // Đăng ký listener cho sự kiện hủy
   if (onCancel) {
     EventBus.once(cancelEventName, () => {
+      if (isHandled) return;
+      isHandled = true;
+
       // Hủy listener khác nếu có
       if (onConfirm) EventBus.off(confirmEventName);
       // Gọi callback
@@ -53,6 +62,15 @@ export function showConfirmPopup(
     cancelEvent: cancelEventName,
     showBothButtons: showBothButtons
   });
+
+  // Return cleanup function
+  return function cleanup() {
+    if (!isHandled) {
+      isHandled = true;
+      EventBus.off(confirmEventName);
+      EventBus.off(cancelEventName);
+    }
+  };
 }
 
 /**

@@ -15,6 +15,12 @@ let btn_skillGunner = null;
 let btn_skillSniper = null;
 let btn_skillRocket = null;
 
+// Track all resources for cleanup
+let skillButtonsResources = {
+    events: [],
+    tweens: []
+};
+
 export function CreateSkillButtons(scene) {
     gunnerUnlocked = null;
     sniperUnlocked = null;
@@ -24,6 +30,12 @@ export function CreateSkillButtons(scene) {
     btn_skillSniper = null;
     btn_skillRocket = null;
 
+    // Reset resources
+    skillButtonsResources = {
+        events: [],
+        tweens: []
+    };
+
     if (container_main) {
         container_main.destroy();
     }
@@ -32,6 +44,11 @@ export function CreateSkillButtons(scene) {
 
     container_selector = scene.add.container(0, 0);
     container_main.add(container_selector);
+
+    // Auto-register with UIManager if available
+    if (scene.ui && scene.ui.register) {
+        scene.ui.register(container_main, 'GameplaySkillButtons');
+    }
 
     for (let i = 0; i < centerData.selectedPlayerArr.length; i++) {
         let unlockedPlayer = centerData.getUnlockedPlayerById(
@@ -64,7 +81,7 @@ export function CreateSkillButtons(scene) {
 
         let btn = CreateButtonSelect(scene);
 
-        btn.button.on("pointerdown", function () {
+        const onGunnerSkill = function () {
             if (btn.locked == false) {
                 btn.setLock(delay, () => {});
 
@@ -72,7 +89,9 @@ export function CreateSkillButtons(scene) {
 
                 CreateSkillIntro(scene);
             }
-        });
+        };
+        btn.button.on("pointerdown", onGunnerSkill);
+        skillButtonsResources.events.push({ target: btn.button, event: "pointerdown", handler: onGunnerSkill });
 
         btn.setPosition(856 + 196 / 2, 862 + 196 / 2);
         btn.image.setTexture("skill_shoot_all");
@@ -91,7 +110,7 @@ export function CreateSkillButtons(scene) {
 
         let btn = CreateButtonSelect(scene);
 
-        btn.button.on("pointerdown", function () {
+        const onSniperSkill = function () {
             if (btn.locked == false) {
                 btn.setLock(delay, () => {});
 
@@ -99,7 +118,9 @@ export function CreateSkillButtons(scene) {
 
                 CreateSkillIntro(scene);
             }
-        });
+        };
+        btn.button.on("pointerdown", onSniperSkill);
+        skillButtonsResources.events.push({ target: btn.button, event: "pointerdown", handler: onSniperSkill });
 
         btn.setPosition(856 + 196 / 2, 862 + 196 / 2);
         btn.image.setTexture("skill_invisible_all");
@@ -118,7 +139,7 @@ export function CreateSkillButtons(scene) {
 
         let btn = CreateButtonSelect(scene);
 
-        btn.button.on("pointerdown", function () {
+        const onRocketSkill = function () {
             if (btn.locked == false) {
                 btn.setLock(delay, () => {});
 
@@ -126,7 +147,9 @@ export function CreateSkillButtons(scene) {
 
                 CreateSkillIntro(scene);
             }
-        });
+        };
+        btn.button.on("pointerdown", onRocketSkill);
+        skillButtonsResources.events.push({ target: btn.button, event: "pointerdown", handler: onRocketSkill });
 
         btn.setPosition(856 + 196 / 2, 862 + 196 / 2);
         btn.image.setTexture("skill_shoot_all");
@@ -183,26 +206,36 @@ function CreateButtonSelect(scene) {
     container_button.button = scene.add
         .image(0, 0, "gameplay_selector_item_btn")
         .setOrigin(0, 0)
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {})
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: container_button,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: container_button,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+    // Track button events
+    const onPointerDown = function () {};
+    container_button.button.on("pointerdown", onPointerDown);
+    skillButtonsResources.events.push({ target: container_button.button, event: "pointerdown", handler: onPointerDown });
+
+    const onPointerOver = function () {
+        scene.tweens.add({
+            targets: container_button,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+    container_button.button.on("pointerover", onPointerOver);
+    skillButtonsResources.events.push({ target: container_button.button, event: "pointerover", handler: onPointerOver });
+
+    const onPointerOut = function () {
+        scene.tweens.add({
+            targets: container_button,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+    container_button.button.on("pointerout", onPointerOut);
+    skillButtonsResources.events.push({ target: container_button.button, event: "pointerout", handler: onPointerOut });
     container_button_inner.add(container_button.button);
 
     container_button.image = scene.add
@@ -325,4 +358,38 @@ function CreateSkillIntro(scene) {
             introImg.destroy();
         },
     });
+}
+
+// Add cleanup function for Skill Buttons
+export function DestroySkillButtons() {
+    // Clean up all tracked events
+    skillButtonsResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // Stop all tracked tweens
+    skillButtonsResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
+    if (container_main && container_main.destroy) {
+        container_main.destroy();
+        container_main = null;
+    }
+
+    // Reset references
+    btn_skillGunner = null;
+    btn_skillSniper = null;
+    btn_skillRocket = null;
+    container_selector = null;
+
+    // Reset resources
+    skillButtonsResources = {
+        events: [],
+        tweens: []
+    };
 }

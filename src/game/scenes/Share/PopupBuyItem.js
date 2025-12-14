@@ -21,6 +21,9 @@ export function CreateBuyItemPopup(
 ) {
     let inputValue = null;
 
+    // Track resources for cleanup
+    const resources = { events: [], tweens: [] };
+
     let container_main_buy = scene.add.container(0, 0);
     container_main_buy.setDepth(1000);
 
@@ -31,6 +34,14 @@ export function CreateBuyItemPopup(
     black_bg.setInteractive();
 
     container_main_buy.add(black_bg);
+
+    // Close on background click
+    const onBgClick = () => {
+        if (onFailed) onFailed();
+        Destroy();
+    };
+    black_bg.on("pointerdown", onBgClick);
+    resources.events.push({ target: black_bg, event: "pointerdown", handler: onBgClick });
 
     let container_popup_buy = scene.add.container(0, 0);
     container_main_buy.add(container_popup_buy);
@@ -167,26 +178,36 @@ export function CreateBuyItemPopup(
         btn_container.button = scene.add
             .image(0, 0, imageKey)
             .setOrigin(0, 0)
-            .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-            .on("pointerdown", function () {})
-            .on("pointerover", function () {
-                scene.tweens.add({
-                    targets: btn_container,
-                    scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                    scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                    duration: 100, // Thời gian hiệu ứng (ms)
-                    ease: "Power2",
-                });
-            })
-            .on("pointerout", function () {
-                scene.tweens.add({
-                    targets: btn_container,
-                    scaleX: 1, // Phóng to 20% theo chiều ngang
-                    scaleY: 1, // Phóng to 20% theo chiều dọc
-                    duration: 100, // Thời gian hiệu ứng (ms)
-                    ease: "Power2",
-                });
+            .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+        // Track events
+        const onPointerDown = function () {};
+        btn_container.button.on("pointerdown", onPointerDown);
+        resources.events.push({ target: btn_container.button, event: "pointerdown", handler: onPointerDown });
+
+        const onPointerOver = function () {
+            scene.tweens.add({
+                targets: btn_container,
+                scaleX: 1.2, // Phóng to 20% theo chiều ngang
+                scaleY: 1.2, // Phóng to 20% theo chiều dọc
+                duration: 100, // Thời gian hiệu ứng (ms)
+                ease: "Power2",
             });
+        };
+        btn_container.button.on("pointerover", onPointerOver);
+        resources.events.push({ target: btn_container.button, event: "pointerover", handler: onPointerOver });
+
+        const onPointerOut = function () {
+            scene.tweens.add({
+                targets: btn_container,
+                scaleX: 1, // Phóng to 20% theo chiều ngang
+                scaleY: 1, // Phóng to 20% theo chiều dọc
+                duration: 100, // Thời gian hiệu ứng (ms)
+                ease: "Power2",
+            });
+        };
+        btn_container.button.on("pointerout", onPointerOut);
+        resources.events.push({ target: btn_container.button, event: "pointerout", handler: onPointerOut });
         btn_inner_container.add(btn_container.button);
 
         const text = scene.add
@@ -221,7 +242,7 @@ export function CreateBuyItemPopup(
             "Yes"
         )
     );
-    btn_yes.button.on("pointerdown", function () {
+    const onYesClick = function () {
         let buyAmount = Number(inputValue);
 
         let caculatedMusk = price * buyAmount;
@@ -304,7 +325,7 @@ export function CreateBuyItemPopup(
                             }
                         );
 
-                        container_main_buy.destroy();
+                        Destroy();
                     },
                     (error) => {
                         HideLoadingPopup();
@@ -339,7 +360,9 @@ export function CreateBuyItemPopup(
                 }
             );
         }
-    });
+    };
+    btn_yes.button.on("pointerdown", onYesClick);
+    resources.events.push({ target: btn_yes.button, event: "pointerdown", handler: onYesClick });
 
     const btn_no = CreateButton(
         scene,
@@ -348,9 +371,12 @@ export function CreateBuyItemPopup(
         "share_popup_input_btn",
         cdLocalization.getLocalization(cdLocalization.GROUP_KEYS.Main.KEY, "No")
     );
-    btn_no.button.on("pointerdown", function () {
-        container_main_buy.destroy();
-    });
+    const onNoClick = function () {
+        if (onFailed) onFailed();
+        Destroy();
+    };
+    btn_no.button.on("pointerdown", onNoClick);
+    resources.events.push({ target: btn_no.button, event: "pointerdown", handler: onNoClick });
 
     let placeHolderStr = cdLocalization.getLocalization(
         cdLocalization.GROUP_KEYS.HomeShop.KEY,
@@ -429,4 +455,44 @@ export function CreateBuyItemPopup(
             inputElement.blur(); // Hủy trạng thái focus
         }
     });
+
+    // Add cleanup function
+    function Destroy() {
+        // Clean up all tracked events
+        resources.events.forEach(({ target, event, handler }) => {
+            if (target && target.off) {
+                target.off(event, handler);
+            }
+        });
+
+        // Stop all tracked tweens
+        resources.tweens.forEach(tween => {
+            if (tween && tween.isActive && tween.isActive()) {
+                tween.stop();
+            }
+        });
+
+        // Clean up DOM event listeners
+        if (inputForm) {
+            inputForm.removeEventListener("submit", submitHandler);
+        }
+
+        // Hide input element
+        if (inputElement) {
+            inputElement.style.visibility = "hidden";
+        }
+
+        if (container_main_buy && container_main_buy.destroy) {
+            container_main_buy.destroy();
+        }
+    }
+
+    // Attach cleanup to container
+    container_main_buy.cleanup = Destroy;
+    container_main_buy.Destroy = Destroy;
+
+    // Auto-register with UIManager if available
+    if (scene.ui && scene.ui.register) {
+        scene.ui.register(container_main_buy);
+    }
 }

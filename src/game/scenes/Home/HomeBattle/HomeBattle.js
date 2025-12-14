@@ -38,6 +38,12 @@ let container_popup_buttons = null;
 
 let isOpen = false;
 
+// Track all resources for cleanup
+let battleResources = {
+    events: [],
+    tweens: []
+};
+
 export function CreateHomeBattle(scene) {
     CreateLoadingPopup();
 
@@ -52,6 +58,12 @@ export function CreateHomeBattle(scene) {
 
 function AssetsLoadDone(scene) {
     Destroy();
+
+    // Reset resources
+    battleResources = {
+        events: [],
+        tweens: []
+    };
 
     container_main = scene.add.container(0, 0);
     container_main.setDepth(200);
@@ -86,28 +98,38 @@ function AssetsLoadDone(scene) {
         //create close btn
         const btn_close = scene.add
             .image(38 + 118 / 2, 248 + 90 / 2, "share_btn_home_2")
-            .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-            .on("pointerdown", function () {
-                CloseHomeBattle(scene);
-            })
-            .on("pointerover", function () {
-                scene.tweens.add({
-                    targets: btn_close,
-                    scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                    scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                    duration: 100, // Thời gian hiệu ứng (ms)
-                    ease: "Power2",
-                });
-            })
-            .on("pointerout", function () {
-                scene.tweens.add({
-                    targets: btn_close,
-                    scaleX: 1, // Phóng to 20% theo chiều ngang
-                    scaleY: 1, // Phóng to 20% theo chiều dọc
-                    duration: 100, // Thời gian hiệu ứng (ms)
-                    ease: "Power2",
-                });
+            .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+        // Track events
+        const onCloseClick = function () {
+            CloseHomeBattle(scene);
+        };
+        btn_close.on("pointerdown", onCloseClick);
+        battleResources.events.push({ target: btn_close, event: "pointerdown", handler: onCloseClick });
+
+        const onCloseOver = function () {
+            scene.tweens.add({
+                targets: btn_close,
+                scaleX: 1.2, // Phóng to 20% theo chiều ngang
+                scaleY: 1.2, // Phóng to 20% theo chiều dọc
+                duration: 100, // Thời gian hiệu ứng (ms)
+                ease: "Power2",
             });
+        };
+        btn_close.on("pointerover", onCloseOver);
+        battleResources.events.push({ target: btn_close, event: "pointerover", handler: onCloseOver });
+
+        const onCloseOut = function () {
+            scene.tweens.add({
+                targets: btn_close,
+                scaleX: 1, // Phóng to 20% theo chiều ngang
+                scaleY: 1, // Phóng to 20% theo chiều dọc
+                duration: 100, // Thời gian hiệu ứng (ms)
+                ease: "Power2",
+            });
+        };
+        btn_close.on("pointerout", onCloseOut);
+        battleResources.events.push({ target: btn_close, event: "pointerout", handler: onCloseOut });
 
         container_popup_buttons.add(btn_close);
     }
@@ -115,6 +137,11 @@ function AssetsLoadDone(scene) {
     //ActiveMode(scene, MODE_KEYS.Account.KEY);
 
     CreateList(scene);
+
+    // Auto-register with UIManager if available
+    if (scene.ui && scene.ui.register) {
+        scene.ui.register(container_main, 'HomeBattle');
+    }
 
     OpenHomeBattle(scene);
 }
@@ -222,26 +249,36 @@ function CreateOptionsButton(scene, container, x, y, imageKey, buttonName) {
     btn_container.button = scene.add
         .image(0, 0, imageKey)
         .setOrigin(0, 0)
-        .setInteractive({ useHandCursor: true }) // Thiết lập tương tác và đổi thành hình bàn tay khi hover
-        .on("pointerdown", function () {})
-        .on("pointerover", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1.2, // Phóng to 20% theo chiều ngang
-                scaleY: 1.2, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
-        })
-        .on("pointerout", function () {
-            scene.tweens.add({
-                targets: btn_container,
-                scaleX: 1, // Phóng to 20% theo chiều ngang
-                scaleY: 1, // Phóng to 20% theo chiều dọc
-                duration: 100, // Thời gian hiệu ứng (ms)
-                ease: "Power2",
-            });
+        .setInteractive({ useHandCursor: true }); // Thiết lập tương tác và đổi thành hình bàn tay khi hover
+
+    // Track events
+    const onPointerDown = function () {};
+    btn_container.button.on("pointerdown", onPointerDown);
+    battleResources.events.push({ target: btn_container.button, event: "pointerdown", handler: onPointerDown });
+
+    const onPointerOver = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1.2, // Phóng to 20% theo chiều ngang
+            scaleY: 1.2, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
         });
+    };
+    btn_container.button.on("pointerover", onPointerOver);
+    battleResources.events.push({ target: btn_container.button, event: "pointerover", handler: onPointerOver });
+
+    const onPointerOut = function () {
+        scene.tweens.add({
+            targets: btn_container,
+            scaleX: 1, // Phóng to 20% theo chiều ngang
+            scaleY: 1, // Phóng to 20% theo chiều dọc
+            duration: 100, // Thời gian hiệu ứng (ms)
+            ease: "Power2",
+        });
+    };
+    btn_container.button.on("pointerout", onPointerOut);
+    battleResources.events.push({ target: btn_container.button, event: "pointerout", handler: onPointerOut });
     btn_inner_container.add(btn_container.button);
 
     const text = scene.add
@@ -330,11 +367,12 @@ function CreateItemCampian(scene, scrollablePanel) {
             "Play"
         )
     );
-    btn_play.button.on("pointerdown", function () {
+    const onPlayCampaign = function () {
         CreateCampain(scene);
-
         DestroyGuidePlayBattle(scene);
-    });
+    };
+    btn_play.button.on("pointerdown", onPlayCampaign);
+    battleResources.events.push({ target: btn_play.button, event: "pointerdown", handler: onPlayCampaign });
 
     scrollablePanel.getElement("panel").add(item, {
         align: "top-left",
@@ -406,9 +444,11 @@ function CreateItemMultiplayer(scene, scrollablePanel) {
             "Create"
         )
     );
-    btn_create_room.button.on("pointerdown", function () {
+    const onCreateRoom = function () {
         CreateMultiplayerBoss(scene);
-    });
+    };
+    btn_create_room.button.on("pointerdown", onCreateRoom);
+    battleResources.events.push({ target: btn_create_room.button, event: "pointerdown", handler: onCreateRoom });
 
     const btn_join_room = CreateOptionsButton(
         scene,
@@ -421,9 +461,11 @@ function CreateItemMultiplayer(scene, scrollablePanel) {
             "Join"
         )
     );
-    btn_join_room.button.on("pointerdown", function () {
+    const onJoinRoom = function () {
         MultiplayerBossJoinRoomPopup(scene);
-    });
+    };
+    btn_join_room.button.on("pointerdown", onJoinRoom);
+    battleResources.events.push({ target: btn_join_room.button, event: "pointerdown", handler: onJoinRoom });
 
     const btn_room_list = CreateOptionsButton(
         scene,
@@ -436,9 +478,11 @@ function CreateItemMultiplayer(scene, scrollablePanel) {
             "Rooms"
         )
     );
-    btn_room_list.button.on("pointerdown", function () {
+    const onRoomList = function () {
         CreateMultiplayerBossRoomList(scene);
-    });
+    };
+    btn_room_list.button.on("pointerdown", onRoomList);
+    battleResources.events.push({ target: btn_room_list.button, event: "pointerdown", handler: onRoomList });
 
     scrollablePanel.getElement("panel").add(item, {
         align: "top-left",
@@ -510,10 +554,12 @@ function CreateItemBoss(scene, scrollablePanel) {
             "Play"
         )
     );
-    btn_play.button.on("pointerdown", function () {
+    const onPlayBoss = function () {
         // Password check removed - direct access to Boss mode
         CreateBoss(scene);
-    });
+    };
+    btn_play.button.on("pointerdown", onPlayBoss);
+    battleResources.events.push({ target: btn_play.button, event: "pointerdown", handler: onPlayBoss });
 
     scrollablePanel.getElement("panel").add(item, {
         align: "top-left",
@@ -552,9 +598,37 @@ export function HideHomeBattle(scene) {
 }
 
 function Destroy() {
+    // Clean up all tracked events
+    battleResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // Stop all tracked tweens
+    battleResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
+    // Clean up guide
+    if (isOpen) {
+        DestroyGuidePlayBattle(null);
+    }
+
     if (container_main) {
         container_main.destroy();
     }
 
     container_main = null;
+    container_popup = null;
+    container_list = null;
+    container_popup_buttons = null;
+
+    // Reset resources
+    battleResources = {
+        events: [],
+        tweens: []
+    };
 }

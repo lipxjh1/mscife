@@ -14,12 +14,63 @@ let rewardData = null;
 
 let container_list = null;
 
+// Track all resources for cleanup
+let gameOverResources = {
+    events: [],
+    tweens: []
+};
+
+// Helper to create button with event tracking
+function createButtonWithTracking(scene, x, y, texture, onClick) {
+    const button = scene.add
+        .image(x, y, texture)
+        .setInteractive({ useHandCursor: true });
+
+    button.on("pointerdown", onClick);
+    gameOverResources.events.push({ target: button, event: "pointerdown", handler: onClick });
+
+    // Add hover effects if needed
+    const onOver = () => {
+        scene.tweens.add({
+            targets: button,
+            scaleX: 1.05,
+            scaleY: 1.05,
+            duration: 100,
+            ease: "Power2"
+        });
+    };
+
+    const onOut = () => {
+        scene.tweens.add({
+            targets: button,
+            scaleX: 1,
+            scaleY: 1,
+            duration: 100,
+            ease: "Power2"
+        });
+    };
+
+    button.on("pointerover", onOver);
+    button.on("pointerout", onOut);
+    gameOverResources.events.push({ target: button, event: "pointerover", handler: onOver });
+    gameOverResources.events.push({ target: button, event: "pointerout", handler: onOut });
+
+    return button;
+}
+
 export function CreateGameOver(scene, isVictory = false, data) {
     rewardData = data;
 
+    // Destroy previous container if exists
     if (container_main != null) {
         container_main.destroy();
     }
+
+    // Reset resources
+    gameOverResources = {
+        events: [],
+        tweens: []
+    };
 
     canClick = false;
 
@@ -28,9 +79,14 @@ export function CreateGameOver(scene, isVictory = false, data) {
     const black_bg = scene.add
         .rectangle(0, 0, window.originWidth, window.originHeight)
         .setOrigin(0, 0)
-        .setInteractive({ useHandCursor: true })
-        .on("pointerdown", function () {
-        });
+        .setInteractive({ useHandCursor: true });
+
+    // Track background click (does nothing but still needs tracking)
+    const onBgClick = function () {
+        // Background click does nothing in game over screen
+    };
+    black_bg.on("pointerdown", onBgClick);
+    gameOverResources.events.push({ target: black_bg, event: "pointerdown", handler: onBgClick });
     black_bg.isFilled = true;
     black_bg.fillColor = 0;
     black_bg.fillAlpha = 0.75;
@@ -590,4 +646,32 @@ function PlayCampain(scene) {
             onAssetLoaded();
         }
     );
+}
+
+// Add cleanup function for Game Over screen
+export function DestroyGameOver() {
+    // Clean up all tracked events
+    gameOverResources.events.forEach(({ target, event, handler }) => {
+        if (target && target.off) {
+            target.off(event, handler);
+        }
+    });
+
+    // Stop all tracked tweens
+    gameOverResources.tweens.forEach(tween => {
+        if (tween && tween.isActive && tween.isActive()) {
+            tween.stop();
+        }
+    });
+
+    if (container_main && container_main.destroy) {
+        container_main.destroy();
+        container_main = null;
+    }
+
+    // Reset resources
+    gameOverResources = {
+        events: [],
+        tweens: []
+    };
 }
