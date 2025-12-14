@@ -10,6 +10,7 @@ import {
 
 import centerData from "../../Data/CenterData.js";
 import { Scale } from "phaser";
+import MathLookup from "../../utils/MathLookup.js";
 import {
     playIdleAnimation,
     playCustomAnimation,
@@ -591,9 +592,14 @@ class BossTitan {
         // Tăng góc dao động
         this.swayAngle += this.swaySpeed;
 
-        // Tính toán dao động dựa trên hàm sin
-        const swayOffsetX = Math.sin(this.swayAngle) * this.swayDistance;
-        const swayOffsetY = Math.cos(this.swayAngle) * this.swayDistance;
+        // OPTIMIZATION: Use MathLookup for faster sin/cos operations
+        // Convert radians to degrees for MathLookup
+        const swayAngleDegrees = this.swayAngle * 180 / Math.PI;
+        const { sin, cos } = MathLookup.getSinCos(swayAngleDegrees);
+
+        // Tính toán dao động dựa trên lookup table
+        const swayOffsetX = sin * this.swayDistance;
+        const swayOffsetY = cos * this.swayDistance;
 
         // Áp dụng dao động vào vị trí của container
         this.spine.x = this.swayOrigin.x + swayOffsetX;

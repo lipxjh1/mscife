@@ -9,6 +9,7 @@ import {
 } from "../Gameplay/GameplayTopBar.js";
 
 import centerData from "../../Data/CenterData.js";
+import MathLookup from "../../utils/MathLookup.js";
 import {
     playIdleAnimation,
     playAttackAnimation,
@@ -287,13 +288,14 @@ class Enemy {
         const distanceX = this.moveToPosition.x - this.container.x;
         const distanceY = this.moveToPosition.y - this.container.y;
 
-        // Tính độ dài vector (khoảng cách Euclid)
-        const distance = Math.sqrt(
-            distanceX * distanceX + distanceY * distanceY
-        );
+        // OPTIMIZATION: Use squared distance for comparison (eliminate Math.sqrt)
+        const distanceSq = distanceX * distanceX + distanceY * distanceY;
+        const moveDistance = this.speed * (delta / 1000);
+        const moveDistanceSq = moveDistance * moveDistance;
 
-        if (distance > this.speed * (delta / 1000)) {
-            // Tính hướng di chuyển (normalize vector)
+        if (distanceSq > moveDistanceSq) {
+            // Only calculate Math.sqrt when needed for normalization
+            const distance = Math.sqrt(distanceSq);
             const directionX = distanceX / distance;
             const directionY = distanceY / distance;
 
@@ -754,9 +756,14 @@ class Enemy {
             // Tăng góc dao động
             this.swayAngle += this.swaySpeed;
 
-            // Tính toán dao động dựa trên hàm sin
-            const swayOffsetX = Math.sin(this.swayAngle) * this.swayDistance;
-            const swayOffsetY = Math.cos(this.swayAngle) * this.swayDistance;
+            // OPTIMIZATION: Use MathLookup for faster sin/cos operations
+            // Convert radians to degrees for MathLookup
+            const swayAngleDegrees = this.swayAngle * 180 / Math.PI;
+            const { sin, cos } = MathLookup.getSinCos(swayAngleDegrees);
+
+            // Tính toán dao động dựa trên lookup table
+            const swayOffsetX = sin * this.swayDistance;
+            const swayOffsetY = cos * this.swayDistance;
 
             // Áp dụng dao động vào vị trí của container
             this.spine.x = this.swayOrigin.x + swayOffsetX;

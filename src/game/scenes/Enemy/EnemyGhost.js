@@ -1,6 +1,7 @@
 
 import centerData from "../../Data/CenterData.js";
 import ProgressBar from "../Gameplay/ProgressBar.js";
+import MathLookup from "../../utils/MathLookup.js";
 import { playIdleAnimation, playCustomAnimation } from "../../utils/spineUtils.js";
 
 export function EnemyGhostIdToKeyImage(enemyId, stage) {
@@ -194,13 +195,14 @@ class EnemyGhost {
         const distanceX = this.moveToPosition.x - this.container.x;
         const distanceY = this.moveToPosition.y - this.container.y;
 
-        // Tính độ dài vector (khoảng cách Euclid)
-        const distance = Math.sqrt(
-            distanceX * distanceX + distanceY * distanceY
-        );
+        // OPTIMIZATION: Use squared distance for comparison (eliminate Math.sqrt)
+        const distanceSq = distanceX * distanceX + distanceY * distanceY;
+        const moveDistance = this.speed * (delta / 1000);
+        const moveDistanceSq = moveDistance * moveDistance;
 
-        if (distance > this.speed * (delta / 1000)) {
-            // Tính hướng di chuyển (normalize vector)
+        if (distanceSq > moveDistanceSq) {
+            // Only calculate Math.sqrt when needed for normalization
+            const distance = Math.sqrt(distanceSq);
             const directionX = distanceX / distance;
             const directionY = distanceY / distance;
 
