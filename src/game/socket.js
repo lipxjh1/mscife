@@ -48,7 +48,9 @@ class SocketService {
             this.socket = io(`${API_BASE_URL}/`, {
                 transports: ["websocket"],
                 auth: (cb) => {
-                    cb({ token: localStorage.getItem("accessToken") });
+                    // Try localStorage first, then sessionStorage for backward compatibility
+                    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+                    cb({ token });
                 },
                 reconnection: true,
                 reconnectionAttempts: 10,
@@ -341,6 +343,35 @@ class SocketService {
                 timestamp: new Date().toISOString(),
             });
             this.socket.disconnect();
+        }
+    }
+
+    // Method để update auth token khi token thay đổi
+    updateAuthToken(newToken) {
+        if (!this.socket) {
+            this.log("⚠️ Cannot update token: socket not initialized");
+            return;
+        }
+
+        // Get current token
+        const currentToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        if (currentToken !== newToken) {
+            this.log("🔄 Updating socket auth token", {
+                hasOldToken: !!currentToken,
+                hasNewToken: !!newToken,
+                timestamp: new Date().toISOString()
+            });
+
+            // Save new token to localStorage
+            if (newToken) {
+                localStorage.setItem("accessToken", newToken);
+            }
+
+            // Force disconnect và reconnect để update token
+            this.socket.disconnect();
+            this.socket = null;
+            this.connectSocket();
         }
     }
 }

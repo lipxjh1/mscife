@@ -178,14 +178,37 @@ export default class BaseScene extends Phaser.Scene {
 
     /**
      * Cleanup socket events
+     * WARNING: Don't cleanup auth-related events as they persist across scenes
      */
     cleanupSocketEvents() {
+        // List of protected auth events that should NOT be cleaned up
+        const PROTECTED_AUTH_EVENTS = [
+            'connect',
+            'disconnect',
+            'auth_success',
+            'auth_error',
+            'token_refresh',
+            'authenticated',
+            'unauthorized',
+            'heartbeat'
+        ];
+
         this._socketEvents.forEach(({ event, callback, socketService }) => {
+            // Skip cleanup for auth-related events
+            if (PROTECTED_AUTH_EVENTS.includes(event)) {
+                console.log(`[BaseScene] Skipping cleanup of protected auth event: ${event}`);
+                return;
+            }
+
             if (socketService?.socket) {
                 socketService.socket.off(event, callback);
             }
         });
-        this._socketEvents = [];
+
+        // Keep only protected events in the array
+        this._socketEvents = this._socketEvents.filter(({ event }) =>
+            PROTECTED_AUTH_EVENTS.includes(event)
+        );
     }
 
     /**

@@ -151,6 +151,20 @@ const setTokens = (newAccessToken, newRefreshToken) => {
     // Lưu token vào localStorage để duy trì trạng thái đăng nhập (giống Login.js)
     localStorage.setItem("accessToken", newAccessToken);
     localStorage.setItem("refreshToken", newRefreshToken);
+
+    // Update socket token if socket service is available
+    try {
+        // Import socketService dynamically to avoid circular dependency
+        import("../socket.js").then(({ socketService }) => {
+            if (socketService && socketService.updateAuthToken) {
+                socketService.updateAuthToken(newAccessToken);
+            }
+        }).catch(err => {
+            console.log('[APIBase] Could not update socket token:', err.message);
+        });
+    } catch (error) {
+        console.log('[APIBase] Socket service not available');
+    }
 };
 
 // Hàm xóa token
@@ -173,16 +187,44 @@ const clearTokens = () => {
 
 // Load token từ localStorage khi khởi động
 const loadTokens = () => {
+    // First try localStorage
     accessToken = localStorage.getItem("accessToken");
     refreshToken = localStorage.getItem("refreshToken");
-    console.log('🔄 APIBase: Tokens reloaded from localStorage');
+
+    // If not in localStorage, try sessionStorage (backward compatibility)
+    if (!accessToken) {
+        accessToken = sessionStorage.getItem("accessToken");
+        refreshToken = sessionStorage.getItem("refreshToken");
+
+        // If found in sessionStorage, migrate to localStorage
+        if (accessToken) {
+            localStorage.setItem("accessToken", accessToken);
+            if (refreshToken) {
+                localStorage.setItem("refreshToken", refreshToken);
+            }
+            console.log('🔄 APIBase: Migrated tokens from sessionStorage to localStorage');
+        }
+    }
+
+    console.log('🔄 APIBase: Tokens loaded');
     console.log('- Access Token:', accessToken ? `PRESENT (${accessToken.substring(0, 20)}...)` : 'MISSING');
     console.log('- Refresh Token:', refreshToken ? 'PRESENT' : 'MISSING');
+    console.log('- Storage:', localStorage.getItem("accessToken") ? 'localStorage' : 'none');
 };
 
 // ✅ FIX: Export loadTokens để Login.js có thể gọi
 if (typeof window !== 'undefined') {
     window.loadTokens = loadTokens;
+}
+
+// Also listen for storage events to sync tokens across tabs
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'accessToken' || e.key === 'refreshToken') {
+            console.log('🔄 APIBase: Token storage changed, reloading...');
+            loadTokens();
+        }
+    });
 }
 
 loadTokens();
